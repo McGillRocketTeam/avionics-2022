@@ -28,8 +28,6 @@ Eg.
 
 Avionics
 .
-├── Ejection
-|   └── Testing
 ├── Flight Computer
 |   └── Ejection
 |   └── Telemetry
