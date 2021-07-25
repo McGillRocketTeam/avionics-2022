@@ -22,7 +22,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
 
+#include "stm32f3xx_hal.h"
+#include "stm32f3xx_hal_flash_ex.h"
+#include "stm32f3xx_hal_flash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,7 +57,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+extern void    FLASH_PageErase(uint32_t PageAddress);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -104,12 +110,50 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint64_t numbers[2] = {1, '6'};
+  uint32_t address =  0x0807F7FCU;
+//  uint32_t reg = 0;
+//
+//  if(HAL_FLASH_Unlock() != HAL_OK){
+//	  while (1){
+//		  myprintf("Mistakes were made\n");
+//	  }
+//  }
+//
+//  static FLASH_EraseInitTypeDef EraseInitStruct;
+//      EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
+//      EraseInitStruct.PageAddress = address;
+//      EraseInitStruct.NbPages = 1;
+//      HAL_FLASHEx_Erase(&EraseInitStruct, &reg);
+//
+//      if(reg | 0xFFFFFFFF == 0xFFFFFFFF){
+//    	  myprintf("Memory is gone yey\n");
+//      }
+//
+//  //HAL_FLASH_Lock();
+//
+//  //HAL_FLASH_Unlock();
+//
+//  if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, '1') != HAL_OK){
+//	  myprintf("Could not write\n");
+//  }
+//
+//  HAL_FLASH_Lock();
+  // TODO test page transitions
+  MRT_WriteDataToFlash(FLASH_TYPEPROGRAM_WORD, address, numbers, 2);
+
+
+  uint32_t *readData = (uint32_t *) address;
+
+  myprintf("Yey %i and yey %i\n", *(readData), *(readData+1));
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
