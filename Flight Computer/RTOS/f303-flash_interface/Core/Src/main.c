@@ -127,7 +127,7 @@ int main(void)
 //      HAL_FLASHEx_Erase(&EraseInitStruct, &reg);
 //
 //      if(reg | 0xFFFFFFFF == 0xFFFFFFFF){
-//    	  myprintf("Memory is gone yey\n");
+//    	  myprintf("Memory is gone yey\r\n");
 //      }
 //
 //  //HAL_FLASH_Lock();
@@ -135,17 +135,16 @@ int main(void)
 //  //HAL_FLASH_Unlock();
 //
 //  if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, '1') != HAL_OK){
-//	  myprintf("Could not write\n");
+//	  myprintf("Could not write\r\n");
 //  }
 //
 //  HAL_FLASH_Lock();
   // TODO test page transitions
-  MRT_WriteDataToFlash(FLASH_TYPEPROGRAM_WORD, address, numbers, 2);
+  MRT_WriteDataToFlash(FLASH_TYPEPROGRAM_HALFWORD, address, numbers, 2);
 
+  uint16_t *readData = (uint16_t *) address;
 
-  uint32_t *readData = (uint32_t *) address;
-
-  myprintf("Yey %i and yey %i\n", *(readData), *(readData+1));
+  myprintf("Yey %i and yey %i\r\n", *(readData), *(readData+1));
 
   while (1)
   {

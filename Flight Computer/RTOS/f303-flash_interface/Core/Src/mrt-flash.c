@@ -2,7 +2,7 @@
 
 HAL_StatusTypeDef MRT_EraseFlashPage(uint32_t address) {
 	if (HAL_FLASH_Unlock() != HAL_OK) {
-		myprintf("Flash unlock failed, could not erase page\n");
+		myprintf("Flash unlock failed, could not erase page\r\r\n");
 		return HAL_ERROR;
 	}
 	uint32_t reg = 0;
@@ -15,7 +15,7 @@ HAL_StatusTypeDef MRT_EraseFlashPage(uint32_t address) {
 	if ((reg | 0xFFFFFFFF) == 0xFFFFFFFF) {
 
 	} else {
-		myprintf("Page erase failed.\n");
+		myprintf("Page erase failed.\r\r\n");
 		return HAL_ERROR;
 	}
 	HAL_FLASH_Lock();
@@ -23,14 +23,14 @@ HAL_StatusTypeDef MRT_EraseFlashPage(uint32_t address) {
 }
 
 /*
- * Does not append, use with precaution.
+ * Does not append, use with precaution. Does not work with double word for some reason.
  */
 HAL_StatusTypeDef MRT_WriteDataToFlash(uint32_t TypeProgram, uint32_t address,
 		uint64_t *data, uint32_t nbBytesToWrite) {
 	/*
 	 if (*((uint32_t *) address) != -1) // Un-comment this 'if' whenever you use this code to avoid overwriting data UNTESTED CODE THO OOPS
 	 {
-	 myprintf("Flash unlock failed, could not erase page\n");
+	 myprintf("Flash unlock failed, could not erase page\r\n");
 	 return HAL_ERROR;
 	 }
 	 */
@@ -47,7 +47,7 @@ HAL_StatusTypeDef MRT_WriteDataToFlash(uint32_t TypeProgram, uint32_t address,
 		currIncrement += 2;
 		break;
 	default:
-		myprintf("Invalid TypeProgram\n");
+		myprintf("Invalid TypeProgram\r\n");
 		return HAL_ERROR;
 		break;
 	}
@@ -58,12 +58,12 @@ HAL_StatusTypeDef MRT_WriteDataToFlash(uint32_t TypeProgram, uint32_t address,
 
 	for (int i = 0; i < nbBytesToWrite; i++) {
 		if (HAL_FLASH_Unlock() != HAL_OK) {
-			myprintf("Flash unlock failed, could not write to memory\n");
+			myprintf("Flash unlock failed, could not write to memory\r\n");
 			return HAL_ERROR;
 		}
 
 		if (HAL_FLASH_Program(TypeProgram, currAddress, data[i]) != HAL_OK) {
-			myprintf("Could not write\n");
+			myprintf("Could not write\r\n");
 			return HAL_ERROR;
 		}
 		HAL_FLASH_Lock();
