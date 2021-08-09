@@ -7,43 +7,43 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         00003798  080001a0  080001a0  000101a0  2**4
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       00000124  08003938  08003938  00013938  2**3
+  2 .rodata       00000118  08003938  08003938  00013938  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  08003a5c  08003a5c  00020070  2**0
+  3 .ARM.extab    00000000  08003a50  08003a50  00020070  2**0
                   CONTENTS
-  4 .ARM          00000000  08003a5c  08003a5c  00020070  2**0
+  4 .ARM          00000000  08003a50  08003a50  00020070  2**0
                   CONTENTS
-  5 .preinit_array 00000000  08003a5c  08003a5c  00020070  2**0
+  5 .preinit_array 00000000  08003a50  08003a50  00020070  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  08003a5c  08003a5c  00013a5c  2**2
+  6 .init_array   00000004  08003a50  08003a50  00013a50  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  7 .fini_array   00000004  08003a60  08003a60  00013a60  2**2
+  7 .fini_array   00000004  08003a54  08003a54  00013a54  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  8 .data         00000070  20000000  08003a64  00020000  2**2
+  8 .data         00000070  20000000  08003a58  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          000001f0  20000070  08003ad4  00020070  2**3
+  9 .bss          000001f0  20000070  08003ac8  00020070  2**3
                   ALLOC
- 10 ._user_heap_stack 00000600  20000260  08003ad4  00020260  2**0
+ 10 ._user_heap_stack 00000600  20000260  08003ac8  00020260  2**0
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  00020070  2**0
                   CONTENTS, READONLY
- 12 .debug_info   00009605  00000000  00000000  000200a0  2**0
+ 12 .debug_info   000095ed  00000000  00000000  000200a0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00001d3b  00000000  00000000  000296a5  2**0
+ 13 .debug_abbrev 00001d3b  00000000  00000000  0002968d  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 000007c8  00000000  00000000  0002b3e0  2**3
+ 14 .debug_aranges 000007c8  00000000  00000000  0002b3c8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 00000728  00000000  00000000  0002bba8  2**3
+ 15 .debug_ranges 00000728  00000000  00000000  0002bb90  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  000201d9  00000000  00000000  0002c2d0  2**0
+ 16 .debug_macro  000201d9  00000000  00000000  0002c2b8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000a0ef  00000000  00000000  0004c4a9  2**0
+ 17 .debug_line   0000a0e9  00000000  00000000  0004c491  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000c0c0d  00000000  00000000  00056598  2**0
+ 18 .debug_str    000c0c0d  00000000  00000000  0005657a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000053  00000000  00000000  001171a5  2**0
+ 19 .comment      00000053  00000000  00000000  00117187  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  000021a0  00000000  00000000  001171f8  2**2
+ 20 .debug_frame  000021a0  00000000  00000000  001171dc  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -199,8 +199,8 @@ void myprintf(const char *fmt, ...) {
   */
 int main(void)
 {
- 80002dc:	b590      	push	{r4, r7, lr}
- 80002de:	b087      	sub	sp, #28
+ 80002dc:	b580      	push	{r7, lr}
+ 80002de:	b084      	sub	sp, #16
  80002e0:	af00      	add	r7, sp, #0
   /* USER CODE END 1 */
 
@@ -230,37 +230,36 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint64_t numbers[2] = {1, '6'};
- 80002f2:	4b0d      	ldr	r3, [pc, #52]	; (8000328 <main+0x4c>)
- 80002f4:	463c      	mov	r4, r7
- 80002f6:	cb0f      	ldmia	r3, {r0, r1, r2, r3}
- 80002f8:	e884 000f 	stmia.w	r4, {r0, r1, r2, r3}
+  uint32_t numbers[2] = {1, '6'};
+ 80002f2:	4a0d      	ldr	r2, [pc, #52]	; (8000328 <main+0x4c>)
+ 80002f4:	463b      	mov	r3, r7
+ 80002f6:	e892 0003 	ldmia.w	r2, {r0, r1}
+ 80002fa:	e883 0003 	stmia.w	r3, {r0, r1}
   uint32_t address =  0x0807F7FCU;
- 80002fc:	4b0b      	ldr	r3, [pc, #44]	; (800032c <main+0x50>)
- 80002fe:	617b      	str	r3, [r7, #20]
+ 80002fe:	4b0b      	ldr	r3, [pc, #44]	; (800032c <main+0x50>)
+ 8000300:	60fb      	str	r3, [r7, #12]
 //	  myprintf("Could not write\r\n");
 //  }
 //
 //  HAL_FLASH_Lock();
   // TODO test page transitions
   MRT_WriteDataToFlash(FLASH_TYPEPROGRAM_HALFWORD, address, numbers, 2);
- 8000300:	463a      	mov	r2, r7
- 8000302:	2302      	movs	r3, #2
- 8000304:	6979      	ldr	r1, [r7, #20]
- 8000306:	2001      	movs	r0, #1
- 8000308:	f000 f8de 	bl	80004c8 <MRT_WriteDataToFlash>
+ 8000302:	463a      	mov	r2, r7
+ 8000304:	2302      	movs	r3, #2
+ 8000306:	68f9      	ldr	r1, [r7, #12]
+ 8000308:	2001      	movs	r0, #1
+ 800030a:	f000 f8dd 	bl	80004c8 <MRT_WriteDataToFlash>
 
-  uint16_t *readData = (uint16_t *) address;
- 800030c:	697b      	ldr	r3, [r7, #20]
- 800030e:	613b      	str	r3, [r7, #16]
+  uint32_t *readData = (uint32_t *) address;
+ 800030e:	68fb      	ldr	r3, [r7, #12]
+ 8000310:	60bb      	str	r3, [r7, #8]
 
   myprintf("Yey %i and yey %i\r\n", *(readData), *(readData+1));
- 8000310:	693b      	ldr	r3, [r7, #16]
- 8000312:	881b      	ldrh	r3, [r3, #0]
- 8000314:	4619      	mov	r1, r3
- 8000316:	693b      	ldr	r3, [r7, #16]
- 8000318:	3302      	adds	r3, #2
- 800031a:	881b      	ldrh	r3, [r3, #0]
+ 8000312:	68bb      	ldr	r3, [r7, #8]
+ 8000314:	6819      	ldr	r1, [r3, #0]
+ 8000316:	68bb      	ldr	r3, [r7, #8]
+ 8000318:	3304      	adds	r3, #4
+ 800031a:	681b      	ldr	r3, [r3, #0]
  800031c:	461a      	mov	r2, r3
  800031e:	4804      	ldr	r0, [pc, #16]	; (8000330 <main+0x54>)
  8000320:	f7ff ffb6 	bl	8000290 <myprintf>
@@ -268,7 +267,7 @@ int main(void)
   while (1)
  8000324:	e7fe      	b.n	8000324 <main+0x48>
  8000326:	bf00      	nop
- 8000328:	08003950 	.word	0x08003950
+ 8000328:	0800394c 	.word	0x0800394c
  800032c:	0807f7fc 	.word	0x0807f7fc
  8000330:	08003938 	.word	0x08003938
 
@@ -571,7 +570,7 @@ HAL_StatusTypeDef MRT_EraseFlashPage(uint32_t address) {
  80004ba:	3710      	adds	r7, #16
  80004bc:	46bd      	mov	sp, r7
  80004be:	bd80      	pop	{r7, pc}
- 80004c0:	08003960 	.word	0x08003960
+ 80004c0:	08003954 	.word	0x08003954
  80004c4:	2000018c 	.word	0x2000018c
 
 080004c8 <MRT_WriteDataToFlash>:
@@ -734,9 +733,9 @@ HAL_StatusTypeDef MRT_WriteDataToFlash(uint32_t TypeProgram, uint32_t address,
  80005a6:	3720      	adds	r7, #32
  80005a8:	46bd      	mov	sp, r7
  80005aa:	bd80      	pop	{r7, pc}
- 80005ac:	08003990 	.word	0x08003990
- 80005b0:	080039a8 	.word	0x080039a8
- 80005b4:	080039dc 	.word	0x080039dc
+ 80005ac:	08003984 	.word	0x08003984
+ 80005b0:	0800399c 	.word	0x0800399c
+ 80005b4:	080039d0 	.word	0x080039d0
 
 080005b8 <HAL_MspInit>:
 /* USER CODE END 0 */
@@ -1235,7 +1234,7 @@ LoopForever:
   ldr r1, =_edata
  80007a8:	20000070 	.word	0x20000070
   ldr r2, =_sidata
- 80007ac:	08003a64 	.word	0x08003a64
+ 80007ac:	08003a58 	.word	0x08003a58
   ldr r2, =_sbss
  80007b0:	20000070 	.word	0x20000070
   ldr r4, =_ebss
@@ -5051,7 +5050,7 @@ HAL_StatusTypeDef HAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, ui
  8002228:	bd80      	pop	{r7, pc}
  800222a:	bf00      	nop
  800222c:	40021000 	.word	0x40021000
- 8002230:	080039f0 	.word	0x080039f0
+ 8002230:	080039e4 	.word	0x080039e4
  8002234:	20000000 	.word	0x20000000
  8002238:	20000004 	.word	0x20000004
 
@@ -5197,8 +5196,8 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
  80022fe:	4770      	bx	lr
  8002300:	40021000 	.word	0x40021000
  8002304:	007a1200 	.word	0x007a1200
- 8002308:	08003a08 	.word	0x08003a08
- 800230c:	08003a18 	.word	0x08003a18
+ 8002308:	080039fc 	.word	0x080039fc
+ 800230c:	08003a0c 	.word	0x08003a0c
 
 08002310 <HAL_RCC_GetHCLKFreq>:
   * @note   The SystemCoreClock CMSIS variable is used to store System Clock Frequency 
@@ -5257,7 +5256,7 @@ uint32_t HAL_RCC_GetPCLK1Freq(void)
  8002360:	46bd      	mov	sp, r7
  8002362:	bd80      	pop	{r7, pc}
  8002364:	40021000 	.word	0x40021000
- 8002368:	08003a00 	.word	0x08003a00
+ 8002368:	080039f4 	.word	0x080039f4
 
 0800236c <HAL_RCC_GetPCLK2Freq>:
   * @note   Each time PCLK2 changes, this function must be called to update the
@@ -5296,7 +5295,7 @@ uint32_t HAL_RCC_GetPCLK2Freq(void)
  80023a4:	46bd      	mov	sp, r7
  80023a6:	bd80      	pop	{r7, pc}
  80023a8:	40021000 	.word	0x40021000
- 80023ac:	08003a00 	.word	0x08003a00
+ 80023ac:	080039f4 	.word	0x080039f4
 
 080023b0 <HAL_RCCEx_PeriphCLKConfig>:
   *         When the TIMx clock source is PLL clock, so the TIMx clock is PLL clock x 2.
@@ -7462,10 +7461,10 @@ HAL_StatusTypeDef UART_WaitOnFlagUntilTimeout(UART_HandleTypeDef *huart, uint32_
  800306a:	4798      	blx	r3
  800306c:	3601      	adds	r6, #1
  800306e:	e7f2      	b.n	8003056 <__libc_init_array+0x1e>
- 8003070:	08003a5c 	.word	0x08003a5c
- 8003074:	08003a5c 	.word	0x08003a5c
- 8003078:	08003a5c 	.word	0x08003a5c
- 800307c:	08003a60 	.word	0x08003a60
+ 8003070:	08003a50 	.word	0x08003a50
+ 8003074:	08003a50 	.word	0x08003a50
+ 8003078:	08003a50 	.word	0x08003a50
+ 800307c:	08003a54 	.word	0x08003a54
 
 08003080 <memset>:
  8003080:	4402      	add	r2, r0
@@ -7807,11 +7806,11 @@ HAL_StatusTypeDef UART_WaitOnFlagUntilTimeout(UART_HandleTypeDef *huart, uint32_
  80033a0:	f000 f87a 	bl	8003498 <_printf_i>
  80033a4:	e7eb      	b.n	800337e <_svfiprintf_r+0x1c2>
  80033a6:	bf00      	nop
- 80033a8:	08003a28 	.word	0x08003a28
- 80033ac:	08003a32 	.word	0x08003a32
+ 80033a8:	08003a1c 	.word	0x08003a1c
+ 80033ac:	08003a26 	.word	0x08003a26
  80033b0:	00000000 	.word	0x00000000
  80033b4:	08003105 	.word	0x08003105
- 80033b8:	08003a2e 	.word	0x08003a2e
+ 80033b8:	08003a22 	.word	0x08003a22
 
 080033bc <_printf_common>:
  80033bc:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -8147,8 +8146,8 @@ HAL_StatusTypeDef UART_WaitOnFlagUntilTimeout(UART_HandleTypeDef *huart, uint32_
  80036d4:	f104 0619 	add.w	r6, r4, #25
  80036d8:	e7f5      	b.n	80036c6 <_printf_i+0x22e>
  80036da:	bf00      	nop
- 80036dc:	08003a39 	.word	0x08003a39
- 80036e0:	08003a4a 	.word	0x08003a4a
+ 80036dc:	08003a2d 	.word	0x08003a2d
+ 80036e0:	08003a3e 	.word	0x08003a3e
 
 080036e4 <memcpy>:
  80036e4:	440a      	add	r2, r1

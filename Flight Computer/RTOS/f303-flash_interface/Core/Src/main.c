@@ -110,7 +110,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint64_t numbers[2] = {1, '6'};
+  uint32_t numbers[2] = {1, '6'};
   uint32_t address =  0x0807F7FCU;
 //  uint32_t reg = 0;
 //
@@ -142,7 +142,7 @@ int main(void)
   // TODO test page transitions
   MRT_WriteDataToFlash(FLASH_TYPEPROGRAM_HALFWORD, address, numbers, 2);
 
-  uint16_t *readData = (uint16_t *) address;
+  uint32_t *readData = (uint32_t *) address;
 
   myprintf("Yey %i and yey %i\r\n", *(readData), *(readData+1));
 

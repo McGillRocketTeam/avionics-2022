@@ -50,6 +50,7 @@
 #include "ejection.h"
 #include "gps.h"
 #include "sx126x.h"
+#include "mrt-flash.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
