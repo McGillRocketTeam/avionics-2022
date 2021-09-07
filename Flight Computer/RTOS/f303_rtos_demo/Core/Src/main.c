@@ -25,6 +25,8 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,7 +38,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 float acceleration;
-uint64_t numberOfFriends = 0; // :(
+uint32_t numberOfFriends = 0; // :(
 
 
 /* USER CODE END PD */
@@ -46,42 +48,42 @@ uint64_t numberOfFriends = 0; // :(
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 /* Definitions for fakeEjection */
 osThreadId_t fakeEjectionHandle;
-uint32_t fakeEjectionBuffer[ 128 ];
+uint32_t fakeEjectionBuffer[ 500 ];
 osStaticThreadDef_t fakeEjectionControlBlock;
 const osThreadAttr_t fakeEjection_attributes = {
   .name = "fakeEjection",
-  .stack_mem = &fakeEjectionBuffer[0],
-  .stack_size = sizeof(fakeEjectionBuffer),
   .cb_mem = &fakeEjectionControlBlock,
   .cb_size = sizeof(fakeEjectionControlBlock),
+  .stack_mem = &fakeEjectionBuffer[0],
+  .stack_size = sizeof(fakeEjectionBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* Definitions for fakeSensors */
 osThreadId_t fakeSensorsHandle;
-uint32_t fakeSensorsBuffer[ 128 ];
+uint32_t fakeSensorsBuffer[ 500 ];
 osStaticThreadDef_t fakeSensorsControlBlock;
 const osThreadAttr_t fakeSensors_attributes = {
   .name = "fakeSensors",
-  .stack_mem = &fakeSensorsBuffer[0],
-  .stack_size = sizeof(fakeSensorsBuffer),
   .cb_mem = &fakeSensorsControlBlock,
   .cb_size = sizeof(fakeSensorsControlBlock),
+  .stack_mem = &fakeSensorsBuffer[0],
+  .stack_size = sizeof(fakeSensorsBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for fakeTelemetry */
 osThreadId_t fakeTelemetryHandle;
-uint32_t fakeTelemetryBuffer[ 128 ];
+uint32_t fakeTelemetryBuffer[ 500 ];
 osStaticThreadDef_t fakeTelemetryControlBlock;
 const osThreadAttr_t fakeTelemetry_attributes = {
   .name = "fakeTelemetry",
-  .stack_mem = &fakeTelemetryBuffer[0],
-  .stack_size = sizeof(fakeTelemetryBuffer),
   .cb_mem = &fakeTelemetryControlBlock,
   .cb_size = sizeof(fakeTelemetryControlBlock),
+  .stack_mem = &fakeTelemetryBuffer[0],
+  .stack_size = sizeof(fakeTelemetryBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
 /* USER CODE BEGIN PV */
@@ -91,12 +93,13 @@ const osThreadAttr_t fakeTelemetry_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
+static void MX_USART3_UART_Init(void);
 void StartFakeEjection(void *argument);
 void StartFakeSensors(void *argument);
 void StartFakeTelemetry(void *argument);
 
 /* USER CODE BEGIN PFP */
+/*
 void myprintf(const char *fmt, ...) {
 	static char buffer[256];
 	va_list args;
@@ -105,8 +108,14 @@ void myprintf(const char *fmt, ...) {
 	va_end(args);
 
 	int len = strlen(buffer);
-	HAL_UART_Transmit(&huart2, (uint8_t*) buffer, len, -1);
+	HAL_UART_Transmit(&huart3, (uint8_t*) buffer, len, -1);
 }
+*/
+void myprintf(char* buffer) {
+	HAL_UART_Transmit(&huart3, (uint8_t*) buffer, 100, 100);
+}
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -142,7 +151,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -233,8 +242,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2;
-  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART3;
+  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -242,37 +251,37 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief USART2 Initialization Function
+  * @brief USART3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART2_UART_Init(void)
+static void MX_USART3_UART_Init(void)
 {
 
-  /* USER CODE BEGIN USART2_Init 0 */
+  /* USER CODE BEGIN USART3_Init 0 */
 
-  /* USER CODE END USART2_Init 0 */
+  /* USER CODE END USART3_Init 0 */
 
-  /* USER CODE BEGIN USART2_Init 1 */
+  /* USER CODE BEGIN USART3_Init 1 */
 
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 38400;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 38400;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
+  /* USER CODE BEGIN USART3_Init 2 */
 
-  /* USER CODE END USART2_Init 2 */
+  /* USER CODE END USART3_Init 2 */
 
 }
 
@@ -285,7 +294,7 @@ static void MX_GPIO_Init(void)
 {
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
 }
 
@@ -304,12 +313,14 @@ void StartFakeEjection(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
+	char* buffer = (char*)malloc(100);
+	memset(buffer, 0, 100);
   for(;;)
   {
-	  if(acceleration == 69.42 || acceleration == 10.3)
+	  if(numberOfFriends == 5)
 	  {
-		  myprintf("EJECT or smthg\r\n");
-		  return;
+		  sprintf(buffer, "EJECT or smthg\r\n");
+		  myprintf(buffer);
 	  }
     osDelay(1000);
   }
@@ -326,16 +337,22 @@ void StartFakeEjection(void *argument)
 void StartFakeSensors(void *argument)
 {
   /* USER CODE BEGIN StartFakeSensors */
-	float accels[10] = {0.0, 0.23, 120, 420, 69.42, 10.3, 20.5, 12.12, 42.42, 0.0};
-	uint64_t friends[10] = {0, 1, 2, 3, 4, 5, 4, 3, 2, 1};
+	float accels[10] = {0.0, 0.23, 120.0, 420.0, 69.42, 10.3, 20.5, 12.12, 42.42, 0.0};
+	uint32_t friends[10] = {0, 1, 2, 3, 4, 5, 4, 3, 2, 1};
   /* Infinite loop */
 	uint32_t i = 0;
+	char* buffer = (char*)malloc(100);
+	memset(buffer, 0, 100);
   for(;;)
   {
 	  acceleration = accels[i%10];
 	  numberOfFriends = friends[i%10];
+	  sprintf(buffer, "IN Acceleration: %f\r\n", acceleration);
+	  myprintf(buffer);
+	  sprintf(buffer, "IN Number of friends: %lu\r\n", numberOfFriends);
+	  myprintf(buffer);
 	  ++i;
-    osDelay(500);
+    osDelay(2000);
   }
   /* USER CODE END StartFakeSensors */
 }
@@ -351,11 +368,15 @@ void StartFakeTelemetry(void *argument)
 {
   /* USER CODE BEGIN StartFakeTelemetry */
   /* Infinite loop */
+	char* buffer1 = (char*)malloc(100);
+	memset(buffer1, 0, 100);
   for(;;)
   {
-	  myprintf("Acceleration: %f\r\n", acceleration);
-	  myprintf("Number of friends: %li\r\n", numberOfFriends);
-    osDelay(1000);
+	  sprintf(buffer1, "OUT Acceleration: %f\r\n", acceleration);
+	  myprintf(buffer1);
+	  sprintf(buffer1, "OUT Number of friends: %li\r\n", numberOfFriends);
+	  myprintf(buffer1);
+    osDelay(5000);
   }
   /* USER CODE END StartFakeTelemetry */
 }
