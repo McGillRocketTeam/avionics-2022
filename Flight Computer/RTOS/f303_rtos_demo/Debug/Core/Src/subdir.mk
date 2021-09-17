@@ -7,6 +7,7 @@
 C_SRCS += \
 ../Core/Src/freertos.c \
 ../Core/Src/lps22hh_reg.c \
+../Core/Src/lsm6dsr_reg.c \
 ../Core/Src/main.c \
 ../Core/Src/sensor_functions.c \
 ../Core/Src/stm32f3xx_hal_msp.c \
@@ -19,6 +20,7 @@ C_SRCS += \
 OBJS += \
 ./Core/Src/freertos.o \
 ./Core/Src/lps22hh_reg.o \
+./Core/Src/lsm6dsr_reg.o \
 ./Core/Src/main.o \
 ./Core/Src/sensor_functions.o \
 ./Core/Src/stm32f3xx_hal_msp.o \
@@ -31,6 +33,7 @@ OBJS += \
 C_DEPS += \
 ./Core/Src/freertos.d \
 ./Core/Src/lps22hh_reg.d \
+./Core/Src/lsm6dsr_reg.d \
 ./Core/Src/main.d \
 ./Core/Src/sensor_functions.d \
 ./Core/Src/stm32f3xx_hal_msp.d \

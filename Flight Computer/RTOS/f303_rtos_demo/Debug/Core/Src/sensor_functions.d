@@ -29,7 +29,7 @@ Core/Src/sensor_functions.o: ../Core/Src/sensor_functions.c \
  ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim_ex.h \
  ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h \
  ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h \
- ../Core/Inc/lps22hh_reg.h
+ ../Core/Inc/lps22hh_reg.h ../Core/Inc/lsm6dsr_reg.h
 
 ../Core/Inc/main.h:
 
@@ -94,3 +94,5 @@ Core/Src/sensor_functions.o: ../Core/Src/sensor_functions.c \
 ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h:
 
 ../Core/Inc/lps22hh_reg.h:
+
+../Core/Inc/lsm6dsr_reg.h:

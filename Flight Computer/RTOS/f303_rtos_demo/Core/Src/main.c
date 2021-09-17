@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lps22hh_reg.h"
+#include "lsm6dsr_reg.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,8 +39,6 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-float acceleration;
-uint32_t numberOfFriends = 0; // :(
 
 
 /* USER CODE END PD */
@@ -53,6 +52,8 @@ I2C_HandleTypeDef hi2c3;
 
 stmdev_ctx_t dev_ctx_lsm;
 stmdev_ctx_t dev_ctx_lps;
+float acceleration[] = {0, 0, 0};
+float angular_rate[]= {0, 0, 0};
 float pressure = 0;
 float temperature = 0;
 
@@ -108,6 +109,11 @@ void StartFakeSensors(void *argument);
 void StartFakeTelemetry(void *argument);
 
 /* USER CODE BEGIN PFP */
+
+// LSM6DSR functions
+extern stmdev_ctx_t lsm6dsr_init(void);
+extern void get_acceleration(stmdev_ctx_t dev_ctx, float *acceleration_mg);
+extern void get_angvelocity(stmdev_ctx_t dev_ctx, float *angular_rate_mdps);
 // LPS22HH functions
 extern stmdev_ctx_t lps22hh_init(void);
 extern void get_pressure(stmdev_ctx_t dev_ctx,  float *pressure);
@@ -167,6 +173,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
+  dev_ctx_lsm = lsm6dsr_init();
   dev_ctx_lps = lps22hh_init();
   /* USER CODE END 2 */
 
@@ -407,10 +414,20 @@ void StartFakeSensors(void *argument)
   {
 	  get_pressure(dev_ctx_lps, &pressure);
 	  get_temperature(dev_ctx_lps,  &temperature);
+	  get_acceleration(dev_ctx_lsm, acceleration);
+	  get_angvelocity(dev_ctx_lsm, angular_rate);
+	  sprintf(buffer, "IN acceleration: %f,%f,%f\r\n", acceleration[0], acceleration[1], acceleration[2]);
+	  myprintf(buffer);
+	  memset(buffer, 0, 100);
+	  sprintf(buffer, "IN angular_rate: %f,%f,%f\r\n", angular_rate[0], angular_rate[1], angular_rate[2]);
+	  myprintf(buffer);
+	  memset(buffer, 0, 100);
 	  sprintf(buffer, "IN pressure: %f\r\n", pressure);
 	  myprintf(buffer);
+	  memset(buffer, 0, 100);
 	  sprintf(buffer, "IN temperature: %f\r\n", temperature);
 	  myprintf(buffer);
+	  memset(buffer, 0, 100);
 	  ++i;
     osDelay(500);
   }
@@ -432,10 +449,18 @@ void StartFakeTelemetry(void *argument)
 	memset(buffer1, 0, 100);
   for(;;)
   {
+	  sprintf(buffer1, "OUT acceleration: %f,%f,%f\r\n", acceleration[0], acceleration[1], acceleration[2]);
+	  myprintf(buffer1);
+	  memset(buffer1, 0, 100);
+	  sprintf(buffer1, "OUT angular_rate: %f,%f,%f\r\n", angular_rate[0], angular_rate[1], angular_rate[2]);
+	  myprintf(buffer1);
+	  memset(buffer1, 0, 100);
 	  sprintf(buffer1, "OUT pressure: %f\r\n", pressure);
 	  myprintf(buffer1);
+	  memset(buffer1, 0, 100);
 	  sprintf(buffer1, "OUT temperature: %f\r\n", temperature);
 	  myprintf(buffer1);
+	  memset(buffer1, 0, 100);
     osDelay(5000);
   }
   /* USER CODE END StartFakeTelemetry */
