@@ -6,7 +6,9 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Core/Src/freertos.c \
+../Core/Src/lps22hh_reg.c \
 ../Core/Src/main.c \
+../Core/Src/sensor_functions.c \
 ../Core/Src/stm32f3xx_hal_msp.c \
 ../Core/Src/stm32f3xx_hal_timebase_tim.c \
 ../Core/Src/stm32f3xx_it.c \
@@ -16,7 +18,9 @@ C_SRCS += \
 
 OBJS += \
 ./Core/Src/freertos.o \
+./Core/Src/lps22hh_reg.o \
 ./Core/Src/main.o \
+./Core/Src/sensor_functions.o \
 ./Core/Src/stm32f3xx_hal_msp.o \
 ./Core/Src/stm32f3xx_hal_timebase_tim.o \
 ./Core/Src/stm32f3xx_it.o \
@@ -26,7 +30,9 @@ OBJS += \
 
 C_DEPS += \
 ./Core/Src/freertos.d \
+./Core/Src/lps22hh_reg.d \
 ./Core/Src/main.d \
+./Core/Src/sensor_functions.d \
 ./Core/Src/stm32f3xx_hal_msp.d \
 ./Core/Src/stm32f3xx_hal_timebase_tim.d \
 ./Core/Src/stm32f3xx_it.d \

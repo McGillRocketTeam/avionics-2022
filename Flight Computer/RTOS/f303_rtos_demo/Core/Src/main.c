@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "lps22hh_reg.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +49,13 @@ uint32_t numberOfFriends = 0; // :(
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c3;
+
+stmdev_ctx_t dev_ctx_lsm;
+stmdev_ctx_t dev_ctx_lps;
+float pressure = 0;
+float temperature = 0;
+
 UART_HandleTypeDef huart2;
 
 /* Definitions for fakeEjection */
@@ -94,11 +102,16 @@ const osThreadAttr_t fakeTelemetry_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_I2C3_Init(void);
 void StartFakeEjection(void *argument);
 void StartFakeSensors(void *argument);
 void StartFakeTelemetry(void *argument);
 
 /* USER CODE BEGIN PFP */
+// LPS22HH functions
+extern stmdev_ctx_t lps22hh_init(void);
+extern void get_pressure(stmdev_ctx_t dev_ctx,  float *pressure);
+extern void get_temperature(stmdev_ctx_t dev_ctx,  float *temperature);
 /*
 void myprintf(const char *fmt, ...) {
 	static char buffer[256];
@@ -152,8 +165,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
-
+  dev_ctx_lps = lps22hh_init();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -242,12 +256,59 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_I2C3;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c3ClockSelection = RCC_I2C3CLKSOURCE_HSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C3_Init(void)
+{
+
+  /* USER CODE BEGIN I2C3_Init 0 */
+
+  /* USER CODE END I2C3_Init 0 */
+
+  /* USER CODE BEGIN I2C3_Init 1 */
+
+  /* USER CODE END I2C3_Init 1 */
+  hi2c3.Instance = I2C3;
+  hi2c3.Init.Timing = 0x2000090E;
+  hi2c3.Init.OwnAddress1 = 0;
+  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c3.Init.OwnAddress2 = 0;
+  hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C3_Init 2 */
+
+  /* USER CODE END I2C3_Init 2 */
+
 }
 
 /**
@@ -292,20 +353,10 @@ static void MX_USART2_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : BUZZER_Pin */
-  GPIO_InitStruct.Pin = BUZZER_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(BUZZER_GPIO_Port, &GPIO_InitStruct);
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
 }
 
@@ -328,7 +379,7 @@ void StartFakeEjection(void *argument)
 	memset(buffer, 0, 100);
   for(;;)
   {
-	  if(numberOfFriends == 5)
+	  if(temperature > 30)
 	  {
 		  sprintf(buffer, "EJECT or smthg\r\n");
 		  myprintf(buffer);
@@ -348,22 +399,20 @@ void StartFakeEjection(void *argument)
 void StartFakeSensors(void *argument)
 {
   /* USER CODE BEGIN StartFakeSensors */
-	float accels[10] = {0.0, 0.23, 120.0, 420.0, 69.42, 10.3, 20.5, 12.12, 42.42, 0.0};
-	uint32_t friends[10] = {0, 1, 2, 3, 4, 5, 4, 3, 2, 1};
   /* Infinite loop */
 	uint32_t i = 0;
 	char* buffer = (char*)malloc(100);
 	memset(buffer, 0, 100);
   for(;;)
   {
-	  acceleration = accels[i%10];
-	  numberOfFriends = friends[i%10];
-	  sprintf(buffer, "IN Acceleration: %f\r\n", acceleration);
+	  get_pressure(dev_ctx_lps, &pressure);
+	  get_temperature(dev_ctx_lps,  &temperature);
+	  sprintf(buffer, "IN pressure: %f\r\n", pressure);
 	  myprintf(buffer);
-	  sprintf(buffer, "IN Number of friends: %lu\r\n", numberOfFriends);
+	  sprintf(buffer, "IN temperature: %f\r\n", temperature);
 	  myprintf(buffer);
 	  ++i;
-    osDelay(2000);
+    osDelay(500);
   }
   /* USER CODE END StartFakeSensors */
 }
@@ -383,16 +432,16 @@ void StartFakeTelemetry(void *argument)
 	memset(buffer1, 0, 100);
   for(;;)
   {
-	  sprintf(buffer1, "OUT Acceleration: %f\r\n", acceleration);
+	  sprintf(buffer1, "OUT pressure: %f\r\n", pressure);
 	  myprintf(buffer1);
-	  sprintf(buffer1, "OUT Number of friends: %li\r\n", numberOfFriends);
+	  sprintf(buffer1, "OUT temperature: %f\r\n", temperature);
 	  myprintf(buffer1);
     osDelay(5000);
   }
   /* USER CODE END StartFakeTelemetry */
 }
 
- /**
+/**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM6 interrupt took place, inside
   * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment

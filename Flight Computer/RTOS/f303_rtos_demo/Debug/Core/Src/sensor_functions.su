@@ -1,0 +1,6 @@
+sensor_functions.c:45:14:lps22hh_init	40	static
+sensor_functions.c:82:6:get_pressure	40	static
+sensor_functions.c:94:6:get_temperature	40	static
+sensor_functions.c:117:16:lps22hh_write	40	static
+sensor_functions.c:137:16:lps22hh_read	40	static
+sensor_functions.c:153:13:platform_delay	16	static
