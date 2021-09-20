@@ -43,6 +43,8 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+RTC_HandleTypeDef hrtc;
+
 TIM_HandleTypeDef htim16;
 
 UART_HandleTypeDef huart2;
@@ -84,6 +86,16 @@ const osThreadAttr_t fakeEjection_attributes = {
   .priority = (osPriority_t) osPriorityLow,
 };
 /* USER CODE BEGIN PV */
+// rtc variables
+RTC_DateTypeDef sdatestructureget;
+RTC_TimeTypeDef stimestructureget;
+RTC_AlarmTypeDef sAlarmA;
+RTC_AlarmTypeDef sAlarmB;
+
+// flag to indicate alarmA interrupt occurred
+volatile uint8_t alarmAOccurred = 0;
+char msg[100];
+
 float acceleration;
 uint32_t numberOfFriends = 0; // :(
 /* USER CODE END PV */
@@ -93,6 +105,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM16_Init(void);
+static void MX_RTC_Init(void);
 void StartFakeSensors(void *argument);
 void StartFakeTelemetry(void *argument);
 void StartFakeEjection(void *argument);
@@ -138,8 +151,10 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_TIM16_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim16);
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -207,9 +222,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -228,13 +244,99 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_TIM16;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_RTC
+                              |RCC_PERIPHCLK_TIM16;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   PeriphClkInit.Tim16ClockSelection = RCC_TIM16CLK_HCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+  RTC_AlarmTypeDef sAlarm = {0};
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date
+  */
+  sTime.Hours = 0x19;
+  sTime.Minutes = 0x5;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Enable the Alarm A
+  */
+  sAlarm.AlarmTime.Hours = 0x19;
+  sAlarm.AlarmTime.Minutes = 0x10;
+  sAlarm.AlarmTime.Seconds = 0x0;
+  sAlarm.AlarmTime.SubSeconds = 0x0;
+  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
+  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+  sAlarm.AlarmDateWeekDay = 0x1;
+  sAlarm.Alarm = RTC_ALARM_A;
+  if (HAL_RTC_SetAlarm(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Enable the Alarm B
+  */
+  sAlarm.AlarmTime.Minutes = 0x0;
+  sAlarm.Alarm = RTC_ALARM_B;
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
 }
 
 /**
@@ -318,7 +420,83 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+// Callbacks
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
+	sprintf((char*) msg, "Alarm A callback entered\r\n");
+	HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen((char const*) msg), 1000);
+	sprintf((char*) msg, "alarmA flag: %d\talarmB flag: %d\r\n\n",
+			__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF),
+			__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
+	HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), 1000);
+	// clear the alarm flag
+		__HAL_RTC_WRITEPROTECTION_DISABLE(hrtc);
+		while (__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF) != RESET)
+			__HAL_RTC_ALARM_CLEAR_FLAG(hrtc, RTC_FLAG_ALRAF);
+		__HAL_RTC_WRITEPROTECTION_ENABLE(hrtc);
+		__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
 
+		sprintf((char*) msg, "alarmA flag after clear: %d\talarmB flag: %d\r\n\n",
+					__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF),
+					__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
+			HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), 1000);
+	alarmAOccurred = 1;
+}
+
+void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
+
+	sprintf((char *)msg, "Alarm B callback entered\r\n");
+		HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen((char const *)msg), 1000);
+
+	HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen((char const *)msg), 1000);
+		sprintf((char*) msg, "before clear attempt: alarmA flag: %d\talarmB flag: %d\r\n\n", __HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF), __HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
+			  HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), 1000);
+
+	// clear the alarm flag
+	__HAL_RTC_WRITEPROTECTION_DISABLE(hrtc);
+	while (__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF) != RESET)
+		__HAL_RTC_ALARM_CLEAR_FLAG(hrtc, RTC_FLAG_ALRBF);
+		__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
+	__HAL_RTC_WRITEPROTECTION_ENABLE(hrtc);
+	__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
+
+	sprintf((char*) msg, "after clear attempt: alarmA flag: %d\talarmB flag: %d\r\n\n", __HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF), __HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
+		  HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), 1000);
+	alarmAOccurred = 0;
+
+}
+
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+//	if (htim == &htim16) {
+//		sprintf((char*) msg, "TIM16 callback entered\r\n");
+//		HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen((char const*) msg),
+//				1000);
+//
+//
+//		// print current RTC time for debugging
+//		HAL_RTC_GetTime(&hrtc, &stimestructureget, RTC_FORMAT_BIN);
+//		HAL_RTC_GetDate(&hrtc, &sdatestructureget, RTC_FORMAT_BIN);
+//		sprintf((char*) msg, "main, current: GetTime/Date: %.2d:%.2d:%.2d\r\n",
+//				stimestructureget.Hours, stimestructureget.Minutes,
+//				stimestructureget.Seconds);
+//		HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), 1000);
+//
+////		// print status of alarm flags for debugging
+//		sprintf((char*) msg, "alarmA flag: %d\talarmB flag: %d\r\n\n",
+//				__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRAF),
+//				__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRBF));
+//		HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), 1000);
+//	}
+//}
+
+/*
+ * polls the alarm interrupt flags and calls the appropriate callback functions.
+ */
+void pollAlarmInterruptFlag(void) {
+	if (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRAF) != RESET)
+		HAL_RTC_AlarmAEventCallback(&hrtc);
+	if (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRBF) != RESET)
+		HAL_RTCEx_AlarmBEventCallback(&hrtc);
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartFakeSensors */
@@ -419,6 +597,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
   /* USER CODE BEGIN Callback 1 */
   if (htim->Instance == TIM16) {
+	  pollAlarmInterruptFlag();
 	  char* buffer = (char*)malloc(100);
 	  memset(buffer, 0, 100);
 	  sprintf(buffer, "UwU\r\n");
