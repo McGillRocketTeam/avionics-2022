@@ -294,8 +294,8 @@ static void MX_RTC_Init(void)
 
   /** Initialize RTC and set the Time and Date
   */
-  sTime.Hours = 0x19;
-  sTime.Minutes = 0x5;
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x29;
   sTime.Seconds = 0x0;
   sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sTime.StoreOperation = RTC_STOREOPERATION_RESET;
@@ -314,13 +314,13 @@ static void MX_RTC_Init(void)
   }
   /** Enable the Alarm A
   */
-  sAlarm.AlarmTime.Hours = 0x19;
-  sAlarm.AlarmTime.Minutes = 0x10;
+  sAlarm.AlarmTime.Hours = 0x0;
+  sAlarm.AlarmTime.Minutes = 0x30;
   sAlarm.AlarmTime.Seconds = 0x0;
   sAlarm.AlarmTime.SubSeconds = 0x0;
   sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
+  sAlarm.AlarmMask = RTC_ALARMMASK_HOURS;
   sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
   sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
   sAlarm.AlarmDateWeekDay = 0x1;
@@ -331,7 +331,7 @@ static void MX_RTC_Init(void)
   }
   /** Enable the Alarm B
   */
-  sAlarm.AlarmTime.Minutes = 0x0;
+  sAlarm.AlarmTime.Minutes = 0x33;
   sAlarm.Alarm = RTC_ALARM_B;
   /* USER CODE BEGIN RTC_Init 2 */
 
@@ -518,7 +518,9 @@ void StartFakeSensors(void *argument)
 		memset(buffer, 0, 100);
 	  for(;;)
 	  {
-		  acceleration = accels[i%10];
+		  if (alarmAOccurred)
+		  {
+			  acceleration = accels[i%10];
 		  numberOfFriends = friends[i%10];
 		  sprintf(buffer, "IN Acceleration: %f\r\n", acceleration);
 		  myprintf(buffer);
@@ -526,6 +528,8 @@ void StartFakeSensors(void *argument)
 		  myprintf(buffer);
 		  ++i;
 	    osDelay(2000);
+		  }
+
 	  }
   /* USER CODE END 5 */
 }
@@ -545,11 +549,15 @@ void StartFakeTelemetry(void *argument)
 	memset(buffer1, 0, 100);
   for(;;)
   {
-	  sprintf(buffer1, "OUT Acceleration: %f\r\n", acceleration);
+	  if (alarmAOccurred)
+	  		  {
+	  			sprintf(buffer1, "OUT Acceleration: %f\r\n", acceleration);
 	  myprintf(buffer1);
 	  sprintf(buffer1, "OUT Number of friends: %li\r\n", numberOfFriends);
 	  myprintf(buffer1);
     osDelay(5000);
+	  		  }
+
   }
   /* USER CODE END StartFakeTelemetry */
 }
@@ -569,12 +577,16 @@ void StartFakeEjection(void *argument)
 	memset(buffer, 0, 100);
   for(;;)
   {
-	  if(numberOfFriends == 5)
-	  {
-		  sprintf(buffer, "EJECT or smthg\r\n");
-		  myprintf(buffer);
-	  }
-    osDelay(1000);
+	  if (alarmAOccurred)
+	  		  {
+		  if(numberOfFriends == 5)
+		  	  {
+		  		  sprintf(buffer, "EJECT or smthg\r\n");
+		  		  myprintf(buffer);
+		  	  }
+		      osDelay(1000);
+	  		  }
+
   }
   /* USER CODE END StartFakeEjection */
 }
