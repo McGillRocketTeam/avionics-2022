@@ -318,7 +318,7 @@ static void MX_RTC_Init(void) {
 	/** Enable the Alarm B
 	 */
 
-	sAlarm.AlarmTime.Minutes = 0x35;
+	sAlarm.AlarmTime.Minutes = 0x31;
 	sAlarm.Alarm = RTC_ALARM_B;
 
 	/* USER CODE BEGIN RTC_Init 2 */
@@ -434,7 +434,7 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 
 	  __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
 	  HAL_SuspendTick(); // systick generates interrupts which may wake the processor
-	  HAL_PWR_EnterSTANDBYMode();
+	  HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFI);
 }
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
@@ -462,7 +462,10 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 			__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF),
 			__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
 	HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg), 1000);
-	alarmAOccurred = 0;
+	alarmAOccurred = 1;
+
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+	HAL_SuspendTick(); // systick generates interrupts which may wake the processor
 
 }
 
