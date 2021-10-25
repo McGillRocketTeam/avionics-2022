@@ -304,7 +304,6 @@ void StartSensor(void *argument)
 	/* Infinite loop */
 	uint32_t i = 0;
 	char *buffer = (char*) malloc(100);
-	sprintf(buffer, "OUT Acceleration");
 	memset(buffer, 0, 100);
 	for (;;) {
 

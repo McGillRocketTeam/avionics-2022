@@ -50,7 +50,7 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
@@ -61,8 +61,8 @@ const osThreadAttr_t defaultTask_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -103,8 +103,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -366,10 +366,14 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
+	char *buffer2 = (char*) malloc(100);
+	memset(buffer2, 0, 100);
   for(;;)
   {
-	char* buffer = "plz work";
-	HAL_UART_Transmit(&huart2, (uint8_t*) buffer, 100, 100);
+	char* buffer = "plz work\n\r\0";
+	sprintf(buffer2, "reasdwer\r\n\0");
+	HAL_UART_Transmit(&huart3, (uint8_t*) buffer, 100, 100);
+	//HAL_UART_Transmit(&huart3, (uint8_t*) buffer2, 100, 100);
     osDelay(1000);
   }
   /* USER CODE END 5 */
