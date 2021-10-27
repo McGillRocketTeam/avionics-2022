@@ -6,6 +6,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Core/Src/freertos.c \
+../Core/Src/gps.c \
 ../Core/Src/lps22hh_reg.c \
 ../Core/Src/lsm6dsr_reg.c \
 ../Core/Src/main.c \
@@ -19,6 +20,7 @@ C_SRCS += \
 
 OBJS += \
 ./Core/Src/freertos.o \
+./Core/Src/gps.o \
 ./Core/Src/lps22hh_reg.o \
 ./Core/Src/lsm6dsr_reg.o \
 ./Core/Src/main.o \
@@ -32,6 +34,7 @@ OBJS += \
 
 C_DEPS += \
 ./Core/Src/freertos.d \
+./Core/Src/gps.d \
 ./Core/Src/lps22hh_reg.d \
 ./Core/Src/lsm6dsr_reg.d \
 ./Core/Src/main.d \

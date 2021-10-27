@@ -61,7 +61,7 @@ stmdev_ctx_t lsm6dsr_init(void){
 	/* Initialize mems driver interface */
 	dev_ctx_lsm6dsr.write_reg = lsm6dsr_write;
 	dev_ctx_lsm6dsr.read_reg = lsm6dsr_read;
-	dev_ctx_lsm6dsr.handle = &hi2c3;
+	dev_ctx_lsm6dsr.handle = &hi2c1;
 
 	/* Wait sensor boot time */
 	platform_delay(BOOT_TIME);
@@ -150,7 +150,7 @@ stmdev_ctx_t lps22hh_init(void){
 	/* Initialize mems driver interface */
 	dev_ctx_lps22hh.write_reg = lps22hh_write;
 	dev_ctx_lps22hh.read_reg = lps22hh_read;
-	dev_ctx_lps22hh.handle = &hi2c3;
+	dev_ctx_lps22hh.handle = &hi2c1;
 
 
 	/* Wait sensor boot time */

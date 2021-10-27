@@ -54,7 +54,8 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-extern I2C_HandleTypeDef hi2c3;
+extern I2C_HandleTypeDef hi2c1;
+extern UART_HandleTypeDef huart1;
 
 /* USER CODE END EFP */
 

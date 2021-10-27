@@ -45,18 +45,22 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c3;
-
 stmdev_ctx_t dev_ctx_lsm;
 stmdev_ctx_t dev_ctx_lps;
 float acceleration[] = {0, 0, 0};
 float angular_rate[]= {0, 0, 0};
 float pressure = 0;
 float temperature = 0;
+float latitude;
+float longitude;
+float time;
 
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
+UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* Definitions for fakeEjection */
@@ -95,6 +99,18 @@ const osThreadAttr_t fakeTelemetry_attributes = {
   .stack_size = sizeof(fakeTelemetryBuffer),
   .priority = (osPriority_t) osPriorityBelowNormal,
 };
+/* Definitions for GPS */
+osThreadId_t GPSHandle;
+uint32_t GPSBuffer[ 1000 ];
+osStaticThreadDef_t GPSControlBlock;
+const osThreadAttr_t GPS_attributes = {
+  .name = "GPS",
+  .cb_mem = &GPSControlBlock,
+  .cb_size = sizeof(GPSControlBlock),
+  .stack_mem = &GPSBuffer[0],
+  .stack_size = sizeof(GPSBuffer),
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -103,10 +119,12 @@ const osThreadAttr_t fakeTelemetry_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_I2C3_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_USART1_UART_Init(void);
 void StartFakeEjection(void *argument);
 void StartFakeSensors(void *argument);
 void StartFakeTelemetry(void *argument);
+void GPS_rtos(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -118,6 +136,8 @@ extern void get_angvelocity(stmdev_ctx_t dev_ctx, float *angular_rate_mdps);
 extern stmdev_ctx_t lps22hh_init(void);
 extern void get_pressure(stmdev_ctx_t dev_ctx,  float *pressure);
 extern void get_temperature(stmdev_ctx_t dev_ctx,  float *temperature);
+
+void GPS_Poll(float*, float*, float*);
 /*
 void myprintf(const char *fmt, ...) {
 	static char buffer[256];
@@ -171,7 +191,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_I2C3_Init();
+  MX_I2C1_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   dev_ctx_lsm = lsm6dsr_init();
   dev_ctx_lps = lps22hh_init();
@@ -205,6 +226,9 @@ int main(void)
 
   /* creation of fakeTelemetry */
   fakeTelemetryHandle = osThreadNew(StartFakeTelemetry, NULL, &fakeTelemetry_attributes);
+
+  /* creation of GPS */
+  GPSHandle = osThreadNew(GPS_rtos, NULL, &GPS_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -263,9 +287,11 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_I2C3;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2
+                              |RCC_PERIPHCLK_I2C1;
+  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  PeriphClkInit.I2c3ClockSelection = RCC_I2C3CLKSOURCE_HSI;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -273,48 +299,83 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief I2C3 Initialization Function
+  * @brief I2C1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_I2C3_Init(void)
+static void MX_I2C1_Init(void)
 {
 
-  /* USER CODE BEGIN I2C3_Init 0 */
+  /* USER CODE BEGIN I2C1_Init 0 */
 
-  /* USER CODE END I2C3_Init 0 */
+  /* USER CODE END I2C1_Init 0 */
 
-  /* USER CODE BEGIN I2C3_Init 1 */
+  /* USER CODE BEGIN I2C1_Init 1 */
 
-  /* USER CODE END I2C3_Init 1 */
-  hi2c3.Instance = I2C3;
-  hi2c3.Init.Timing = 0x2000090E;
-  hi2c3.Init.OwnAddress1 = 0;
-  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c3.Init.OwnAddress2 = 0;
-  hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x2000090E;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
     Error_Handler();
   }
   /** Configure Analogue filter
   */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
   /** Configure Digital filter
   */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN I2C3_Init 2 */
+  /* USER CODE BEGIN I2C1_Init 2 */
 
-  /* USER CODE END I2C3_Init 2 */
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 9600;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
 
 }
 
@@ -364,6 +425,7 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
 }
 
@@ -429,7 +491,7 @@ void StartFakeSensors(void *argument)
 	  myprintf(buffer);
 	  memset(buffer, 0, 100);
 	  ++i;
-    osDelay(500);
+    osDelay(1000);
   }
   /* USER CODE END StartFakeSensors */
 }
@@ -449,6 +511,8 @@ void StartFakeTelemetry(void *argument)
 	memset(buffer1, 0, 100);
   for(;;)
   {
+	  sprintf(buffer1, "OUT GPS: %f, %f, %f\r\n", latitude, longitude, time);
+	  myprintf(buffer1);
 	  sprintf(buffer1, "OUT acceleration: %f,%f,%f\r\n", acceleration[0], acceleration[1], acceleration[2]);
 	  myprintf(buffer1);
 	  memset(buffer1, 0, 100);
@@ -464,6 +528,29 @@ void StartFakeTelemetry(void *argument)
     osDelay(5000);
   }
   /* USER CODE END StartFakeTelemetry */
+}
+
+/* USER CODE BEGIN Header_GPS_rtos */
+/**
+* @brief Function implementing the GPS thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_GPS_rtos */
+void GPS_rtos(void *argument)
+{
+  /* USER CODE BEGIN GPS_rtos */
+  /* Infinite loop */
+	char* buffer = (char*)malloc(100);
+	memset(buffer, 0, 100);
+  for(;;)
+  {
+	  GPS_Poll(&latitude, &longitude, &time);
+	  sprintf(buffer, "IN GPS: %f, %f, %f\r\n", latitude, longitude, time);
+	  myprintf(buffer);
+	  osDelay(1000);
+  }
+  /* USER CODE END GPS_rtos */
 }
 
 /**
