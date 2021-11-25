@@ -887,7 +887,7 @@ bool IridiumSBD::noBlockWait(int seconds)
 // stored in response buffer for later parsing by caller.
 bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char *prompt, const char *terminator)
 {
-   diagprint(F("Waiting for response "));
+   diagprint(F("Waiting for AT response "));
    diagprint(terminator);
    diagprint(F("\r\n"));
 
@@ -898,7 +898,7 @@ bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char 
    int matchTerminatorPos = 0; // Matches chars in terminator
    enum {LOOKING_FOR_PROMPT, GATHERING_RESPONSE, LOOKING_FOR_TERMINATOR};
    int promptState = prompt ? LOOKING_FOR_PROMPT : LOOKING_FOR_TERMINATOR;
-   consoleprint(F("<< "));
+   //consoleprint(F("<< "));
    for (unsigned long start=millis(); millis() - start < 1000UL * atTimeout;)
    {
       if (cancelled())
@@ -941,7 +941,6 @@ bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char 
                break;
             }
          }
-
          if (c == terminator[matchTerminatorPos])
          {
             ++matchTerminatorPos;

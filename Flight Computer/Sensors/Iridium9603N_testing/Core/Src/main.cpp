@@ -146,10 +146,9 @@ int main(void)
 	     int err = GPS.getSystemTime(t); // Ask the 9603N for the system time
 	     if (err == ISBD_SUCCESS) // Was it successful?
 	     {
-	        char buf[32];
-	        sprintf(buf, "%d-%02d-%02d %02d:%02d:%02d",
+	        char buf[61];
+	        sprintf(buf, "\r\n<< Iridium date/time is %d-%02d-%02d %02d:%02d:%02d\r\n",
 	           t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
-	        HAL_UART_Transmit(&(GPS.uart),(uint8_t*) "\r\nIridium date/time is ", 25, HAL_MAX_DELAY);
 	        HAL_UART_Transmit(&(GPS.uart),(uint8_t*) buf, strlen(buf), HAL_MAX_DELAY);
 	     }
 
