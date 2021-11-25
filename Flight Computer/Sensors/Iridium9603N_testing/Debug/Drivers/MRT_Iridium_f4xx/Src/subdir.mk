@@ -5,40 +5,40 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Core/Src/stm32f4xx_hal_msp.c \
-../Core/Src/stm32f4xx_hal_timebase_tim.c \
-../Core/Src/stm32f4xx_it.c \
-../Core/Src/syscalls.c \
-../Core/Src/sysmem.c \
-../Core/Src/system_stm32f4xx.c 
+../Drivers/MRT_Iridium_f4xx/Src/dtostrf.c \
+../Drivers/MRT_Iridium_f4xx/Src/itoa.c 
 
 CPP_SRCS += \
-../Core/Src/main.cpp 
+../Drivers/MRT_Iridium_f4xx/Src/IridiumSBD.cpp \
+../Drivers/MRT_Iridium_f4xx/Src/Print.cpp \
+../Drivers/MRT_Iridium_f4xx/Src/Stream.cpp \
+../Drivers/MRT_Iridium_f4xx/Src/WString.cpp \
+../Drivers/MRT_Iridium_f4xx/Src/Wire.cpp 
 
 C_DEPS += \
-./Core/Src/stm32f4xx_hal_msp.d \
-./Core/Src/stm32f4xx_hal_timebase_tim.d \
-./Core/Src/stm32f4xx_it.d \
-./Core/Src/syscalls.d \
-./Core/Src/sysmem.d \
-./Core/Src/system_stm32f4xx.d 
+./Drivers/MRT_Iridium_f4xx/Src/dtostrf.d \
+./Drivers/MRT_Iridium_f4xx/Src/itoa.d 
 
 OBJS += \
-./Core/Src/main.o \
-./Core/Src/stm32f4xx_hal_msp.o \
-./Core/Src/stm32f4xx_hal_timebase_tim.o \
-./Core/Src/stm32f4xx_it.o \
-./Core/Src/syscalls.o \
-./Core/Src/sysmem.o \
-./Core/Src/system_stm32f4xx.o 
+./Drivers/MRT_Iridium_f4xx/Src/IridiumSBD.o \
+./Drivers/MRT_Iridium_f4xx/Src/Print.o \
+./Drivers/MRT_Iridium_f4xx/Src/Stream.o \
+./Drivers/MRT_Iridium_f4xx/Src/WString.o \
+./Drivers/MRT_Iridium_f4xx/Src/Wire.o \
+./Drivers/MRT_Iridium_f4xx/Src/dtostrf.o \
+./Drivers/MRT_Iridium_f4xx/Src/itoa.o 
 
 CPP_DEPS += \
-./Core/Src/main.d 
+./Drivers/MRT_Iridium_f4xx/Src/IridiumSBD.d \
+./Drivers/MRT_Iridium_f4xx/Src/Print.d \
+./Drivers/MRT_Iridium_f4xx/Src/Stream.d \
+./Drivers/MRT_Iridium_f4xx/Src/WString.d \
+./Drivers/MRT_Iridium_f4xx/Src/Wire.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Core/Src/%.o: ../Core/Src/%.cpp Core/Src/subdir.mk
+Drivers/MRT_Iridium_f4xx/Src/%.o: ../Drivers/MRT_Iridium_f4xx/Src/%.cpp Drivers/MRT_Iridium_f4xx/Src/subdir.mk
 	arm-none-eabi-g++ "$<" -mcpu=cortex-m4 -std=gnu++14 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I../Core/Inc -I../Drivers/MRT_Iridium_f4xx/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -fno-exceptions -fno-rtti -fno-use-cxa-atexit -Wall -fstack-usage -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
-Core/Src/%.o: ../Core/Src/%.c Core/Src/subdir.mk
+Drivers/MRT_Iridium_f4xx/Src/%.o: ../Drivers/MRT_Iridium_f4xx/Src/%.c Drivers/MRT_Iridium_f4xx/Src/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I../Core/Inc -I../Drivers/MRT_Iridium_f4xx/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
 

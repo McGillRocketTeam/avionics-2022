@@ -32,5 +32,6 @@ CPP_DEPS :=
 SUBDIRS := \
 Core/Src \
 Core/Startup \
+Drivers/MRT_Iridium_f4xx/Src \
 Drivers/STM32F4xx_HAL_Driver/Src \
 

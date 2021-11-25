@@ -1,0 +1,32 @@
+cmath:592:3:constexpr bool std::isinf(double)	32	static
+cmath:619:3:constexpr bool std::isnan(double)	24	static
+WString.h:81:22:unsigned int String::length() const	16	static
+WString.h:163:15:const char* String::c_str() const	16	static
+Print.h:28:12:size_t Print::write(const char*)	24	static
+Print.h:33:12:size_t Print::write(const char*, size_t)	24	static
+Print.cpp:15:8:virtual size_t Print::write(const uint8_t*, size_t)	32	static
+Print.cpp:24:8:size_t Print::print(const __FlashStringHelper*)	16	static
+Print.cpp:29:8:size_t Print::print(const String&)	24	static
+Print.cpp:34:8:size_t Print::print(const char*)	16	static
+Print.cpp:39:8:size_t Print::print(char)	16	static
+Print.cpp:44:8:size_t Print::print(unsigned char, int)	24	static
+Print.cpp:49:8:size_t Print::print(int, int)	24	static
+Print.cpp:54:8:size_t Print::print(unsigned int, int)	24	static
+Print.cpp:59:8:size_t Print::print(long int, int)	32	static
+Print.cpp:75:8:size_t Print::print(long unsigned int, int)	24	static
+Print.cpp:81:8:size_t Print::print(double, int)	24	static
+Print.cpp:86:8:size_t Print::println(const __FlashStringHelper*)	24	static
+Print.cpp:93:8:size_t Print::print(const Printable&)	16	static
+Print.cpp:98:8:size_t Print::println()	16	static
+Print.cpp:103:8:size_t Print::println(const String&)	24	static
+Print.cpp:110:8:size_t Print::println(const char*)	24	static
+Print.cpp:117:8:size_t Print::println(char)	24	static
+Print.cpp:124:8:size_t Print::println(unsigned char, int)	32	static
+Print.cpp:131:8:size_t Print::println(int, int)	32	static
+Print.cpp:138:8:size_t Print::println(unsigned int, int)	32	static
+Print.cpp:145:8:size_t Print::println(long int, int)	32	static
+Print.cpp:152:8:size_t Print::println(long unsigned int, int)	32	static
+Print.cpp:159:8:size_t Print::println(double, int)	32	static
+Print.cpp:166:8:size_t Print::println(const Printable&)	24	static
+Print.cpp:175:8:size_t Print::printNumber(long unsigned int, uint8_t)	72	static
+Print.cpp:194:8:size_t Print::printFloat(double, uint8_t)	64	static
