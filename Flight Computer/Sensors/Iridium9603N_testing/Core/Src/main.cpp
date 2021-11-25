@@ -26,6 +26,7 @@
 #include <IridiumSBD.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 /* USER CODE END Includes */
 
@@ -42,6 +43,13 @@
  * https://community.st.com/s/question/0D53W000005qNDr/signature-issue-in-hal-function-haluarttransmit-how-to-file-a-bugchange-request
  */
 #define DIAGNOSTICS false
+
+/*
+ * TODO this part doesn't work but it needs to affect the print functions from all the files (global macro)
+ */
+//#define GLOBAL_UART this->uart
+//#define diagprint(s) HAL_UART_Transmit(&GLOBAL_UART,(uint8_t*) s, 15, HAL_MAX_DELAY)
+//#define consoleprint(s) HAL_UART_Transmit(&GLOBAL_UART,(uint8_t*) s, 15, HAL_MAX_DELAY)
 
 /* USER CODE END PD */
 
@@ -67,10 +75,6 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-
-static uint8_t setup(IridiumSBD I);
-static void iridiumErrorMessage(uint8_t error);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,7 +114,24 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-  setup(GPS);
+  /*
+    * TODO it seems like huart3 needs to be initialize before being passed in order to print
+    * Solution: pass the variable in setup
+    */
+  GPS.setup(huart3);
+
+
+  #if DIAGNOSTICS
+  void ISBDConsoleCallback(IridiumSBD *device, char c)
+  {
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
+  }
+
+  void ISBDDiagsCallback(IridiumSBD *device, char c)
+  {
+	  HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
+  }
+  #endif
 
   /* USER CODE END 2 */
 
@@ -121,6 +142,31 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  struct tm t; // struct tm is defined in time.h
+	     int err = GPS.getSystemTime(t); // Ask the 9603N for the system time
+	     if (err == ISBD_SUCCESS) // Was it successful?
+	     {
+	        char buf[32];
+	        sprintf(buf, "%d-%02d-%02d %02d:%02d:%02d",
+	           t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+	        HAL_UART_Transmit(&(GPS.uart),(uint8_t*) "\r\nIridium date/time is ", 25, HAL_MAX_DELAY);
+	        HAL_UART_Transmit(&(GPS.uart),(uint8_t*) buf, strlen(buf), HAL_MAX_DELAY);
+	     }
+
+	     else if (err == ISBD_NO_NETWORK) // Did it fail because the 9603N has not yet seen the network?
+	     {
+	    	 HAL_UART_Transmit(&(GPS.uart),(uint8_t*) "\r\nNo network detected.  Waiting 10 seconds.\r\n", 49, HAL_MAX_DELAY);
+	     }
+
+	     else
+	     {
+	        HAL_UART_Transmit(&(GPS.uart),(uint8_t*) "\r\nUnexpected Error ", 21, HAL_MAX_DELAY);
+	        GPS.iridiumErrorMessage(err);
+	        return false;
+	     }
+
+	     // Delay 10 seconds
+	     HAL_Delay(10 * 1000UL);
   }
   /* USER CODE END 3 */
 }
@@ -252,139 +298,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-static uint8_t setup(IridiumSBD I){
-	HAL_UART_Transmit(&huart3,(uint8_t*) "\r\nChecking for the device...", 30, HAL_MAX_DELAY);
-	while(!I.isConnected()){
-		HAL_UART_Transmit(&huart3,(uint8_t*) "Check if the device is connected. Trying again in\r\n", 53, HAL_MAX_DELAY);
-		HAL_Delay(500);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "\r3", 3, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "\r2", 3, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "\r1\r\n", 7, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-	}
-	HAL_UART_Transmit(&huart3,(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
-
-	/*
-	//Check if device is connected (adress 0x63)
-	HAL_UART_Transmit(&huart3, "Checking for the device...\n\r", 30, HAL_MAX_DELAY);
-	ret = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(63<<1), 3, 5);
-	while (ret != HAL_OK) {
-		HAL_UART_Transmit(&huart3,(uint8_t*) "Check if the device is connected. Trying again in\n\r", 53, HAL_MAX_DELAY);
-		HAL_Delay(500);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "3\r", 3, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "2\r", 3, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "1\r", 3, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-	}
-	HAL_UART_Transmit(&huart3,(uint8_t*) "The device was found!\n\r", 25, HAL_MAX_DELAY);
-	*/
-
-	//Activate the superchargers
-	HAL_UART_Transmit(&huart3,(uint8_t*) "Activating the superchargers...", 31, HAL_MAX_DELAY);
-	I.enableSuperCapCharger(true);
-	HAL_UART_Transmit(&huart3,(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
-
-
-	//Wait for the supercapacitors to charge
-	while (!I.checkSuperCapCharger()){
-		HAL_UART_Transmit(&huart3,(uint8_t*) "\rWaiting for the supercapacitors to charge.\r", 46, HAL_MAX_DELAY);
-		HAL_Delay(333);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "Waiting for the supercapacitors to charge..\r", 45, HAL_MAX_DELAY);
-		HAL_Delay(333);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "Waiting for the supercapacitors to charge...", 44, HAL_MAX_DELAY);
-		HAL_Delay(333);
-	}
-	HAL_UART_Transmit(&huart3,(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
-
-
-	//Enable power for the 9603N
-	HAL_UART_Transmit(&huart3,(uint8_t*) "Enabling 9603N power...", 23, HAL_MAX_DELAY);
-	I.enable9603Npower(true);
-	HAL_UART_Transmit(&huart3,(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
-
-
-	/*
-	 * Begin satellite modem operation
-	 */
-
-	//Power on the rockblock
-	HAL_UART_Transmit(&huart3,(uint8_t*) "Starting Modem...", 17, HAL_MAX_DELAY);
-	int err = I.begin();
-	if (err != ISBD_SUCCESS)
-	  {
-		HAL_UART_Transmit(&huart3,(uint8_t*) "Failed: ", 8, HAL_MAX_DELAY);
-		HAL_UART_Transmit(&huart3,(uint8_t*) err, 4, HAL_MAX_DELAY);
-		iridiumErrorMessage(err);
-
-	    return HAL_ERROR;
-	  }
-	HAL_UART_Transmit(&huart3,(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
-
-	return HAL_OK;
-}
-
-static void iridiumErrorMessage(uint8_t error){
-	HAL_UART_Transmit(&huart3,(uint8_t*) "\r\nError:\t", 12, HAL_MAX_DELAY);
-	if (error == ISBD_ALREADY_AWAKE){
-	   	HAL_UART_Transmit(&huart3,(uint8_t*) "Already Awake\r\n", 17, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_SERIAL_FAILURE){
-	   	HAL_UART_Transmit(&huart3,(uint8_t*) "Serial Failure\r\n", 18, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_PROTOCOL_ERROR){
-		HAL_UART_Transmit(&huart3,(uint8_t*) "Protocol Error\r\n", 18, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_CANCELLED){
-	   	HAL_UART_Transmit(&huart3,(uint8_t*) "\r\nCancelled", 13, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_NO_MODEM_DETECTED){
-	   	HAL_UART_Transmit(&huart3,(uint8_t*) "\r\nNo modem detected: check wiring.", 36, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_SBDIX_FATAL_ERROR){
-	   	HAL_UART_Transmit(&huart3,(uint8_t*) "SDBIX Fatal Error\r\n", 21, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_SENDRECEIVE_TIMEOUT){
-	   	HAL_UART_Transmit(&huart3,(uint8_t*) "Send-Receive Timeout\r\n", 24, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_RX_OVERFLOW){
-		HAL_UART_Transmit(&huart3,(uint8_t*) "RX Overflow\r\n", 15, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_REENTRANT){
-		HAL_UART_Transmit(&huart3,(uint8_t*) "REENTRANT\r\n", 13, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_IS_ASLEEP){
-	   	HAL_UART_Transmit(&huart3,(uint8_t*) "Is Asleep\r\n", 13, HAL_MAX_DELAY);
-	}
-	else if (error == ISBD_NO_SLEEP_PIN){
-	   	HAL_UART_Transmit(&huart3,(uint8_t*) "No Sleep Pin\r\n", 16, HAL_MAX_DELAY);
-	}
-	else if(error == 20){
-		HAL_UART_Transmit(&huart3,(uint8_t*) "DEBUG LINE REACHED\r\n", 22, HAL_MAX_DELAY);
-	}
-	else{
-		HAL_UART_Transmit(&huart3,(uint8_t*) "UNKNOWN\r\n", 11, HAL_MAX_DELAY);
-	}
-
-/*
-#define ISBD_SUCCESS             0
-#define ISBD_ALREADY_AWAKE       1
-#define ISBD_SERIAL_FAILURE      2
-#define ISBD_PROTOCOL_ERROR      3
-#define ISBD_CANCELLED           4
-#define ISBD_NO_MODEM_DETECTED   5
-#define ISBD_SBDIX_FATAL_ERROR   6
-#define ISBD_SENDRECEIVE_TIMEOUT 7
-#define ISBD_RX_OVERFLOW         8
-#define ISBD_REENTRANT           9
-#define ISBD_IS_ASLEEP           10
-#define ISBD_NO_SLEEP_PIN        11
-*/
-}
 /* USER CODE END 4 */
 
 /**

@@ -24,7 +24,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <WString.h> // for FlashString
 #include <Stream.h> // for Stream
-
 #include "wiring.h"
 #include <Wire.h>
 
@@ -34,10 +33,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 // Advanced macro to swap routine names and parameters (so the arduino code works). You need to define the pins too
 /*
- * How dafuck do you use the ## operator with non-static "this->instances"
+ * TODO How do you use the ## operator with non-static "this->instances"
  */
 //#define digitalWrite(PIN_NAME,PIN_STATE)   HAL_GPIO_WritePin(##PIN_NAME##_GPIO_Port,##PIN_NAME##_Pin,GPIO_PIN_##PIN_STATE)
 //#define digitalRead(PIN_NAME)   HAL_GPIO_ReadPin(##PIN_NAME##_GPIO_Port,##PIN_NAME##_Pin)
+
+//Solution: make a different function and set it as a macro
 #define pinMode(PIN_NAME,PIN_MODE) st_pinMode(PIN_NAME##_GPIO_Port,PIN_NAME##_Pin,PIN_MODE)
 #define OUTPUT 1
 #define INPUT 0
@@ -48,7 +49,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define sleepPin_GPIO_Port GPIOC
 #define D11_Pin GPIO_PIN_7
 #define D11_GPIO_Port GPIOC
-//Arduino pinMode function declaration (define in .cpp file)
+
+//Arduino pinMode function declaration (defined in .cpp file)
 void st_pinMode(GPIO_TypeDef* PIN_NAME_GPIO_Port,uint8_t PIN_NAME_Pin,int i);
 
 
@@ -132,6 +134,14 @@ public:
    // Weak functions to begin and end the Serial port after power(true) and before power(false)
    void beginSerialPort() __attribute__((weak));
    void endSerialPort() __attribute__((weak));
+
+
+   //TODO Homemade non-static functions
+      uint8_t setup(UART_HandleTypeDef huart);
+      void iridiumErrorMessage(uint8_t error);
+   //TODO uart field (passed through setup)
+      UART_HandleTypeDef uart;
+
 
    IridiumSBD(Stream &str, int sleepPinNo = -1, int ringPinNo = -1)
    {

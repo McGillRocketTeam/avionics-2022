@@ -24,10 +24,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <time.h>
 #include "IridiumSBD.h"
-
-//General define needed to convert arduino to stm32
 #include <stdio.h>
 #include <stm32f4xx_hal.h>
+
+
+//General define needed to convert arduino to stm32
 #define millis() HAL_GetTick()
 
 bool ISBDCallback() __attribute__((weak));
@@ -37,28 +38,6 @@ void ISBDDiagsCallback(IridiumSBD *device, char c) __attribute__((weak));
 bool ISBDCallback() { return true; }
 void ISBDConsoleCallback(IridiumSBD *device, char c) { }
 void ISBDDiagsCallback(IridiumSBD *device, char c) { }
-
-
-//Define a version of pinMode for st to convert arduino's pinMode with macro
-void st_pinMode(GPIO_TypeDef* PIN_NAME_GPIO_Port,uint8_t PIN_NAME_Pin,int i){
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-	/*Configure GPIO pin Output Level */
-	if (i==1){
-		HAL_GPIO_WritePin(PIN_NAME_GPIO_Port, PIN_NAME_Pin, GPIO_PIN_RESET);
-	}
-	/*Configure GPIO pin */
-	GPIO_InitStruct.Pin = PIN_NAME_Pin;
-	if (i==1) {
-		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	}
-	else{
-		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	}
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(PIN_NAME_GPIO_Port, &GPIO_InitStruct);
-}
-
 
 // Power on the RockBLOCK or return from sleep
 int IridiumSBD::begin()
@@ -620,8 +599,6 @@ int IridiumSBD::internalBegin()
    send(ringAlertsEnabled ? F("AT+SBDMTA=1\r") : F("AT+SBDMTA=0\r"));
    if (!waitForATResponse())
       return cancelled() ? ISBD_CANCELLED : ISBD_PROTOCOL_ERROR;
-
-   return 20; //TODO debug line
 
    // Decide whether the internal MSSTM workaround should be enforced on TX/RX
    // By default it is unless the firmware rev is >= TA13001
@@ -1328,12 +1305,20 @@ void IridiumSBD::diagprint(FlashString str)
       if (c == 0) break;
       ISBDDiagsCallback(this, c);
    }
+   /*
+    * TODO diagprint should now print to serial
+    */
+   HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen((char*) str), HAL_MAX_DELAY);
 }
 
 void IridiumSBD::diagprint(const char *str)
 {
    while (*str)
       ISBDDiagsCallback(this, *str++);
+   /*
+    * TODO diagprint should now print to serial
+    */
+   HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen((char*) str), HAL_MAX_DELAY);
 }
 
 void IridiumSBD::diagprint(uint16_t n)
@@ -1352,12 +1337,20 @@ void IridiumSBD::consoleprint(FlashString str)
       if (c == 0) break;
       ISBDConsoleCallback(this, c);
    }
+   /*
+    * TODO consoleprint should now print to serial
+    */
+    HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen((char*) str), HAL_MAX_DELAY);
 }
 
 void IridiumSBD::consoleprint(const char *str)
 {
    while (*str)
       ISBDConsoleCallback(this, *str++);
+   /*
+    * TODO consoleprint should now print to serial
+    */
+    HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen((char*) str), HAL_MAX_DELAY);
 }
 
 void IridiumSBD::consoleprint(uint16_t n)
@@ -1370,6 +1363,10 @@ void IridiumSBD::consoleprint(uint16_t n)
 void IridiumSBD::consoleprint(char c)
 {
    ISBDConsoleCallback(this, c);
+   /*
+    * TODO consoleprint should now print to serial
+    */
+    HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
 }
 
 void IridiumSBD::SBDRINGSeen()
@@ -1714,4 +1711,149 @@ int IridiumSBD::internalGetIMEI(char *IMEI, size_t bufferSize)
       return cancelled() ? ISBD_CANCELLED : ISBD_PROTOCOL_ERROR;
 
    return ISBD_SUCCESS;
+}
+
+
+
+
+/*
+ * TODO HOMEMADE FUNCTIONS BELOW
+ */
+uint8_t IridiumSBD::setup(UART_HandleTypeDef huart){
+	this->uart = huart;
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nChecking for the device...", 30, HAL_MAX_DELAY);
+	while(!this->isConnected()){
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Check if the device is connected. Trying again in\r\n", 53, HAL_MAX_DELAY);
+		HAL_Delay(500);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r3", 3, HAL_MAX_DELAY);
+		HAL_Delay(1000);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r2", 3, HAL_MAX_DELAY);
+		HAL_Delay(1000);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r1\r\n", 7, HAL_MAX_DELAY);
+		HAL_Delay(1000);
+	}
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+
+	/*
+	//Check if device is connected (adress 0x63)
+	HAL_UART_Transmit(&huart3, "Checking for the device...\n\r", 30, HAL_MAX_DELAY);
+	ret = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(63<<1), 3, 5);
+	while (ret != HAL_OK) {
+		HAL_UART_Transmit(&huart3,(uint8_t*) "Check if the device is connected. Trying again in\n\r", 53, HAL_MAX_DELAY);
+		HAL_Delay(500);
+		HAL_UART_Transmit(&huart3,(uint8_t*) "3\r", 3, HAL_MAX_DELAY);
+		HAL_Delay(1000);
+		HAL_UART_Transmit(&huart3,(uint8_t*) "2\r", 3, HAL_MAX_DELAY);
+		HAL_Delay(1000);
+		HAL_UART_Transmit(&huart3,(uint8_t*) "1\r", 3, HAL_MAX_DELAY);
+		HAL_Delay(1000);
+	}
+	HAL_UART_Transmit(&huart3,(uint8_t*) "The device was found!\n\r", 25, HAL_MAX_DELAY);
+	*/
+	//Activate the superchargers
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Activating the superchargers...", 31, HAL_MAX_DELAY);
+	this->enableSuperCapCharger(true);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+
+
+	//Wait for the supercapacitors to charge
+	while (!this->checkSuperCapCharger()){
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "\rWaiting for the supercapacitors to charge.  \r", 48, HAL_MAX_DELAY);
+		HAL_Delay(333);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Waiting for the supercapacitors to charge.. \r", 46, HAL_MAX_DELAY);
+		HAL_Delay(333);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Waiting for the supercapacitors to charge...", 44, HAL_MAX_DELAY);
+		HAL_Delay(333);
+	}
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+
+
+	//Enable power for the 9603N
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Enabling 9603N power...", 23, HAL_MAX_DELAY);
+	this->enable9603Npower(true);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+
+
+	/*
+	 * Begin satellite modem operation
+	 */
+
+	//Power on the rockblock
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Starting Modem...", 17, HAL_MAX_DELAY);
+	int err = this->begin();
+	if (err != ISBD_SUCCESS)
+	  {
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Failed: ", 8, HAL_MAX_DELAY);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) err, 4, HAL_MAX_DELAY);
+		this->iridiumErrorMessage(err);
+
+	    return HAL_ERROR;
+	  }
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+
+	return HAL_OK;
+}
+
+void IridiumSBD::iridiumErrorMessage(uint8_t error){
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nError:\t", 12, HAL_MAX_DELAY);
+	if (error == ISBD_ALREADY_AWAKE){
+	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Already Awake\r\n", 17, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_SERIAL_FAILURE){
+	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Serial Failure\r\n", 18, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_PROTOCOL_ERROR){
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Protocol Error\r\n", 18, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_CANCELLED){
+	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nCancelled", 13, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_NO_MODEM_DETECTED){
+	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nNo modem detected: check wiring.", 36, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_SBDIX_FATAL_ERROR){
+	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "SDBIX Fatal Error\r\n", 21, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_SENDRECEIVE_TIMEOUT){
+	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Send-Receive Timeout\r\n", 24, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_RX_OVERFLOW){
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "RX Overflow\r\n", 15, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_REENTRANT){
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "REENTRANT\r\n", 13, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_IS_ASLEEP){
+	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Is Asleep\r\n", 13, HAL_MAX_DELAY);
+	}
+	else if (error == ISBD_NO_SLEEP_PIN){
+	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "No Sleep Pin\r\n", 16, HAL_MAX_DELAY);
+	}
+	else if(error == 20){
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "DEBUG LINE REACHED\r\n", 22, HAL_MAX_DELAY);
+	}
+	else{
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "UNKNOWN\r\n", 11, HAL_MAX_DELAY);
+	}
+}
+
+
+//Define a version of pinMode for st to convert arduino's pinMode with macro
+void st_pinMode(GPIO_TypeDef* PIN_NAME_GPIO_Port,uint8_t PIN_NAME_Pin,int i){
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	/*Configure GPIO pin Output Level */
+	if (i==1){
+		HAL_GPIO_WritePin(PIN_NAME_GPIO_Port, PIN_NAME_Pin, GPIO_PIN_RESET);
+	}
+	/*Configure GPIO pin */
+	GPIO_InitStruct.Pin = PIN_NAME_Pin;
+	if (i==1) {
+		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	}
+	else{
+		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	}
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(PIN_NAME_GPIO_Port, &GPIO_InitStruct);
 }
