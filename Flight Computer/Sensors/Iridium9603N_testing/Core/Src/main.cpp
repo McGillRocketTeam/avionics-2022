@@ -118,20 +118,16 @@ int main(void)
     * TODO it seems like huart3 needs to be initialize before being passed in order to print
     * Solution: pass the variable in setup
     */
-  GPS.setup(huart3);
+  GPS.MRT_Iridium_setup(huart3,IridiumSBD::DEFAULT_POWER_PROFILE);
+  GPS.MRT_Iridium_getIMEI();
+  HAL_Delay(3000);
+  GPS.MRT_Iridium_checkCSQ(false);
+  HAL_Delay(3000);
+  GPS.MRT_Iridium_getTime();
+  HAL_Delay(3000);
+  GPS.MRT_Iridium_shutdown();
 
 
-  #if DIAGNOSTICS
-  void ISBDConsoleCallback(IridiumSBD *device, char c)
-  {
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
-  }
-
-  void ISBDDiagsCallback(IridiumSBD *device, char c)
-  {
-	  HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
-  }
-  #endif
 
   /* USER CODE END 2 */
 
@@ -142,30 +138,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  struct tm t; // struct tm is defined in time.h
-	     int err = GPS.getSystemTime(t); // Ask the 9603N for the system time
-	     if (err == ISBD_SUCCESS) // Was it successful?
-	     {
-	        char buf[61];
-	        sprintf(buf, "\r\n<< Iridium date/time is %d-%02d-%02d %02d:%02d:%02d\r\n",
-	           t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
-	        HAL_UART_Transmit(&(GPS.uart),(uint8_t*) buf, strlen(buf), HAL_MAX_DELAY);
-	     }
-
-	     else if (err == ISBD_NO_NETWORK) // Did it fail because the 9603N has not yet seen the network?
-	     {
-	    	 HAL_UART_Transmit(&(GPS.uart),(uint8_t*) "\r\nNo network detected.  Waiting 10 seconds.\r\n", 49, HAL_MAX_DELAY);
-	     }
-
-	     else
-	     {
-	        HAL_UART_Transmit(&(GPS.uart),(uint8_t*) "\r\nUnexpected Error ", 21, HAL_MAX_DELAY);
-	        GPS.iridiumErrorMessage(err);
-	        return false;
-	     }
-
-	     // Delay 10 seconds
-	     HAL_Delay(10 * 1000UL);
   }
   /* USER CODE END 3 */
 }

@@ -50,8 +50,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define D11_Pin GPIO_PIN_7
 #define D11_GPIO_Port GPIOC
 
-//Arduino pinMode function declaration (defined in .cpp file)
 void st_pinMode(GPIO_TypeDef* PIN_NAME_GPIO_Port,uint8_t PIN_NAME_Pin,int i);
+static void diagnostic(void);
 
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -137,10 +137,15 @@ public:
 
 
    //TODO Homemade non-static functions
-      uint8_t setup(UART_HandleTypeDef huart);
-      void iridiumErrorMessage(uint8_t error);
+      uint8_t MRT_Iridium_setup(UART_HandleTypeDef huart,POWERPROFILE profile);
+      boolean MRT_Iridium_shutdown(void);
+      void MRT_Iridium_ErrorMessage(uint8_t error);
+      boolean MRT_Iridium_getIMEI(void);
+      int MRT_Iridium_checkCSQ(boolean b);
+      boolean MRT_Iridium_getTime(void);
    //TODO uart field (passed through setup)
       UART_HandleTypeDef uart;
+      char IMEI[16];
 
 
    IridiumSBD(Stream &str, int sleepPinNo = -1, int ringPinNo = -1)

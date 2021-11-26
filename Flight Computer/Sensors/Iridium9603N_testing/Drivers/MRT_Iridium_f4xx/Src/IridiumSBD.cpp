@@ -611,7 +611,13 @@ int IridiumSBD::internalBegin()
    }
    else
    {
-      diagprint(F("Firmware version is ")); diagprint(version); diagprint(F("\r\n"));
+      //diagprint(F("Firmware version is ")); diagprint(version); diagprint(F("\r\n"));
+
+      //TODO doesn't show anything otherwise
+      char str[30];
+      sprintf(str, "Firmware version is %s\r\n", version);
+      HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+
       if (version[0] == 'T' && version[1] == 'A')
       {
          unsigned long ver = strtoul(version + 2, NULL, 10);
@@ -887,9 +893,14 @@ bool IridiumSBD::noBlockWait(int seconds)
 // stored in response buffer for later parsing by caller.
 bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char *prompt, const char *terminator)
 {
-   diagprint(F("Waiting for AT response "));
-   diagprint(terminator);
-   diagprint(F("\r\n"));
+   //diagprint(F("Waiting for AT response "));
+
+   /*
+    * TODO Prints weirdly because of terminator
+    */
+   char str[26];
+   sprintf(str, "Waiting for AT response %s", terminator);
+   HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
 
    if (response)
       memset(response, 0, responseSize);
@@ -898,7 +909,7 @@ bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char 
    int matchTerminatorPos = 0; // Matches chars in terminator
    enum {LOOKING_FOR_PROMPT, GATHERING_RESPONSE, LOOKING_FOR_TERMINATOR};
    int promptState = prompt ? LOOKING_FOR_PROMPT : LOOKING_FOR_TERMINATOR;
-   //consoleprint(F("<< "));
+   consoleprint(F("<< "));
    for (unsigned long start=millis(); millis() - start < 1000UL * atTimeout;)
    {
       if (cancelled())
@@ -1324,7 +1335,7 @@ void IridiumSBD::diagprint(uint16_t n)
 {
    char str[10];
    sprintf(str, "%u", n);
-   diagprint(str);
+   HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
 }
 
 void IridiumSBD::consoleprint(FlashString str)
@@ -1354,9 +1365,9 @@ void IridiumSBD::consoleprint(const char *str)
 
 void IridiumSBD::consoleprint(uint16_t n)
 {
-   char str[10];
+   char str[2];
    sprintf(str, "%u", n);
-   consoleprint(str);
+   HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
 }
 
 void IridiumSBD::consoleprint(char c)
@@ -1365,7 +1376,9 @@ void IridiumSBD::consoleprint(char c)
    /*
     * TODO consoleprint should now print to serial
     */
-    HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
+   char str[2];
+   sprintf(str, "%c", c);
+   HAL_UART_Transmit(&(this->uart),(uint8_t*) str, sizeof(char), HAL_MAX_DELAY);
 }
 
 void IridiumSBD::SBDRINGSeen()
@@ -1718,7 +1731,22 @@ int IridiumSBD::internalGetIMEI(char *IMEI, size_t bufferSize)
 /*
  * TODO HOMEMADE FUNCTIONS BELOW
  */
-uint8_t IridiumSBD::setup(UART_HandleTypeDef huart){
+static void diagnostic(void){
+	#if DIAGNOSTICS
+	void ISBDConsoleCallback(IridiumSBD *device, char c)
+	{
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
+	}
+
+	void ISBDDiagsCallback(IridiumSBD *device, char c)
+	{
+	  HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
+	}
+	#endif
+}
+
+
+uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart,POWERPROFILE profile){
 	this->uart = huart;
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nChecking for the device...", 30, HAL_MAX_DELAY);
 	while(!this->isConnected()){
@@ -1731,28 +1759,12 @@ uint8_t IridiumSBD::setup(UART_HandleTypeDef huart){
 		HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r1\r\n", 7, HAL_MAX_DELAY);
 		HAL_Delay(1000);
 	}
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 6, HAL_MAX_DELAY);
 
-	/*
-	//Check if device is connected (adress 0x63)
-	HAL_UART_Transmit(&huart3, "Checking for the device...\n\r", 30, HAL_MAX_DELAY);
-	ret = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(63<<1), 3, 5);
-	while (ret != HAL_OK) {
-		HAL_UART_Transmit(&huart3,(uint8_t*) "Check if the device is connected. Trying again in\n\r", 53, HAL_MAX_DELAY);
-		HAL_Delay(500);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "3\r", 3, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "2\r", 3, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-		HAL_UART_Transmit(&huart3,(uint8_t*) "1\r", 3, HAL_MAX_DELAY);
-		HAL_Delay(1000);
-	}
-	HAL_UART_Transmit(&huart3,(uint8_t*) "The device was found!\n\r", 25, HAL_MAX_DELAY);
-	*/
 	//Activate the superchargers
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Activating the superchargers...", 31, HAL_MAX_DELAY);
 	this->enableSuperCapCharger(true);
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 6, HAL_MAX_DELAY);
 
 
 	//Wait for the supercapacitors to charge
@@ -1764,13 +1776,13 @@ uint8_t IridiumSBD::setup(UART_HandleTypeDef huart){
 		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Waiting for the supercapacitors to charge...", 44, HAL_MAX_DELAY);
 		HAL_Delay(333);
 	}
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 6, HAL_MAX_DELAY);
 
 
 	//Enable power for the 9603N
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Enabling 9603N power...", 23, HAL_MAX_DELAY);
 	this->enable9603Npower(true);
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 6, HAL_MAX_DELAY);
 
 
 	/*
@@ -1779,21 +1791,53 @@ uint8_t IridiumSBD::setup(UART_HandleTypeDef huart){
 
 	//Power on the rockblock
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Starting Modem...", 17, HAL_MAX_DELAY);
+	this->setPowerProfile(profile);
 	int err = this->begin();
 	if (err != ISBD_SUCCESS)
 	  {
 		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Failed: ", 8, HAL_MAX_DELAY);
 		HAL_UART_Transmit(&(this->uart),(uint8_t*) err, 4, HAL_MAX_DELAY);
-		this->iridiumErrorMessage(err);
+		this->MRT_Iridium_ErrorMessage(err);
 
 	    return HAL_ERROR;
 	  }
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Done\r\n", 8, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 6, HAL_MAX_DELAY);
 
 	return HAL_OK;
 }
 
-void IridiumSBD::iridiumErrorMessage(uint8_t error){
+
+boolean IridiumSBD::MRT_Iridium_shutdown(void){
+	diagprint(F("\r\nShutting down the Iridium\r\n"));
+
+	// Power down the modem
+	diagprint(F("Putting the 9603N to sleep..."));
+	int err = this->sleep();
+	if (err != ISBD_SUCCESS)
+	{
+	    diagprint(F("sleep failed: error "));
+		diagprint(err);
+		return false;
+	}
+	diagprint(F("OK\r\n"));
+
+	// Disable 9603N power
+	diagprint(F("Disabling 9603N power...\r\n"));
+	this->enable9603Npower(false);
+	diagprint(F("OK\r\n"));
+
+	// Disable the supercapacitor charger
+	diagprint(F("Disabling the supercapacitor charger..."));
+	this->enableSuperCapCharger(false);
+	diagprint(F("OK\r\n"));
+
+	diagprint(F("Iridium successfully shutdown\r\n"));
+	return true;
+}
+
+
+
+void IridiumSBD::MRT_Iridium_ErrorMessage(uint8_t error){
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nError:\t", 12, HAL_MAX_DELAY);
 	if (error == ISBD_ALREADY_AWAKE){
 	   	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Already Awake\r\n", 17, HAL_MAX_DELAY);
@@ -1856,3 +1900,109 @@ void st_pinMode(GPIO_TypeDef* PIN_NAME_GPIO_Port,uint8_t PIN_NAME_Pin,int i){
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(PIN_NAME_GPIO_Port, &GPIO_InitStruct);
 }
+
+
+
+/*
+ * This function requests the satellite modem's IMEI number.
+ */
+boolean IridiumSBD::MRT_Iridium_getIMEI(void){
+	// Get the IMEI
+	diagprint(F("\r\nRetrieving the IMEI\r\n"));
+	  int err = this->getIMEI(IMEI, sizeof(IMEI));
+	  if (err != ISBD_SUCCESS)
+	  {
+	     diagprint(F("getIMEI failed: error "));
+	     diagprint(err);
+	     diagprint(F("\r\n"));
+	     return false;
+	  }
+	  char str[28];
+	  sprintf(str, "IMEI is %s\r\n", IMEI);
+	  HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+	  return true;
+}
+
+
+/*
+ * This sketch checks the Iridium signal quality and returns the status
+ * of the Network Available signal.
+ *
+ * The boolean param is if you want to check for network availability
+ */
+int IridiumSBD::MRT_Iridium_checkCSQ(boolean b){
+	diagprint(F("\r\nChecking Signal Quality\r\n"));
+	int signalQuality = -1;
+
+	//If IMEI not retrieved already, get it
+	if (IMEI==NULL){
+		diagprint(F("No IMEI"));
+		this->MRT_Iridium_getIMEI();
+	}
+
+	// Check the signal quality.
+	// This returns a number between 0 and 5.
+	// 2 or better is preferred.
+	int err = this->getSignalQuality(signalQuality);
+	if (err != ISBD_SUCCESS)
+	{
+	  diagprint(F("SignalQuality failed: error "));
+	  diagprint(err);
+	  diagprint(F("\r\n"));
+	  return -1;
+	}
+
+	diagprint(F("On a scale of 0 to 5, signal quality is currently "));
+	diagprint(signalQuality);
+	diagprint(F("\r\n"));
+
+	if (b){
+		// Check Network Available.
+		diagprint(F("Checking Network Available:\t"));
+		while (!this->checkNetworkAvailable())
+		{
+	  diagprint(F("Network is not available.\r\n"));
+	  diagprint(F("(This might be because the 9603N has not yet aquired the ring channel.)\r\n"));
+	  diagprint(F("Checking again in 10 seconds...\r\n"));
+	  HAL_Delay(10000);
+	  }
+	  diagprint(F("Network is available!\r\n"));
+	}
+	return signalQuality;
+}
+
+/*
+ * This function requests the time
+ */
+boolean IridiumSBD::MRT_Iridium_getTime(void){
+	struct tm t; // struct tm is defined in time.h
+	int err = this->getSystemTime(t); // Ask the 9603N for the system time
+	if (err == ISBD_SUCCESS) // Was it successful?
+	    {
+		char buf[61];
+		sprintf(buf, "\r\n<< Iridium date/time is %d-%02d-%02d %02d:%02d:%02d\r\n",
+				t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) buf, strlen(buf), HAL_MAX_DELAY);
+		return true;
+	}
+
+	else if (err == ISBD_NO_NETWORK) // Did it fail because the 9603N has not yet seen the network?
+	     {
+	  	 HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nNo network detected.\r\n", 28, HAL_MAX_DELAY);
+	   	 return false;
+	}
+
+	else
+	    {
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nUnexpected Error ", 21, HAL_MAX_DELAY);
+		this->MRT_Iridium_ErrorMessage(err);
+		return false;
+	}
+}
+
+
+
+
+
+
+
