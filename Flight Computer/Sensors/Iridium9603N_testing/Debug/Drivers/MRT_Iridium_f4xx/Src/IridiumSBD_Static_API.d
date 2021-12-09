@@ -1,4 +1,6 @@
-Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
+Drivers/MRT_Iridium_f4xx/Src/IridiumSBD_Static_API.o: \
+ ../Drivers/MRT_Iridium_f4xx/Src/IridiumSBD_Static_API.cpp \
+ ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -29,9 +31,19 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h
+ ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/WString.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/pgmspace.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/Stream.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/Print.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/types.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/WString.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/Printable.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/wiring.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/Wire.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/Stream.h
 
-../Core/Inc/main.h:
+../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -93,4 +105,24 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
-../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h:
+../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/WString.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/pgmspace.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/Stream.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/Print.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/types.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/WString.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/Printable.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/wiring.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/Wire.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/Stream.h:

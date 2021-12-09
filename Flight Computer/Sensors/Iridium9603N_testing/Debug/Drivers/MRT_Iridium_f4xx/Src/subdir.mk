@@ -10,6 +10,7 @@ C_SRCS += \
 
 CPP_SRCS += \
 ../Drivers/MRT_Iridium_f4xx/Src/IridiumSBD.cpp \
+../Drivers/MRT_Iridium_f4xx/Src/IridiumSBD_Static_API.cpp \
 ../Drivers/MRT_Iridium_f4xx/Src/Print.cpp \
 ../Drivers/MRT_Iridium_f4xx/Src/Stream.cpp \
 ../Drivers/MRT_Iridium_f4xx/Src/WString.cpp \
@@ -21,6 +22,7 @@ C_DEPS += \
 
 OBJS += \
 ./Drivers/MRT_Iridium_f4xx/Src/IridiumSBD.o \
+./Drivers/MRT_Iridium_f4xx/Src/IridiumSBD_Static_API.o \
 ./Drivers/MRT_Iridium_f4xx/Src/Print.o \
 ./Drivers/MRT_Iridium_f4xx/Src/Stream.o \
 ./Drivers/MRT_Iridium_f4xx/Src/WString.o \
@@ -30,6 +32,7 @@ OBJS += \
 
 CPP_DEPS += \
 ./Drivers/MRT_Iridium_f4xx/Src/IridiumSBD.d \
+./Drivers/MRT_Iridium_f4xx/Src/IridiumSBD_Static_API.d \
 ./Drivers/MRT_Iridium_f4xx/Src/Print.d \
 ./Drivers/MRT_Iridium_f4xx/Src/Stream.d \
 ./Drivers/MRT_Iridium_f4xx/Src/WString.d \

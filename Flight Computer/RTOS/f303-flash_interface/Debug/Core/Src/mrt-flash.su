@@ -1,2 +1,0 @@
-mrt-flash.c:3:19:MRT_EraseFlashPage	24	static
-mrt-flash.c:28:19:MRT_WriteDataToFlash	40	static

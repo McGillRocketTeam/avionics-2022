@@ -2,7 +2,7 @@
 #define TwoWire_h
 
 #include "stm32f4xx_hal.h"
-#include <inttypes.h>
+//#include <inttypes.h> //TODO already included in Stream
 #include "Stream.h"
 
 #define BUFFER_LENGTH 32

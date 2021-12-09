@@ -31,12 +31,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define IRIDIUM_SBD
 #define I2C_BUFFER_LENGTH 32
 
-// Advanced macro to swap routine names and parameters (so the arduino code works). You need to define the pins too
-/*
- * TODO How do you use the ## operator with non-static "this->instances"
- */
-//#define digitalWrite(PIN_NAME,PIN_STATE)   HAL_GPIO_WritePin(##PIN_NAME##_GPIO_Port,##PIN_NAME##_Pin,GPIO_PIN_##PIN_STATE)
-//#define digitalRead(PIN_NAME)   HAL_GPIO_ReadPin(##PIN_NAME##_GPIO_Port,##PIN_NAME##_Pin)
 
 //Solution: make a different function and set it as a macro
 #define pinMode(PIN_NAME,PIN_MODE) st_pinMode(PIN_NAME##_GPIO_Port,PIN_NAME##_Pin,PIN_MODE)
@@ -51,7 +45,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define D11_GPIO_Port GPIOC
 
 void st_pinMode(GPIO_TypeDef* PIN_NAME_GPIO_Port,uint8_t PIN_NAME_Pin,int i);
-static void diagnostic(void);
 
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -123,7 +116,7 @@ public:
    bool checkNetworkAvailable();
    void enable9603(bool enable);
    void enable841lowPower(bool enable);
-   boolean isConnected();
+   bool isConnected();
    int passThruI2Cread(uint8_t *rxBuffer, size_t &rxBufferSize, size_t &numBytes);
    int passThruI2Cwrite(uint8_t *txBuffer, size_t &txBufferSize);
 
@@ -137,17 +130,18 @@ public:
 
 
    //TODO Homemade non-static functions
-      uint8_t MRT_Iridium_setup(UART_HandleTypeDef huart,POWERPROFILE profile);
-      boolean MRT_Iridium_shutdown(void);
-      void MRT_Iridium_ErrorMessage(uint8_t error);
-      boolean MRT_Iridium_getIMEI(void);
-      int MRT_Iridium_checkCSQ(boolean b);
-      boolean MRT_Iridium_getTime(void);
-   //TODO uart field (passed through setup)
-      UART_HandleTypeDef uart;
-      char IMEI[16];
+         uint8_t MRT_Iridium_setup(UART_HandleTypeDef huart);
+         boolean MRT_Iridium_shutdown(void);
+         void MRT_Iridium_ErrorMessage(uint8_t error);
+         boolean MRT_Iridium_getIMEI(void);
+         int MRT_Iridium_checkCSQ(boolean b);
+         boolean MRT_Iridium_getTime(void);
+      //TODO uart field (passed through setup)
+         UART_HandleTypeDef uart;
+         char* IMEI;
 
 
+   /* Not using this constructor
    IridiumSBD(Stream &str, int sleepPinNo = -1, int ringPinNo = -1)
    {
       useSerial = true;
@@ -175,8 +169,8 @@ public:
          pinMode(sleepPin, OUTPUT);
       if (ringPin != -1)
          pinMode(ringPin, INPUT);
-
    }
+   */
 
    IridiumSBD(TwoWire &wirePort = Wire, uint8_t deviceAddress = 0x63)
    {

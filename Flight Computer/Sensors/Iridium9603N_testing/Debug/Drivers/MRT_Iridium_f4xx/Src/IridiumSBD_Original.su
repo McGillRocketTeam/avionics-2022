@@ -1,0 +1,83 @@
+Wire.h:58:19:size_t TwoWire::write(int)	16	static
+IridiumSBD_Original.cpp:38:6:bool ISBDCallback()	4	static
+IridiumSBD_Original.cpp:39:6:void ISBDConsoleCallback(IridiumSBD*, char)	16	static
+IridiumSBD_Original.cpp:40:6:void ISBDDiagsCallback(IridiumSBD*, char)	16	static
+IridiumSBD_Original.cpp:43:5:int IridiumSBD::begin()	24	static
+IridiumSBD_Original.cpp:64:5:int IridiumSBD::sendSBDBinary(const uint8_t*, size_t)	40	static
+IridiumSBD_Original.cpp:76:5:int IridiumSBD::sendReceiveSBDBinary(const uint8_t*, size_t, uint8_t*, size_t&)	40	static
+IridiumSBD_Original.cpp:88:5:int IridiumSBD::sendSBDText(const char*)	32	static
+IridiumSBD_Original.cpp:100:5:int IridiumSBD::sendReceiveSBDText(const char*, uint8_t*, size_t&)	40	static
+IridiumSBD_Original.cpp:112:5:int IridiumSBD::getSignalQuality(int&)	24	static
+IridiumSBD_Original.cpp:124:5:int IridiumSBD::sleep()	24	static
+IridiumSBD_Original.cpp:147:6:bool IridiumSBD::isAsleep()	16	static
+IridiumSBD_Original.cpp:153:5:int IridiumSBD::getWaitingMessageCount()	16	static
+IridiumSBD_Original.cpp:159:6:void IridiumSBD::setPowerProfile(IridiumSBD::POWERPROFILE)	16	static
+IridiumSBD_Original.cpp:174:6:void IridiumSBD::adjustATTimeout(int)	16	static
+IridiumSBD_Original.cpp:180:6:void IridiumSBD::adjustSendReceiveTimeout(int)	16	static
+IridiumSBD_Original.cpp:186:6:void IridiumSBD::adjustStartupTimeout(int)	16	static
+IridiumSBD_Original.cpp:191:6:void IridiumSBD::useMSSTMWorkaround(bool)	16	static
+IridiumSBD_Original.cpp:196:6:void IridiumSBD::enableRingAlerts(bool)	16	static
+IridiumSBD_Original.cpp:209:6:bool IridiumSBD::hasRingAsserted()	24	static
+IridiumSBD_Original.cpp:246:5:int IridiumSBD::getSystemTime(tm&)	128	static
+IridiumSBD_Original.cpp:284:5:int IridiumSBD::getFirmwareVersion(char*, size_t)	32	static
+IridiumSBD_Original.cpp:296:6:void IridiumSBD::enableSuperCapCharger(bool)	16	static
+IridiumSBD_Original.cpp:317:6:bool IridiumSBD::checkSuperCapCharger()	16	static
+IridiumSBD_Original.cpp:337:6:void IridiumSBD::enable9603Npower(bool)	16	static
+IridiumSBD_Original.cpp:358:6:void IridiumSBD::enable9603(bool)	16	static
+IridiumSBD_Original.cpp:379:6:void IridiumSBD::enable841lowPower(bool)	16	static
+IridiumSBD_Original.cpp:400:6:bool IridiumSBD::checkRingIndicator()	16	static
+IridiumSBD_Original.cpp:420:6:void IridiumSBD::clearRingIndicator()	16	static
+IridiumSBD_Original.cpp:435:6:bool IridiumSBD::checkNetworkAvailable()	16	static
+IridiumSBD_Original.cpp:456:5:int IridiumSBD::clearBuffers(int)	24	static
+IridiumSBD_Original.cpp:468:5:int IridiumSBD::getIMEI(char*, size_t)	32	static
+IridiumSBD_Original.cpp:482:6:bool IridiumSBD::isConnected()	16	static
+IridiumSBD_Original.cpp:496:5:int IridiumSBD::passThruI2Cread(uint8_t*, size_t&, size_t&)	32	static
+IridiumSBD_Original.cpp:518:5:int IridiumSBD::passThruI2Cwrite(uint8_t*, size_t&)	32	static
+IridiumSBD_Original.cpp:541:5:int IridiumSBD::internalBegin()	72	static
+IridiumSBD_Original.cpp:628:5:int IridiumSBD::internalSendReceiveSBD(const char*, const uint8_t*, size_t, uint8_t*, size_t*)	96	static
+IridiumSBD_Original.cpp:809:5:int IridiumSBD::internalGetSignalQuality(int&)	32	static
+IridiumSBD_Original.cpp:829:5:int IridiumSBD::internalMSSTMWorkaround(bool&)	48	static
+IridiumSBD_Original.cpp:860:5:int IridiumSBD::internalSleep()	16	static
+IridiumSBD_Original.cpp:876:6:bool IridiumSBD::noBlockWait(int)	24	static
+IridiumSBD_Original.cpp:888:6:bool IridiumSBD::waitForATResponse(char*, int, const char*, const char*)	48	static
+IridiumSBD_Original.cpp:960:6:bool IridiumSBD::cancelled()	16	static
+IridiumSBD_Original.cpp:976:5:int IridiumSBD::doSBDIX(uint16_t&, uint16_t&, uint16_t&, uint16_t&, uint16_t&, uint16_t&)	96	static
+IridiumSBD_Original.cpp:995:5:int IridiumSBD::doSBDRB(uint8_t*, size_t*)	56	static
+IridiumSBD_Original.cpp:1113:6:void IridiumSBD::power(bool)	24	static
+IridiumSBD_Original.cpp:1167:6:void IridiumSBD::configureSleepPin()	16	static
+IridiumSBD_Original.cpp:1174:6:void IridiumSBD::setSleepPin(uint8_t)	16	static
+IridiumSBD_Original.cpp:1185:6:void IridiumSBD::beginSerialPort()	16	static
+IridiumSBD_Original.cpp:1190:6:void IridiumSBD::endSerialPort()	16	static
+IridiumSBD_Original.cpp:1195:6:void IridiumSBD::send(FlashString, bool, bool)	24	static
+IridiumSBD_Original.cpp:1217:6:void IridiumSBD::send(const char*)	16	static
+IridiumSBD_Original.cpp:1237:6:void IridiumSBD::sendlong(const char*)	32	static
+IridiumSBD_Original.cpp:1280:6:void IridiumSBD::send(uint16_t)	16	static
+IridiumSBD_Original.cpp:1298:6:void IridiumSBD::diagprint(FlashString)	32	static
+IridiumSBD_Original.cpp:1312:6:void IridiumSBD::diagprint(const char*)	24	static
+IridiumSBD_Original.cpp:1321:6:void IridiumSBD::diagprint(uint16_t)	40	static
+IridiumSBD_Original.cpp:1329:6:void IridiumSBD::consoleprint(FlashString)	32	static
+IridiumSBD_Original.cpp:1343:6:void IridiumSBD::consoleprint(const char*)	24	static
+IridiumSBD_Original.cpp:1352:6:void IridiumSBD::consoleprint(uint16_t)	40	static
+IridiumSBD_Original.cpp:1361:6:void IridiumSBD::consoleprint(char)	16	static
+IridiumSBD_Original.cpp:1366:6:void IridiumSBD::SBDRINGSeen()	16	static
+IridiumSBD_Original.cpp:1376:6:void IridiumSBD::filterSBDRING()	24	static
+IridiumSBD_Original.cpp:1423:5:int IridiumSBD::filteredavailable()	16	static
+IridiumSBD_Original.cpp:1429:5:int IridiumSBD::filteredread()	24	static
+IridiumSBD_Original.cpp:1455:6:void IridiumSBD::check9603data()	24	static
+IridiumSBD_Original.cpp:1501:6:void IridiumSBD::check9603pins()	16	static
+IridiumSBD_Original.cpp:1514:6:void IridiumSBD::set9603pins(uint8_t)	16	static
+IridiumSBD_Original.cpp:1524:5:int IridiumSBD::internalPassThruI2Cread(uint8_t*, size_t&, size_t&)	40	static
+IridiumSBD_Original.cpp:1596:5:int IridiumSBD::internalPassThruI2Cwrite(uint8_t*, size_t&)	40	static
+IridiumSBD_Original.cpp:1637:5:int IridiumSBD::i2cSerAvailable()	16	static
+IridiumSBD_Original.cpp:1642:5:int IridiumSBD::i2cSerRead()	24	static
+IridiumSBD_Original.cpp:1654:6:void IridiumSBD::i2cSerPoke(char)	24	static
+IridiumSBD_Original.cpp:1668:5:int IridiumSBD::internalClearBuffers(int)	24	static
+IridiumSBD_Original.cpp:1693:5:int IridiumSBD::internalGetIMEI(char*, size_t)	32	static
+IridiumSBD_Original.cpp:1714:13:void diagnostic()	4	static
+IridiumSBD_Original.cpp:1729:9:uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef, IridiumSBD::POWERPROFILE)	24	static
+IridiumSBD_Original.cpp:1804:9:boolean IridiumSBD::MRT_Iridium_shutdown()	56	static
+IridiumSBD_Original.cpp:1835:6:void IridiumSBD::MRT_Iridium_ErrorMessage(uint8_t)	16	static
+IridiumSBD_Original.cpp:1880:6:void st_pinMode(GPIO_TypeDef*, uint8_t, int)	48	static
+IridiumSBD_Original.cpp:1904:9:boolean IridiumSBD::MRT_Iridium_getIMEI()	88	static
+IridiumSBD_Original.cpp:1928:5:int IridiumSBD::MRT_Iridium_checkCSQ(boolean)	160	static
+IridiumSBD_Original.cpp:1977:9:boolean IridiumSBD::MRT_Iridium_getTime()	152	static
