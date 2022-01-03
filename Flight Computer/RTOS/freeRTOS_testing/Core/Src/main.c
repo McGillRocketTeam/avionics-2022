@@ -34,6 +34,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define print(s) HAL_UART_Transmit(&huart3,s, strlen(s), HAL_MAX_DELAY);
+
 //INCLUDE_vTaskSuspend must be set to 1
 
 /* USER CODE END PD */
@@ -83,7 +85,7 @@ const osThreadAttr_t alarmPolling_attributes = {
 
 uint8_t flagA = 0;
 uint8_t flagB = 0;
-uint8_t hook = 0;
+uint8_t hook = 1;
 osThreadId_t threadID[10];
 
 /* USER CODE END PV */
@@ -331,6 +333,7 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
+
   /** Enable the Alarm B
   */
   /*
@@ -490,34 +493,13 @@ void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
 
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
 
-
 	//SystemClock_Config();
 	//HAL_ResumeTick();
 
+	//HAL_UART_Transmit(&huart3,(uint8_t*)"RTCW callback\r\n", 15, HAL_MAX_DELAY);
 
-	HAL_UART_Transmit(&huart3,(uint8_t*)"RTCW callback\r\n", 15, HAL_MAX_DELAY);
-	/*
-	HAL_UART_Transmit(&huart3,(uint8_t*)"Does it \r\n", 10, HAL_MAX_DELAY);
-	vTaskResume(blinkyTaskHandle);
-	HAL_UART_Transmit(&huart3,(uint8_t*)"Does it \r\n", 10, HAL_MAX_DELAY);
-	vTaskResume(printStateHandle);
-	HAL_UART_Transmit(&huart3,(uint8_t*)"Does it \r\n", 10, HAL_MAX_DELAY);
-	vTaskResume(alarmPollingHandle);
-	*/
-
-	/*Maybe not use this one since it plays with the scheduler
-	if( !xTaskResumeAll())
-	{
-		HAL_UART_Transmit(&huart3,(uint8_t*)"Does it work?\r\n", 15, HAL_MAX_DELAY);
-		taskYIELD();
-	}
-	*/
-
-	HAL_UART_Transmit(&huart3,(uint8_t*)"Does it \r\n", 10, HAL_MAX_DELAY);
 	//Deactivate the wake up timer (or else it would be call every 10s)
-	HAL_RTCEx_DeactivateWakeUpTimer(hrtc);
-
-	HAL_UART_Transmit(&huart3,(uint8_t*)"Does it work?\r\n", 15, HAL_MAX_DELAY);
+	//HAL_RTCEx_DeactivateWakeUpTimer(hrtc);
 }
 
 
@@ -555,13 +537,7 @@ void osRtxIdleThread (void) {
 
 
 void vApplicationIdleHook( void ){
-
 	//This function runs no matter what (because of idle task)
-
-	if (hook==1){
-
-		hook=0;
-	}
 }
 
 
@@ -612,76 +588,78 @@ void startPrintState(void *argument)
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
-	uint16_t state;
-	uint16_t lastState=0;
-  /* Infinite loop */
-  for(;;)
-  {
-	state = HAL_GPIO_ReadPin(LD1_GPIO_Port,LD1_Pin);
-	if (state!=lastState){
-		if (GPIO_PIN_SET == state) {
-			HAL_UART_Transmit(&huart3,(uint8_t*)"LED ON\r\n", 8, HAL_MAX_DELAY);
-		}
-		else{
-			HAL_UART_Transmit(&huart3,(uint8_t*)"LED OFF\r\n", 9, HAL_MAX_DELAY);
-		}
+
+	//If WU flag set, wake up procedure
+	  if (__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
+	  {
+		  __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);  // clear the flag
+
+		  /** display  the string **/
+		  char *str = "Wakeup from the STANDBY MODE\r\n";
+		  HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen (str), HAL_MAX_DELAY);
+
+		  /** Disable the WWAKEUP PIN **/
+		  HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);  // disable PA0
+
+		  /** Deactivate the RTC wakeup  **/
+		  //HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
+	  }
+
+
+	  osDelay(3000);
+
+while(hook!=1){osDelay(10);}
+
+	hook=0;
+
+	//Must be after alarm A was activated and before going to sleep
+
+	  	//Clear alarmA flag
+	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
+	while (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRAF) != RESET){
+		__HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRAF);
 	}
-	lastState=state;
-	osDelay(3000);
-
-	//if (flagA==1){
-
-				/*
-				//Setup RTC wake up timer
-				HAL_UART_Transmit(&huart3,"Setting up RTCW\r\n", 17, HAL_MAX_DELAY);
-				//Counter value =
-				//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x4E20, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-				if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x2806, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-				//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x500C, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-				//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-				{
-					Error_Handler();
-				}
-				*/
-
-				/*
-				__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
-				while (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRAF) != RESET){
-					__HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRAF);
-				}
-				__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
-				__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
-				*/
-
-				HAL_UART_Transmit(&huart3,(uint8_t*)"RTCS\r\n", 6, HAL_MAX_DELAY);
+	__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
+	__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
 
 
-				HAL_UART_Transmit(&huart3,"Suspend main\r\n", 14, HAL_MAX_DELAY);
-				osThreadSuspend(threadID[0]);
-				HAL_UART_Transmit(&huart3,"Suspend blinky\r\n", 16, HAL_MAX_DELAY);
-				osThreadSuspend(threadID[1]);
-				//HAL_UART_Transmit(&huart3,"Suspend printState\r\n", 19, HAL_MAX_DELAY);
-				//osThreadSuspend(threadID[2]);
-				//vTaskSuspend(blinkyTaskHandle);
-				//vTaskSuspend(NULL);
+	/* Clear the WU FLAG */
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+	/* clear the RTC Wake UP (WU) flag */
+	__HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&hrtc, RTC_FLAG_WUTF);
 
 
-				//HAL_SuspendTick();
 
-				//vTaskSuspendAll();// TODO Maybe not use this one since it suspend the scheduler instead of just the tasks
+	/* Enable the WAKEUP PIN */
+	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
 
-				//__WFI();
-				//HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
-				HAL_PWR_EnterSTANDBYMode();
-
-				HAL_UART_Transmit(&huart3,"Resume main\r\n", 13, HAL_MAX_DELAY);
-				osThreadResume(threadID[0]);
-				HAL_UART_Transmit(&huart3,"Resume blinky\r\n", 15, HAL_MAX_DELAY);
-				osThreadResume(threadID[1]);
-				//HAL_UART_Transmit(&huart3,"Resume printState\r\n", 19, HAL_MAX_DELAY);
-				//osThreadResume(threadID[2]);
+	/* enable the RTC Wakeup */
+	/*  RTC Wake-up Interrupt Generation:
+	Wake-up Time Base = (RTC_WAKEUPCLOCK_RTCCLK_DIV /(LSI))
+	==> WakeUpCounter = Wake-up Time / Wake-up Time Base
+	    	To configure the wake up timer to 5s the WakeUpCounter is set to 0x2710:
+	RTC_WAKEUPCLOCK_RTCCLK_DIV = RTCCLK_Div16 = 16
+	Wake-up Time Base = 16 /(32KHz) = 0.0005 seconds
+	==> WakeUpCounter = ~5s/0.0005s = 20000 = 0x2710
+	*/
+	//Setup RTC wake up timer
+	HAL_UART_Transmit(&huart3,"Setting up RTCW\r\n", 17, HAL_MAX_DELAY);
+	//Counter value =
+	//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x4E20, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+	//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x2806, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+	//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x500C, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+	//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+	//{
+	//	Error_Handler();
 	//}
-  }
+
+	HAL_UART_Transmit(&huart3,(uint8_t*)"RTCS\r\n", 6, HAL_MAX_DELAY);
+
+	//unsigned int sleep = osKernelSuspend();
+	//vTaskSuspendAll();
+	HAL_PWR_EnterSTANDBYMode();
+
+	print("Something went wrong")
 
   //In case it leaves the infinite loop
    osThreadTerminate(NULL);
@@ -702,6 +680,8 @@ void startAlarmPolling(void *argument)
 
 	//Add thread id to the list
 	threadID[0]=osThreadGetId();
+
+	print("start alarm polling\r\n");
 
 	char msg[10];
   /* Infinite loop */
