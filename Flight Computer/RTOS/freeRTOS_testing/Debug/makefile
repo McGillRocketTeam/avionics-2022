@@ -14,6 +14,7 @@ RM := rm -rf
 -include Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/subdir.mk
 -include Middlewares/Third_Party/FreeRTOS/Source/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
+-include Drivers/MRT_RTOS_f4xx/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include subdir.mk
@@ -65,8 +66,8 @@ all: main-build
 main-build: freeRTOS_testing.elf secondary-outputs
 
 # Tool invocations
-freeRTOS_testing.elf: $(OBJS) $(USER_OBJS) C:\Users\Jacoby\STM32CubeIDE\workspace_1.7.0\freeRTOS_testing\STM32F446ZETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "freeRTOS_testing.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jacoby\STM32CubeIDE\workspace_1.7.0\freeRTOS_testing\STM32F446ZETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="freeRTOS_testing.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+freeRTOS_testing.elf: $(OBJS) $(USER_OBJS) C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight\ Computer\avionics-2022\Flight\ Computer\RTOS\freeRTOS_testing\STM32F446ZETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "freeRTOS_testing.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight Computer\avionics-2022\Flight Computer\RTOS\freeRTOS_testing\STM32F446ZETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="freeRTOS_testing.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

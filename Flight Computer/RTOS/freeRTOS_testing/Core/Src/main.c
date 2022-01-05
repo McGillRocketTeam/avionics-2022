@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
+#include <MRT_RTOS.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -34,7 +34,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define print(s) HAL_UART_Transmit(&huart3,s, strlen(s), HAL_MAX_DELAY);
+//#define print(s) HAL_UART_Transmit(&huart3,s, strlen(s), HAL_MAX_DELAY);
 
 //INCLUDE_vTaskSuspend must be set to 1
 
@@ -44,10 +44,12 @@
 /* USER CODE BEGIN PM */
 
 //freeRTOS sleep processing macros
+/*
 #if configUSE_TICKLESS_IDLE == 1
 #define configPRE_SLEEP_PROCESSING PreSleepProcessing
 #define configPOST_SLEEP_PROCESSING PostSleppProcessing
 #endif
+*/
 
 //Set configUSE_IDLE_HOOK to 1 in FreeRTOSConfig.h
 
@@ -83,9 +85,6 @@ const osThreadAttr_t alarmPolling_attributes = {
 };
 /* USER CODE BEGIN PV */
 
-uint8_t flagA = 0;
-uint8_t flagB = 0;
-uint8_t hook = 0;
 osThreadId_t threadID[10];
 
 /* USER CODE END PV */
@@ -101,10 +100,6 @@ void startPrintState(void *argument);
 void startAlarmPolling(void *argument);
 
 /* USER CODE BEGIN PFP */
-
-void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc);
-void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc);
-void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc);
 
 /* USER CODE END PFP */
 
@@ -145,6 +140,13 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+
+  //With default alarm
+  MRT_SetupRTOS(huart3,1);
+
+  //With custim alarm
+  //MRT_SetupRTOS(huart3,0);
+  //MRT_CustomRTC(int values[]); //TODO or simply configure in .ioc
 
   /* USER CODE END 2 */
 
@@ -267,76 +269,14 @@ static void MX_RTC_Init(void)
 
   /* USER CODE END RTC_Init 0 */
 
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef sDate = {0};
-  RTC_AlarmTypeDef sAlarm = {0};
-
   /* USER CODE BEGIN RTC_Init 1 */
 
   /* USER CODE END RTC_Init 1 */
-  /** Initialize RTC Only
-  */
-  hrtc.Instance = RTC;
-  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = 127;
-  hrtc.Init.SynchPrediv = 255;
-  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
 
   /* USER CODE END Check_RTC_BKUP */
 
-  /** Initialize RTC and set the Time and Date
-  */
-  sTime.Hours = 0x0;
-  sTime.Minutes = 0x0;
-  sTime.Seconds = 0x15;
-  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x0;
-
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Enable the Alarm A
-  */
-  sAlarm.AlarmTime.Hours = 0x0;
-  sAlarm.AlarmTime.Minutes = 0x0;
-  sAlarm.AlarmTime.Seconds = 0x20;
-  sAlarm.AlarmTime.SubSeconds = 0x0;
-  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
-  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
-  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
-  sAlarm.AlarmDateWeekDay = 0x1;
-  sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Enable the WakeUp
-  */
-  /*
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 10, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  */
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -464,19 +404,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
-	HAL_UART_Transmit(&huart3,(uint8_t*)"AlarmA\r\n", 8, HAL_MAX_DELAY);
-	flagA = 1;
-	hook=1;
-}
-
-void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
-	HAL_UART_Transmit(&huart3,(uint8_t*)"AlarmB\r\n", 8, HAL_MAX_DELAY);
-	flagB = 1;
-}
-
-void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
-}
 
 /* USER CODE END 4 */
 
@@ -524,101 +451,13 @@ void startPrintState(void *argument)
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
+	osDelay(3000);
+	MRT_StandByMode(10);
 
-	//If WU flag set, wake up procedure
-	  if (__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
-	  {
-		  __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);  // clear the flag
+	HAL_UART_Transmit(&huart3,"Something went wrong\r\n",22,HAL_MAX_DELAY);
 
-		  /** display  the string **/
-		  char *str = "Wakeup from the STANDBY MODE\r\n";
-		  HAL_UART_Transmit(&huart3, (uint8_t *)str, strlen (str), HAL_MAX_DELAY);
-
-		  /** Disable the WWAKEUP PIN **/
-		  HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);  // disable PA0
-
-		  /** Deactivate the RTC wakeup  **/
-		  HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
-	  }
-
-
-	  osDelay(3000);
-
-while(hook!=1){osDelay(10);}
-
-	hook=0;
-
-	//Must be after alarm A was activated and before going to sleep
-
-	  	//Clear alarmA flag
-	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
-	while (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRAF) != RESET){
-		__HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRAF);
-	}
-	__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
-	__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
-
-
-  	//Clear alarmB flag
-	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
-	while (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRBF) != RESET){
-		__HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRBF);
-	}
-	__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
-	__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
-
-
-	/* Clear the WU FLAG */
-	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-	/* clear the RTC Wake UP (WU) flag */
-	__HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&hrtc, RTC_FLAG_WUTF);
-
-
-	/* Enable the WAKEUP PIN */
-	//HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
-
-	/* enable the RTC Wakeup */
-	/*  RTC Wake-up Interrupt Generation:
-	Wake-up Time Base = (RTC_WAKEUPCLOCK_RTCCLK_DIV /(LSI))
-	==> WakeUpCounter = Wake-up Time / Wake-up Time Base
-	    	To configure the wake up timer to 5s the WakeUpCounter is set to 0x2710:
-	RTC_WAKEUPCLOCK_RTCCLK_DIV = RTCCLK_Div16 = 16
-	Wake-up Time Base = 16 /(32KHz) = 0.0005 seconds
-	==> WakeUpCounter = ~5s/0.0005s = 20000 = 0x2710
-	*/
-	//Setup RTC wake up timer
-	HAL_UART_Transmit(&huart3,"Setting up RTCW\r\n", 17, HAL_MAX_DELAY);
-	//Counter value =
-	//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x4E20, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-	//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x2806, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-	//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x500C, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-	//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-	//{
-	//	Error_Handler();
-	//}
-
-
-	//THIS ONE DOESN'T ALLOW EXTI INTERRUPT BUT WHEN YOU ADD _IT IT DOES (see next one)
-	/*
-	if (HAL_RTCEx_SetWakeUpTimer(&hrtc, 120, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
-	{
-	  Error_Handler();
-	}
-	*/
-
-	if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc,120, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
-	{
-	  Error_Handler();
-	}
-
-	HAL_UART_Transmit(&huart3,(uint8_t*)"RTCS\r\n", 6, HAL_MAX_DELAY);
-
-	HAL_PWR_EnterSTANDBYMode();
-
-	print("Something went wrong")
-
-  //In case it leaves the infinite loop
-   osThreadTerminate(NULL);
+    //In case it leaves the infinite loop
+    osThreadTerminate(NULL);
 
   /* USER CODE END startPrintState */
 }
@@ -637,19 +476,18 @@ void startAlarmPolling(void *argument)
 	//Add thread id to the list
 	threadID[0]=osThreadGetId();
 
-	print("start alarm polling\r\n");
+	HAL_UART_Transmit(&huart3,"Start alarm polling\r\n",21,HAL_MAX_DELAY);
 
 	char msg[10];
   /* Infinite loop */
   for(;;)
   {
-	sprintf(msg,"FlagA: %i, FlagB: %i\r\n",flagA,flagB);
+	sprintf(msg,"FlagA: %u, FlagB: %u\r\n",flagA,flagB);
 	HAL_UART_Transmit(&huart3,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
 	if (flagA==1){
 		HAL_UART_Transmit(&huart3,(uint8_t*)"FlagA==1\r\n", 10, HAL_MAX_DELAY);
 		flagA=0;
-		hook=1;
 	}
 
 	if (flagB==1){

@@ -41,8 +41,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-RTC_HandleTypeDef hrtc;
-
 UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -63,8 +61,6 @@ const osThreadAttr_t blinkyTask_attributes = {
 };
 /* USER CODE BEGIN PV */
 
-uint8_t flagA = 0;
-
 osThreadId_t threadID[10];
 
 /* USER CODE END PV */
@@ -74,14 +70,10 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
-static void MX_RTC_Init(void);
 void StartMainTask(void *argument);
 void StartBlinkyTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-
-void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc);
-void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc);
 
 /* USER CODE END PFP */
 
@@ -120,8 +112,13 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
-  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+
+  MRT_SetupRTOS(huart3,1);
+
+  //With custim alarm
+  //MRT_SetupRTOS(huart3,0);
+  //MRT_CustomRTC(int values[]); //TODO or simply configure in .ioc
 
   /* USER CODE END 2 */
 
@@ -190,9 +187,8 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -217,86 +213,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief RTC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_RTC_Init(void)
-{
-
-  /* USER CODE BEGIN RTC_Init 0 */
-
-  /* USER CODE END RTC_Init 0 */
-
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef sDate = {0};
-  RTC_AlarmTypeDef sAlarm = {0};
-
-  /* USER CODE BEGIN RTC_Init 1 */
-
-  /* USER CODE END RTC_Init 1 */
-  /** Initialize RTC Only
-  */
-  hrtc.Instance = RTC;
-  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = 127;
-  hrtc.Init.SynchPrediv = 255;
-  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* USER CODE BEGIN Check_RTC_BKUP */
-
-  /* USER CODE END Check_RTC_BKUP */
-
-  /** Initialize RTC and set the Time and Date
-  */
-  sTime.Hours = 0x0;
-  sTime.Minutes = 0x0;
-  sTime.Seconds = 0x0;
-  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x0;
-
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Enable the Alarm A
-  */
-  sAlarm.AlarmTime.Hours = 0x0;
-  sAlarm.AlarmTime.Minutes = 0x0;
-  sAlarm.AlarmTime.Seconds = 0x7;
-  sAlarm.AlarmTime.SubSeconds = 0x0;
-  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
-  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
-  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
-  sAlarm.AlarmDateWeekDay = 0x1;
-  sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RTC_Init 2 */
-
-  /* USER CODE END RTC_Init 2 */
-
 }
 
 /**
@@ -420,55 +336,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-
-
-
-
-
-
-void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
-	HAL_UART_Transmit(&huart3,(uint8_t*)"AlarmA\r\n", 8, HAL_MAX_DELAY);
-	flagA = 1;
-}
-
-
-void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
-
-
-	//SystemClock_Config();
-	//HAL_ResumeTick();
-
-
-	HAL_UART_Transmit(&huart3,"RTCW callback\r\n", 15, HAL_MAX_DELAY);
-
-
-	HAL_UART_Transmit(&huart3,"Suspend main\r\n", 14, HAL_MAX_DELAY);
-	osThreadResume(threadID[0]);
-	HAL_UART_Transmit(&huart3,"Suspend blinky\r\n", 16, HAL_MAX_DELAY);
-	osThreadResume(threadID[1]);
-
-	/*Maybe not use this one since it plays with the scheduler
-	if( !xTaskResumeAll())
-	{
-		HAL_UART_Transmit(&huart3,(uint8_t*)"Does it work?\r\n", 15, HAL_MAX_DELAY);
-		taskYIELD();
-	}
-	*/
-
-	HAL_UART_Transmit(&huart3,"Does it \r\n", 10, HAL_MAX_DELAY);
-	//Deactivate the wake up timer (or else it would be call every 10s)
-	HAL_RTCEx_DeactivateWakeUpTimer(&hrtc);
-
-	HAL_UART_Transmit(&huart3,"Does it work?\r\n", 15, HAL_MAX_DELAY);
-}
-
-
-
-
-
-
-
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartMainTask */
@@ -482,45 +349,13 @@ void StartMainTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
 
-	//Add thread id to the list
-	threadID[0]=osThreadGetId();
+	while(flagA!=1) osDelay(10);
 
-  /* Infinite loop */
-	char msg[10];
-	  /* Infinite loop */
-	  for(;;)
-	  {
-		sprintf(msg,"FlagA: %i\r\n",flagA);
-		HAL_UART_Transmit(&huart3,msg, strlen(msg), HAL_MAX_DELAY);
-
-		if (flagA==1){
-			HAL_UART_Transmit(&huart3,"FlagA==1\r\n", 10, HAL_MAX_DELAY);
-			flagA=0;
+	MRT_StandByMode(10);
 
 
-
-			//Setup RTC wake up timer
-			HAL_UART_Transmit(&huart3,"Setting up RTCW\r\n", 17, HAL_MAX_DELAY);
-			//Counter value =
-			//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x4E20, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-			//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x2806, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-			//if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0x500C, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-			if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-			{
-				Error_Handler();
-			}
-
-
-			osThreadSuspend(threadID[1]);
-			osThreadSuspend(osThreadGetId());
-			//vTaskSuspend(blinkyTaskHandle);
-			//vTaskSuspend(NULL);
-		}
-	    osDelay(1000);
-	  }
-
-	  //In case it leaves the infinite loop
-	    osThreadTerminate(NULL);
+	//In case it leaves the infinite loop
+	osThreadTerminate(NULL);
 
   /* USER CODE END 5 */
 }
