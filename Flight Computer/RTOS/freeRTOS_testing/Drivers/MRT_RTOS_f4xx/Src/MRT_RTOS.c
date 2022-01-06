@@ -7,21 +7,19 @@
 
 #include <MRT_RTOS.h>
 
-uint8_t flagA = 0;
-uint8_t flagB = 0;
-
 RTC_HandleTypeDef hrtc;
 
 struct MRT_RTOS rtos;
 
 
-void MRT_SetupRTOS(UART_HandleTypeDef uart, uint8_t defAlarm){
-	rtos.huart = uart;
-	MRT_WUProcedure();
-	if (defAlarm==1) MRT_DefaultRTC();
-}
+uint8_t flagA = 0;
+uint8_t flagB = 0;
 
+RTC_TimeTypeDef sTime = {0};
+RTC_DateTypeDef sDate = {0};
+RTC_AlarmTypeDef sAlarm = {0};
 
+/*You cannot put these in the user callbacks section and I don't know why (can put in user begin 4)*/
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
 	HAL_UART_Transmit(&(rtos.huart),(uint8_t*)"AlarmA\r\n", 8, HAL_MAX_DELAY);
 	flagA = 1;
@@ -34,6 +32,31 @@ void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
 
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
 }
+
+
+
+
+void MRT_SetupRTOS(UART_HandleTypeDef uart, uint8_t defAlarm){
+	HAL_UART_Transmit(&(rtos.huart),"Setting up RTOS\r\n", 17, HAL_MAX_DELAY);
+	rtos.huart = uart;
+	MRT_WUProcedure();
+	if (defAlarm==1) MRT_DefaultRTC();
+}
+
+/*
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
+	HAL_UART_Transmit(&(rtos.huart),(uint8_t*)"AlarmA\r\n", 8, HAL_MAX_DELAY);
+	flagA = 1;
+}
+
+void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
+	HAL_UART_Transmit(&(rtos.huart),(uint8_t*)"AlarmB\r\n", 8, HAL_MAX_DELAY);
+	flagB = 1;
+}
+
+void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
+}
+*/
 
 
 void MRT_WUProcedure(void){
@@ -60,6 +83,7 @@ void MRT_WUProcedure(void){
 void MRT_ClearFlags(void){
 	//Must be after alarm A was activated and before going to sleep
 
+	HAL_UART_Transmit(&(rtos.huart),"Clearing the flags\r\n", 20, HAL_MAX_DELAY);
 	  	//Clear alarmA flag
 	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
 	while (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRAF) != RESET){
@@ -132,11 +156,7 @@ void MRT_DefaultRTC(void){
 
 	/*Can be setup using the ioc files*/
 
-	  RTC_TimeTypeDef sTime = {0};
-	  RTC_DateTypeDef sDate = {0};
-	  RTC_AlarmTypeDef sAlarm = {0};
-
-
+	  HAL_UART_Transmit(&(rtos.huart),"Initializing default RTC\r\n", 26, HAL_MAX_DELAY);
 	  /** Initialize RTC and set the Time and Date
 	  */
 	  sTime.Hours = 0x0;
@@ -163,7 +183,7 @@ void MRT_DefaultRTC(void){
 	  */
 	  sAlarm.AlarmTime.Hours = 0x0;
 	  sAlarm.AlarmTime.Minutes = 0x0;
-	  sAlarm.AlarmTime.Seconds = 0x40;
+	  sAlarm.AlarmTime.Seconds = 0x20;
 	  sAlarm.AlarmTime.SubSeconds = 0x0;
 	  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 	  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
