@@ -16,6 +16,7 @@ RM := rm -rf
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Drivers/MRT_RTOS_f4xx/Src/subdir.mk
 -include Drivers/MRT_Iridium_f4xx/Src/subdir.mk
+-include Drivers/MRT_ISM330DLC_f4xx/Src/subdir.mk
 -include Drivers/MRT_Helpers_f4xx/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
@@ -84,7 +85,7 @@ main-build: FC_v1.elf secondary-outputs
 
 # Tool invocations
 FC_v1.elf: $(OBJS) $(USER_OBJS) C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight\ Computer\avionics-2022\Flight\ Computer\Release\STM32F446ZETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "FC_v1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight Computer\avionics-2022\Flight Computer\Release\STM32F446ZETX_FLASH.ld" -Wl,-Map="FC_v1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+	arm-none-eabi-g++ -o "FC_v1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight Computer\avionics-2022\Flight Computer\Release\STM32F446ZETX_FLASH.ld" -Wl,-Map="FC_v1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

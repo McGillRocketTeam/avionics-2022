@@ -27,6 +27,7 @@
 #include <MRT_RTOS.h>
 #include <IridiumSBD_Static_API.h>
 #include <MRT_Helpers.h>
+#include "ism330dlc_reg.h"
 
 /* USER CODE END Includes */
 
@@ -68,10 +69,10 @@ const osThreadAttr_t Iridium02_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for LSM03 */
-osThreadId_t LSM03Handle;
-const osThreadAttr_t LSM03_attributes = {
-  .name = "LSM03",
+/* Definitions for ISM330DLC03 */
+osThreadId_t ISM330DLC03Handle;
+const osThreadAttr_t ISM330DLC03_attributes = {
+  .name = "ISM330DLC03",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
@@ -89,7 +90,7 @@ static void MX_RTC_Init(void);
 static void MX_I2C1_Init(void);
 void StartDefaultTask(void *argument);
 void StartIridium02(void *argument);
-void StartLSM03(void *argument);
+void StartISM330DLC03(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -137,22 +138,36 @@ int main(void)
 
   //TODO
   /*
+   * In general:
+   *-Activate I2C1 and use pins PB8 and PB9
+   *-Activate usart3 and use pins PD9 and PD8 and set the baud rate
+   *-Activate freeRTOS
+   *-Change SysTic to any other timer
+   */
+
+  /*
    * For Iridium:
    * -Set the project as c++
-   * -Activate I2C1 and use pins PB8 and PB9
    */
-  MRT_Static_Iridium_Setup(huart3);
+  //MRT_Static_Iridium_Setup(huart3);
+
+  /*
+   * For ISM330DLC
+   *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
+   */
+  MRT_ISM330DLC_Setup(&huart3,hi2c1);
 
   /*
    * For RTOS
    * -Activate RTC, calendar and internal alarm A (don't forget to activate NVIC EXTI)
-   * -Activate freeRTOS
    * -Define what you want in the alarms callback functions (check the .h file)
    * -(Optional) Setup alarm A and the clock time in .ioc
    * The rest have been taken care of
    * You can access the flag of both alarm A and B with the variables flagA and flagB
    */
   MRT_SetupRTOS(huart3,10,0);
+
+  HAL_UART_Transmit(&huart3,"Starting FC\r\n",13,HAL_MAX_DELAY);
 
   /* USER CODE END 2 */
 
@@ -182,8 +197,8 @@ int main(void)
   /* creation of Iridium02 */
   Iridium02Handle = osThreadNew(StartIridium02, NULL, &Iridium02_attributes);
 
-  /* creation of LSM03 */
-  LSM03Handle = osThreadNew(StartLSM03, NULL, &LSM03_attributes);
+  /* creation of ISM330DLC03 */
+  ISM330DLC03Handle = osThreadNew(StartISM330DLC03, NULL, &ISM330DLC03_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -437,11 +452,17 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	/*
+	if (flagA==1){
+		MRT_Static_Iridium_Shutdown();
+		MRT_StandByMode(10);
+	}
+	*/
     osDelay(1);
   }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&huart3,"Something went wrong\r\n",22,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart3,"Something went wrong with thread 0\r\n",36,HAL_MAX_DELAY);
   osThreadTerminate(NULL);
 
   /* USER CODE END 5 */
@@ -461,6 +482,7 @@ void StartIridium02(void *argument)
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
+	/*
 	MRT_Static_Iridium_CSQ();
 	MRT_Static_Iridium_getIMEI();
 
@@ -469,46 +491,51 @@ void StartIridium02(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	MRT_Static_Iridium_getTime();
+	//MRT_Static_Iridium_getTime();
     osDelay(5000);
   }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&huart3,"Something went wrong\r\n",22,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart3,"Something went wrong with thread 2\r\n",36,HAL_MAX_DELAY);
   osThreadTerminate(NULL);
 
   /* USER CODE END StartIridium02 */
 }
 
-/* USER CODE BEGIN Header_StartLSM03 */
+/* USER CODE BEGIN Header_StartISM330DLC03 */
 /**
-* @brief Function implementing the LSM03 thread.
+* @brief Function implementing the ISM330DLC03 thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartLSM03 */
-void StartLSM03(void *argument)
+/* USER CODE END Header_StartISM330DLC03 */
+void StartISM330DLC03(void *argument)
 {
-  /* USER CODE BEGIN StartLSM03 */
-
+  /* USER CODE BEGIN StartISM330DLC03 */
 	//Add thread id to the list
 	threadID[3]=osThreadGetId();
 
   /* Infinite loop */
   for(;;)
   {
-	if (flagA==1){
-		MRT_Static_Iridium_Shutdown();
-		MRT_StandByMode(10);
-	}
-    osDelay(1);
+	osDelay(1000);
+	ISM330DLC_getAcceleration(data_raw_acceleration,acceleration_mg,&dev_ctx);
+	sprintf((char *)tx_buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
+	HAL_UART_Transmit(&huart3, tx_buffer, strlen(tx_buffer), HAL_MAX_DELAY);
+
+	ISM330DLC_getAngularRate(data_raw_angular_rate,angular_rate_mdps,&dev_ctx);
+	sprintf((char *)tx_buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
+	HAL_UART_Transmit(&huart3, tx_buffer, strlen(tx_buffer), HAL_MAX_DELAY);
+
+	ISM330DLC_getTemperature(data_raw_temperature,temperature_degC,&dev_ctx);
+	sprintf((char *)tx_buffer, "Temperature [degC]:%6.2f\r\n", temperature_degC[0]);
+	HAL_UART_Transmit(&huart3, tx_buffer, strlen(tx_buffer), HAL_MAX_DELAY);
   }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&huart3,"Something went wrong\r\n",22,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart3,"Something went wrong with thread 3\r\n",36,HAL_MAX_DELAY);
   osThreadTerminate(NULL);
-
-  /* USER CODE END StartLSM03 */
+  /* USER CODE END StartISM330DLC03 */
 }
 
 /**

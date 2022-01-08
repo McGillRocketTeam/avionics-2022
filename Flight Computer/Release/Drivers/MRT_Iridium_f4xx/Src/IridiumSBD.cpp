@@ -1791,7 +1791,7 @@ uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart){
 	//Setup default IMEI to 000000000000000 (no IMEI)
 	IMEI="000000000000000";
 
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) "End of setup\r\n", 14, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "End of setup\r\n\r\n", 16, HAL_MAX_DELAY);
 
 	return HAL_OK;
 }
