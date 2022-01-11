@@ -47,9 +47,14 @@ float acceleration[] = {0, 0, 0};
 float angular_rate[]= {0, 0, 0};
 float pressure = 0;
 float temperature = 0;
-float latitude;
-float longitude;
+double latitude;
+double longitude;
 float time;
+
+FATFS FatFs; 	//Fatfs handle
+FIL fil; 		//File handle
+FRESULT fres; //Result after operations
+static uint8_t msg_buffer[1000];
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -79,6 +84,13 @@ const osThreadAttr_t pollSensors_attributes = {
   .stack_size = 1024 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for saveData */
+osThreadId_t saveDataHandle;
+const osThreadAttr_t saveData_attributes = {
+  .name = "saveData",
+  .stack_size = 1024 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -95,6 +107,7 @@ static void MX_USART6_UART_Init(void);
 static void MX_UART8_Init(void);
 void printSensorsFunc(void *argument);
 void pollSensorsFunction(void *argument);
+void saveDataFunc(void *argument);
 
 /* USER CODE BEGIN PFP */
 // LSM6DSR functions
@@ -180,6 +193,9 @@ int main(void)
 
   /* creation of pollSensors */
   pollSensorsHandle = osThreadNew(pollSensorsFunction, NULL, &pollSensors_attributes);
+
+  /* creation of saveData */
+  saveDataHandle = osThreadNew(saveDataFunc, NULL, &saveData_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -671,9 +687,9 @@ void printSensorsFunc(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	myprintf("ACCEL: %f, %f, %f\r\n", acceleration[0], acceleration[1], acceleration[2]);
-	myprintf("IN GPS: %f, %f, %f\r\n", latitude, longitude, time);
-    osDelay(2000);
+	//myprintf("ACCEL: %f, %f, %f\r\n", acceleration[0], acceleration[1], acceleration[2]);
+	//myprintf("GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
+    osDelay(1000);
   }
   /* USER CODE END 5 */
 }
@@ -694,10 +710,57 @@ void pollSensorsFunction(void *argument)
 	get_acceleration(dev_ctx_lsm, acceleration);
 	get_angvelocity(dev_ctx_lsm, angular_rate);
 	GPS_Poll(&latitude, &longitude, &time);
-	//myprintf("IN GPS: %f, %f, %f\r\n", latitude, longitude, time);
-    osDelay(1000);
+	myprintf("IN GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
+    osDelay(100);
   }
   /* USER CODE END pollSensorsFunction */
+}
+
+/* USER CODE BEGIN Header_saveDataFunc */
+/**
+* @brief Function implementing the saveData thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_saveDataFunc */
+void saveDataFunc(void *argument)
+{
+  /* USER CODE BEGIN saveDataFunc */
+  /* Infinite loop */
+  HAL_Delay(1000);
+  BYTE writeBuf[100];
+  UINT bytesWrote;
+  //Open the file system
+  /*
+  fres = f_mount(&FatFs, "", 1); //1=mount now
+  if (fres != FR_OK) {
+	myprintf("f_mount error (%i)\r\n", fres);
+	while(1);
+  }
+
+  fres = f_open(&fil, "write_10.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+  if(fres == FR_OK) {
+	myprintf("I was able to open 'write.txt' for writing\r\n");
+  } else {
+	myprintf("f_open error (%i)\r\n", fres);
+  }
+  */
+  for(;;)
+  {
+	  /*
+	  sprintf(writeBuf, "GPS: %f, %f, %f\r\n", latitude, longitude, time);
+	  fres = f_write(&fil, writeBuf, strlen(writeBuf), &bytesWrote);
+	  if(fres == FR_OK) {
+		myprintf("Wrote %i bytes to 'write.txt'!\r\n", bytesWrote);
+	  } else {
+		myprintf("f_write error (%i)\r\n");
+	  }
+	  */
+    osDelay(1000);
+  }
+  f_close(&fil);
+  f_mount(NULL, "", 0);
+  /* USER CODE END saveDataFunc */
 }
 
 /**

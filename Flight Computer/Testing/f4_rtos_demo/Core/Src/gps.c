@@ -35,12 +35,13 @@
 //#include <usart.h>
 #include "gps.h"
 #include "main.h"
+#include "sd_card.h"
 
 #if (GPS_DEBUG == 1)
 #include <usbd_cdc_if.h>
 #endif
 
-uint8_t rx_buffer[100];
+uint8_t rx_buffer[75];
 uint16_t rx_current = 0;
 uint8_t rx_index = 0;
 
@@ -57,19 +58,12 @@ void GPS_print(char *data){
 }
 #endif
 
-void GPS_Poll(float *latitude, float *longitude, float *time)
+void GPS_Poll(double *latitude, double *longitude, float *time)
 {
-	uint16_t max_loop_count = 75;
-	uint16_t max_skip_count = 75;
+	uint16_t max_loop_count = 1000;
 	uint16_t loop_count = 0;
 	int done = 0;
-	for(int i = 0; i < max_skip_count; i++){
-		HAL_UART_Receive(GPS_USART, (uint8_t*)&rx_current, 1, 100);
-		if(rx_current == '$'){
-			rx_buffer[rx_index++] = rx_current;
-			i = max_skip_count;
-		}
-	}
+
 	while(loop_count < max_loop_count && !done){
 		HAL_UART_Receive(GPS_USART, (uint8_t*)&rx_current, 1, 100);
 		//HAL_UART_Transmit(&huart8, (uint8_t*)&rx_current, 1, 100);
@@ -82,9 +76,11 @@ void GPS_Poll(float *latitude, float *longitude, float *time)
 		} else {
 			if(GPS_validate((char*) rx_buffer)){
 				if(GPS_parse((char*) rx_buffer)){
+					//myprintf("%s\n",rx_buffer);
 					*latitude = GPS.dec_latitude;
 					*longitude = GPS.dec_longitude;
 					*time = GPS.utc_time;
+					//myprintf("LATITUDE: %f, LONGITUDE: %f\n", GPS.dec_latitude, GPS.dec_longitude);
 					done = 1;
 				}
 			}
@@ -148,14 +144,14 @@ int GPS_validate(char *nmeastr){
 
 int GPS_parse(char *GPSstrParse){
     if(!strncmp(GPSstrParse, "$GNGGA", 6)){
-    	if (sscanf(GPSstrParse, "$GNGGA,%f,%f,%c,%f,%c,%d,%d,%f,%f,%c", &GPS.utc_time, &GPS.nmea_latitude, &GPS.ns, &GPS.nmea_longitude, &GPS.ew, &GPS.lock, &GPS.satelites, &GPS.hdop, &GPS.msl_altitude, &GPS.msl_units) >= 1){
+    	if (sscanf(GPSstrParse, "$GNGGA,%f,%lf,%c,%lf,%c,%d,%d,%f,%f,%c", &GPS.utc_time, &GPS.nmea_latitude, &GPS.ns, &GPS.nmea_longitude, &GPS.ew, &GPS.lock, &GPS.satelites, &GPS.hdop, &GPS.msl_altitude, &GPS.msl_units) >= 1){
     		GPS.dec_latitude = GPS_nmea_to_dec(GPS.nmea_latitude, GPS.ns);
     		GPS.dec_longitude = GPS_nmea_to_dec(GPS.nmea_longitude, GPS.ew);
     		return 1;
     	}
     }
     else if (!strncmp(GPSstrParse, "$GNRMC", 6)){
-    	if(sscanf(GPSstrParse, "$GNRMC,%f,%f,%c,%f,%c,%f,%f,%d", &GPS.utc_time, &GPS.nmea_latitude, &GPS.ns, &GPS.nmea_longitude, &GPS.ew, &GPS.speed_k, &GPS.course_d, &GPS.date) >= 1){
+    	if(sscanf(GPSstrParse, "$GNRMC,%f,%lf,%c,%lf,%c,%f,%f,%d", &GPS.utc_time, &GPS.nmea_latitude, &GPS.ns, &GPS.nmea_longitude, &GPS.ew, &GPS.speed_k, &GPS.course_d, &GPS.date) >= 1){
     		GPS.dec_latitude = GPS_nmea_to_dec(GPS.nmea_latitude, GPS.ns);
     		GPS.dec_longitude = GPS_nmea_to_dec(GPS.nmea_longitude, GPS.ew);
     		return 1;
@@ -164,7 +160,7 @@ int GPS_parse(char *GPSstrParse){
 
     }
     else if (!strncmp(GPSstrParse, "$GNGLL", 6)){
-        if(sscanf(GPSstrParse, "$GNGLL,%f,%c,%f,%c,%f,%c", &GPS.nmea_latitude, &GPS.ns, &GPS.nmea_longitude, &GPS.ew, &GPS.utc_time, &GPS.gll_status) >= 1){
+        if(sscanf(GPSstrParse, "$GNGLL,%lf,%c,%lf,%c,%f,%c", &GPS.nmea_latitude, &GPS.ns, &GPS.nmea_longitude, &GPS.ew, &GPS.utc_time, &GPS.gll_status) >= 1){
         	GPS.dec_latitude = GPS_nmea_to_dec(GPS.nmea_latitude, GPS.ns);
         	GPS.dec_longitude = GPS_nmea_to_dec(GPS.nmea_longitude, GPS.ew);
         	return 1;
@@ -178,11 +174,11 @@ int GPS_parse(char *GPSstrParse){
     return 0;
 }
 
-float GPS_nmea_to_dec(float deg_coord, char nsew) {
+double GPS_nmea_to_dec(double deg_coord, char nsew) {
     int degree = (int)(deg_coord/100);
-    float minutes = deg_coord - degree*100;
-    float dec_deg = minutes / 60;
-    float decimal = degree + dec_deg;
+    double minutes = deg_coord - degree*100;
+    double dec_deg = minutes / 60;
+    double decimal = degree + dec_deg;
     if (nsew == 'S' || nsew == 'W') { // return negative
         decimal *= -1;
     }
