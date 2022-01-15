@@ -52,11 +52,25 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
+ ../FATFS/Target/user_diskio_spi.h \
+ ../Middlewares/Third_Party/FatFs/src/integer.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
- ../USB_DEVICE/Target/usbd_conf.h ../Core/Inc/i2c_sensor_functions.h \
- ../Core/Inc/main.h ../Core/Inc/lsm6dsl_reg.h ../Core/Inc/lps22hh_reg.h \
- ../Core/Inc/sd_card.h
+ ../USB_DEVICE/Target/usbd_conf.h ../USB_DEVICE/App/usbd_cdc_if.h \
+ ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h \
+ ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
+ ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
+ ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
+ ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
+ ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
+ ../Core/Inc/i2c_sensor_functions.h ../Core/Inc/main.h \
+ ../Core/Inc/lsm6dsl_reg.h ../Core/Inc/lps22hh_reg.h \
+ ../Core/Inc/sd_card.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
+ ../Core/Inc/gps.h ../Core/Inc/MAX31855.h
 
 ../Core/Inc/main.h:
 
@@ -172,11 +186,31 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../FATFS/Target/user_diskio.h:
 
+../FATFS/Target/user_diskio_spi.h:
+
+../Middlewares/Third_Party/FatFs/src/integer.h:
+
+../Middlewares/Third_Party/FatFs/src/diskio.h:
+
 ../USB_DEVICE/App/usb_device.h:
 
 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
 
 ../USB_DEVICE/Target/usbd_conf.h:
+
+../USB_DEVICE/App/usbd_cdc_if.h:
+
+../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h:
+
+../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
+
+../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
+
+../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h:
+
+../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
+
+../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h:
 
 ../Core/Inc/i2c_sensor_functions.h:
 
@@ -187,3 +221,13 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/lps22hh_reg.h:
 
 ../Core/Inc/sd_card.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
+
+../Core/Inc/gps.h:
+
+../Core/Inc/MAX31855.h:
