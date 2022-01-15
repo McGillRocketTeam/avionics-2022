@@ -43,7 +43,6 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
@@ -57,7 +56,6 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -95,17 +93,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART3_UART_Init();
+  MX_USART3_UART_Init(); // Serial monitor
   MX_I2C1_Init();
-  MX_USART2_UART_Init();
-  MX_UART4_Init();
+  MX_USART2_UART_Init(); // XTend DIn, DOut, !CTS
   /* USER CODE BEGIN 2 */
 
   uint8_t Start[] = "Starting XTend\r\n";
   HAL_UART_Transmit(&huart3,Start,16,HAL_MAX_DELAY);
-
-  uint8_t Msg[] = "abcdefghijklmnopqrstuvwxyz hell\0";
-  	  HAL_UART_Transmit(&huart2,Msg,32,HAL_Delay);
 
   /* USER CODE END 2 */
 
@@ -113,13 +107,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  /*uint8_t Msg[] = "abcdefghijklmnopqrstuvwxyz";
-	  HAL_UART_Transmit(&huart2,Msg,26,HAL_Delay);
+	  uint8_t Msg[] = "hello!\r\n";
+	  HAL_UART_Transmit(&huart2,Msg,8,HAL_MAX_DELAY);
 
 	  uint8_t Sent[] = "Msg Sent\r\n";
 	  HAL_UART_Transmit(&huart3,Sent,10,HAL_MAX_DELAY);
 
-	  HAL_Delay(10000);*/
+	  HAL_Delay(10000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -207,39 +201,6 @@ static void MX_I2C1_Init(void)
 }
 
 /**
-  * @brief UART4 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_UART4_Init(void)
-{
-
-  /* USER CODE BEGIN UART4_Init 0 */
-
-  /* USER CODE END UART4_Init 0 */
-
-  /* USER CODE BEGIN UART4_Init 1 */
-
-  /* USER CODE END UART4_Init 1 */
-  huart4.Instance = UART4;
-  huart4.Init.BaudRate = 9600;
-  huart4.Init.WordLength = UART_WORDLENGTH_8B;
-  huart4.Init.StopBits = UART_STOPBITS_1;
-  huart4.Init.Parity = UART_PARITY_NONE;
-  huart4.Init.Mode = UART_MODE_TX_RX;
-  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN UART4_Init 2 */
-
-  /* USER CODE END UART4_Init 2 */
-
-}
-
-/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -259,9 +220,9 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.Mode = UART_MODE_TX;
+  huart2.Init.HwFlowCtl = !UART_HWCONTROL_CTS; // CTS bit is inverted
+  huart2.Init.OverSampling = UART_OVERSAMPLING_8;
   if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
@@ -312,11 +273,20 @@ static void MX_USART3_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pins : PC10 PC11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF8_UART4;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 }
 
