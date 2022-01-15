@@ -47,7 +47,7 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-char msg[100];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,8 +56,9 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
-/* USER CODE BEGIN PFP */
 
+/* USER CODE BEGIN PFP */
+static void XTend_Transmit(char *Msg);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -99,7 +100,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   uint8_t Start[] = "Starting XTend\r\n";
-  HAL_UART_Transmit(&huart3,Start,16,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart3, Start, 16, HAL_MAX_DELAY);
+
+  XTend_Transmit("You would not believe your eyes\r\n");
 
   /* USER CODE END 2 */
 
@@ -107,13 +110,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  uint8_t Msg[] = "hello!\r\n";
-	  HAL_UART_Transmit(&huart2,Msg,8,HAL_MAX_DELAY);
 
-	  uint8_t Sent[] = "Msg Sent\r\n";
-	  HAL_UART_Transmit(&huart3,Sent,10,HAL_MAX_DELAY);
+	  uint8_t Msg[] = "If ten thousand fireflies\r\n";
+	  HAL_UART_Transmit(&huart2, Msg, 27, HAL_Delay);
 
-	  HAL_Delay(10000);
+	  HAL_Delay(30000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -291,12 +292,14 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void StartXTend(void *arguments){
-	uint8_t Buffer[25] = {0};
-	uint8_t StartMSG[] = "Starting \r\n";
-	HAL_UART_Transmit(&huart3, StartMSG, strlen(StartMSG), HAL_MAX_DELAY);
-	HAL_Delay(1000);
+/**
+ * @brief   Function to transmit message to XTend
+ * @param  Msg : char array (range 1-800)
+ */
+static void XTend_Transmit(char *Msg){
+	HAL_UART_Transmit(&huart2, Msg, strlen(Msg), HAL_Delay);
 }
+
 /* USER CODE END 4 */
 
 /**

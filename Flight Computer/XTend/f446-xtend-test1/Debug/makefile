@@ -61,8 +61,8 @@ all: main-build
 main-build: f446-xtend-test1.elf secondary-outputs
 
 # Tool invocations
-f446-xtend-test1.elf: $(OBJS) $(USER_OBJS) C:\Users\ojett\Documents\McGill\MRT\f446-xtend-test1\STM32F446ZETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "f446-xtend-test1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\ojett\Documents\McGill\MRT\f446-xtend-test1\STM32F446ZETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f446-xtend-test1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+f446-xtend-test1.elf: $(OBJS) $(USER_OBJS) C:\Users\ojett\Documents\McGill\avionics-2022\Flight\ Computer\XTend\f446-xtend-test1\STM32F446ZETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "f446-xtend-test1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\ojett\Documents\McGill\avionics-2022\Flight Computer\XTend\f446-xtend-test1\STM32F446ZETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f446-xtend-test1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
