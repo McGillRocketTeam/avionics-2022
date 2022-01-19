@@ -1,0 +1,5 @@
+.metadata/
+test1/.settings/
+test1/Debug/
+*.launch
+
