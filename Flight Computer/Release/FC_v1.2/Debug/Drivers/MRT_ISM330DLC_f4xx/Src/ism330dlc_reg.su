@@ -246,3 +246,9 @@ ism330dlc_reg.c:7762:9:ism330dlc_sh_slave_2_dec_set	24	static
 ism330dlc_reg.c:7799:9:ism330dlc_sh_slave_2_dec_get	24	static
 ism330dlc_reg.c:7852:9:ism330dlc_sh_slave_3_dec_set	24	static
 ism330dlc_reg.c:7889:9:ism330dlc_sh_slave_3_dec_get	24	static
+ism330dlc_reg.c:7957:16:write	40	static
+ism330dlc_reg.c:7973:16:read	40	static
+ism330dlc_reg.c:7985:6:MRT_ISM330DLC_Setup	24	static
+ism330dlc_reg.c:8050:6:MRT_ISM330DLC_getAcceleration	32	static
+ism330dlc_reg.c:8072:6:MRT_ISM330DLC_getTemperature	24	static
+ism330dlc_reg.c:8087:6:MRT_ISM330DLC_getAngularRate	32	static

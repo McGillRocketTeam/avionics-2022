@@ -41,12 +41,6 @@
 
 #define DIAGNOSTICS false
 
-#define SENSOR_BUS hi2c1 //TODO to put in driver file
-
-//TODO to put in driver file
-#define    BOOT_TIME            10 //ms
-#define TX_BUF_DIM          50
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -82,17 +76,24 @@ const osThreadAttr_t Sensors3_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for Propulsion0 */
-osThreadId_t Propulsion0Handle;
-const osThreadAttr_t Propulsion0_attributes = {
-  .name = "Propulsion0",
+/* Definitions for Propulsion4 */
+osThreadId_t Propulsion4Handle;
+const osThreadAttr_t Propulsion4_attributes = {
+  .name = "Propulsion4",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for Memory0 */
+osThreadId_t Memory0Handle;
+const osThreadAttr_t Memory0_attributes = {
+  .name = "Memory0",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* USER CODE BEGIN PV */
 
 //General
-osThreadId_t threadID[4]; //TODO
+osThreadId_t threadID[5]; //TODO
 bool wakingUp;
 
 //Ejection
@@ -111,26 +112,6 @@ uint8_t sensorsPolling;
 uint8_t dataWriting;
 
 
-
-
-//FOR THE ISM TODO
-static uint8_t whoamI, rst;
-stmdev_ctx_t dev_ctx;
-
-//Necessary for acceleration
-static int16_t data_raw_acceleration[3];
-static float acceleration_mg[3];
-
-//Necessary for angular rate
-static int16_t data_raw_angular_rate[3];
-static float angular_rate_mdps[3];
-
-//Necessary for temp
-static int16_t data_raw_temperature[1];
-static float temperature_degC[1];
-
-
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -142,17 +123,10 @@ static void MX_USART3_UART_Init(void);
 void StartEjection1(void *argument);
 void StartTelemetry2(void *argument);
 void StartSensors3(void *argument);
-void StartPropulsion0(void *argument);
+void StartPropulsion4(void *argument);
+void StartMemory0(void *argument);
 
 /* USER CODE BEGIN PFP */
-
-static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp,uint16_t len);
-static int32_t read(void *handle, uint8_t reg, uint8_t *bufp,uint16_t len);
-static void tx_com( uint8_t *tx_buffer, uint16_t len );
-void setup(stmdev_ctx_t* dev_ctx);
-void ISM330DLC_getAcceleration(int16_t data_raw_acceleration[3],float acceleration_mg[3],stmdev_ctx_t* dev_ctx);
-void ISM330DLC_getAngularRate(int16_t data_raw_angular_rate[3],float angular_rate_mdps[3],stmdev_ctx_t *dev_ctx);
-void ISM330DLC_getTemperature(int16_t data_raw_temperature[1],float temperature_degC[1],stmdev_ctx_t *dev_ctx);
 
 /* USER CODE END PFP */
 
@@ -217,7 +191,7 @@ int main(void)
    * For ISM330DLC
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
-   setup(&dev_ctx);
+   MRT_ISM330DLC_Setup(&dev_ctx,&hi2c1,&huart3);
 
   /*
    * For RTOS
@@ -263,8 +237,11 @@ int main(void)
   /* creation of Sensors3 */
   Sensors3Handle = osThreadNew(StartSensors3, NULL, &Sensors3_attributes);
 
-  /* creation of Propulsion0 */
-  Propulsion0Handle = osThreadNew(StartPropulsion0, NULL, &Propulsion0_attributes);
+  /* creation of Propulsion4 */
+  Propulsion4Handle = osThreadNew(StartPropulsion4, NULL, &Propulsion4_attributes);
+
+  /* creation of Memory0 */
+  Memory0Handle = osThreadNew(StartMemory0, NULL, &Memory0_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -505,175 +482,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void setup(stmdev_ctx_t *dev_ctx)
-	{
-	  HAL_UART_Transmit(&huart3,"LISM330DLC Setup Starts\n\r", 27, HAL_MAX_DELAY);
-	  /* Initialize mems driver interface */
-	  dev_ctx->write_reg = write;
-	  dev_ctx->read_reg = read;
-	  dev_ctx->handle = &SENSOR_BUS;
-	  /* Wait sensor boot time */
-	  HAL_Delay(BOOT_TIME);
-	  /* Check device ID */
-	  ism330dlc_device_id_get(dev_ctx, &whoamI);
-
-	  	  HAL_UART_Transmit(&huart3,"Checking Sensor ID...", 21, HAL_MAX_DELAY);
-	  	  /*
-	  if (whoamI != ISM330DLC_ID){
-		  HAL_UART_Transmit(&huart3,"NOT OK\n\r", 10, HAL_MAX_DELAY);
-		  HAL_UART_Transmit(&huart3,"This Device is: " , 16, HAL_MAX_DELAY);
-		  HAL_UART_Transmit(&huart3,whoamI, 2, HAL_MAX_DELAY);
-		  HAL_UART_Transmit(&huart3,"\n\rProgram Terminated\n\r", 26, HAL_MAX_DELAY);
-		  while(1);
-	  }
-	  */
-	  	  HAL_UART_Transmit(&huart3,"OK\n\r", 6, HAL_MAX_DELAY);
-
-	  /* Restore default configuration */
-	  ism330dlc_reset_set(dev_ctx, PROPERTY_ENABLE);
-
-	  do {
-		ism330dlc_reset_get(dev_ctx, &rst);
-	  } while (rst);
-
-
-	  /* Enable Block Data Update */
-	    ism330dlc_block_data_update_set(dev_ctx, PROPERTY_ENABLE);
-	    /* Set Output Data Rate */
-	    ism330dlc_xl_data_rate_set(dev_ctx, ISM330DLC_XL_ODR_12Hz5);
-	    ism330dlc_gy_data_rate_set(dev_ctx, ISM330DLC_GY_ODR_12Hz5);
-	    /* Set full scale */
-	    ism330dlc_xl_full_scale_set(dev_ctx, ISM330DLC_2g);
-	    ism330dlc_gy_full_scale_set(dev_ctx, ISM330DLC_2000dps);
-	    /* Configure filtering chain(No aux interface) */
-	    /* Accelerometer - analog filter */
-	    ism330dlc_xl_filter_analog_set(dev_ctx, ISM330DLC_XL_ANA_BW_400Hz);
-	    /* Accelerometer - LPF1 path ( LPF2 not used )*/
-	    //ism330dlc_xl_lp1_bandwidth_set(dev_ctx, ISM330DLC_XL_LP1_ODR_DIV_4);
-	    /* Accelerometer - LPF1 + LPF2 path */
-	    ism330dlc_xl_lp2_bandwidth_set(dev_ctx,
-	                                   ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_100);
-	    /* Accelerometer - High Pass / Slope path */
-	    //ism330dlc_xl_reference_mode_set(&dev_ctx, PROPERTY_DISABLE);
-	    //ism330dlc_xl_hp_bandwidth_set(&dev_ctx, ISM330DLC_XL_HP_ODR_DIV_100);
-	    /* Gyroscope - filtering chain */
-	    ism330dlc_gy_band_pass_set(dev_ctx, ISM330DLC_HP_260mHz_LP1_STRONG);
-	    HAL_UART_Transmit(&huart3,"LISM330DLC Setup Ends\n\r", 25, HAL_MAX_DELAY);
-	}
-
-
-			/*
-			 * Get acceleration values
-			 */
-			void ISM330DLC_getAcceleration(int16_t data_raw_acceleration[3],float acceleration_mg[3],stmdev_ctx_t *dev_ctx){
-					ism330dlc_reg_t reg; //For some reason, this one has to be in the loop
-					ism330dlc_status_reg_get(dev_ctx, &reg.status_reg);
-
-					if (reg.status_reg.gda) {
-					/* Read magnetic field data */
-					memset(data_raw_acceleration, 0x00, 3 * sizeof(int16_t));
-			        ism330dlc_acceleration_raw_get(dev_ctx, data_raw_acceleration);
-			        acceleration_mg[0] = ism330dlc_from_fs2g_to_mg(
-			                               data_raw_acceleration[0]);
-			        acceleration_mg[1] = ism330dlc_from_fs2g_to_mg(
-			                               data_raw_acceleration[1]);
-			        acceleration_mg[2] = ism330dlc_from_fs2g_to_mg(
-			                               data_raw_acceleration[2]);
-			      }
-
-			}
-
-
-
-			/*
-			 * Get angular rate values
-			 */
-			void ISM330DLC_getAngularRate(int16_t data_raw_angular_rate[3],float angular_rate_mdps[3],stmdev_ctx_t *dev_ctx){
-					ism330dlc_reg_t reg; //For some reason, this one has to be in the loop
-					ism330dlc_status_reg_get(dev_ctx, &reg.status_reg);
-
-					if (reg.status_reg.xlda) {
-					/* Read magnetic field data */
-					memset(data_raw_angular_rate, 0x00, 3 * sizeof(int16_t));
-					ism330dlc_acceleration_raw_get(dev_ctx, data_raw_angular_rate);
-					angular_rate_mdps[0] = ism330dlc_from_fs2g_to_mg(
-					data_raw_angular_rate[0]);
-					angular_rate_mdps[1] = ism330dlc_from_fs2g_to_mg(
-					data_raw_angular_rate[1]);
-					angular_rate_mdps[2] = ism330dlc_from_fs2g_to_mg(
-					data_raw_angular_rate[2]);
-					}
-
-			}
-
-
-
-
-			/*
-			 * Get temperature value
-			 */
-			void ISM330DLC_getTemperature(int16_t data_raw_temperature[1],float temperature_degC[1],stmdev_ctx_t *dev_ctx){
-				ism330dlc_reg_t reg; //For some reason, this one has to be in the loop
-				ism330dlc_status_reg_get(dev_ctx, &reg.status_reg);
-				if (reg.status_reg.tda) {
-					//Read temperature data
-					memset(data_raw_temperature, 0x00, sizeof(int16_t));
-					ism330dlc_temperature_raw_get(dev_ctx, data_raw_temperature);
-					temperature_degC[0] = ism330dlc_from_lsb_to_celsius(data_raw_temperature[0]);
-				}
-			}
-
-
-
-
-/*
- * @brief  Write generic device register (platform dependent)
- *
- * @param  handle    customizable argument. In this examples is used in
- *                   order to select the correct sensor bus handler.
- * @param  reg       register to write
- * @param  bufp      pointer to data to write in register reg
- * @param  len       number of consecutive register to write
- *
- */
-static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp,
-                              uint16_t len)
-{
-  HAL_I2C_Mem_Write(handle, ISM330DLC_I2C_ADD_L, reg,
-                    I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
-  return 0;
-}
-
-/*
- * @brief  Read generic device register (platform dependent)
- *
- * @param  handle    customizable argument. In this examples is used in
- *                   order to select the correct sensor bus handler.
- * @param  reg       register to read
- * @param  bufp      pointer to buffer that store the data read
- * @param  len       number of consecutive register to read
- *
- */
-static int32_t read(void *handle, uint8_t reg, uint8_t *bufp,
-                             uint16_t len)
-{
-  HAL_I2C_Mem_Read(handle, ISM330DLC_I2C_ADD_L, reg,
-                   I2C_MEMADD_SIZE_8BIT, bufp, len, 1000);
-  return 0;
-}
-
-/*
- * @brief  Send buffer to console (platform dependent)
- *
- * @param  tx_buffer     buffer to transmit
- * @param  len           number of byte to send
- *
- */
-static void tx_com(uint8_t *tx_buffer, uint16_t len)
-{
-  HAL_UART_Transmit(&huart3, tx_buffer, len, 1000);
-}
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartEjection1 */
@@ -707,7 +515,7 @@ void StartEjection1(void *argument)
 
 
 	  memset(buffer, 0, TX_BUF_DIM);
-	  ISM330DLC_getTemperature(data_raw_temperature,temperature_degC,&dev_ctx);
+	  MRT_ISM330DLC_getTemperature(data_raw_temperature,temperature_degC);
 	  sprintf((char *)buffer, "Temperature [degC]:%6.2f\r\n", temperature_degC[0] );sprintf((char *)buffer, "Temperature [degC]:%f\r\n", temperature_degC[0] );
 	  HAL_UART_Transmit(&huart3, buffer, strlen(buffer), HAL_MAX_DELAY);
 
@@ -726,14 +534,14 @@ void StartEjection1(void *argument)
 		  for(;;){
 
 			  memset(buffer, 0, TX_BUF_DIM);
-			  ISM330DLC_getAcceleration(data_raw_acceleration,acceleration_mg,&dev_ctx);
+			  MRT_ISM330DLC_getAcceleration(data_raw_acceleration,acceleration_mg);
 			  sprintf((char *)buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
 			  HAL_UART_Transmit(&huart3, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 			  memset(buffer, 0, TX_BUF_DIM);
-			  ISM330DLC_getAngularRate(data_raw_angular_rate,angular_rate_mdps,&dev_ctx);
+			  MRT_ISM330DLC_getAngularRate(data_raw_angular_rate,angular_rate_mdps);
 			  sprintf((char *)buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
-			  tx_com( buffer, strlen( (char const *)buffer ) );
+			  HAL_UART_Transmit(&huart3, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 			  altitude = acceleration_mg[0];
 
@@ -853,21 +661,20 @@ void StartSensors3(void *argument)
   /* USER CODE END StartSensors3 */
 }
 
-/* USER CODE BEGIN Header_StartPropulsion0 */
+/* USER CODE BEGIN Header_StartPropulsion4 */
 /**
-* @brief Function implementing the Propulsion0 thread.
+* @brief Function implementing the Propulsion4 thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartPropulsion0 */
-void StartPropulsion0(void *argument)
+/* USER CODE END Header_StartPropulsion4 */
+void StartPropulsion4(void *argument)
 {
-  /* USER CODE BEGIN StartPropulsion0 */
-
+  /* USER CODE BEGIN StartPropulsion4 */
 	osThreadExit();
 
 	//Add thread id to the list
-	threadID[0]=osThreadGetId();
+	threadID[4]=osThreadGetId();
 
 	if (wakingUp) osThreadExit();
 
@@ -883,9 +690,37 @@ void StartPropulsion0(void *argument)
   }
 
   //In case it leaves the infinite loop
+  HAL_UART_Transmit(&huart3,"Something went wrong with thread 4\r\n",36,HAL_MAX_DELAY);
+  osThreadExit();
+  /* USER CODE END StartPropulsion4 */
+}
+
+/* USER CODE BEGIN Header_StartMemory0 */
+/**
+* @brief Function implementing the Memory0 thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartMemory0 */
+void StartMemory0(void *argument)
+{
+  /* USER CODE BEGIN StartMemory0 */
+
+	osThreadExit();
+
+	//Add thread id to the list
+	threadID[0]=osThreadGetId();
+
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+
+  //In case it leaves the infinite loop
   HAL_UART_Transmit(&huart3,"Something went wrong with thread 0\r\n",36,HAL_MAX_DELAY);
   osThreadExit();
-  /* USER CODE END StartPropulsion0 */
+  /* USER CODE END StartMemory0 */
 }
 
 /**
