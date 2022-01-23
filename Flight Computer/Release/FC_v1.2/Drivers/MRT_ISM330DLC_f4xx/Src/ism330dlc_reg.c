@@ -8048,7 +8048,7 @@ void MRT_ISM330DLC_Setup(stmdev_ctx_t *dev_ctx, I2C_HandleTypeDef* SENSOR_BUS, U
  * Get acceleration values
  */
 void MRT_ISM330DLC_getAcceleration(int16_t data_raw_acceleration[3],float acceleration_mg[3]){
-		ism330dlc_reg_t reg; //For some reason, this one has to be in the loop
+		ism330dlc_reg_t reg;
 		ism330dlc_status_reg_get(&dev_ctx, &reg.status_reg);
 
 		if (reg.status_reg.gda) {

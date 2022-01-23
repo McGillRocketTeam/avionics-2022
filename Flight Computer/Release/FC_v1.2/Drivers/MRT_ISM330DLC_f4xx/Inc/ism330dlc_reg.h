@@ -2845,9 +2845,6 @@ void MRT_ISM330DLC_getAngularRate(int16_t data_raw_angular_rate[3],float angular
 void MRT_ISM330DLC_getTemperature(int16_t data_raw_temperature[1],float temperature_degC[1]);
 
 
-
-
-
 #ifdef __cplusplus
 }
 #endif

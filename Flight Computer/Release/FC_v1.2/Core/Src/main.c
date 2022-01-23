@@ -93,10 +93,10 @@ const osThreadAttr_t Memory0_attributes = {
 /* USER CODE BEGIN PV */
 
 //General
-osThreadId_t threadID[5]; //TODO
+osThreadId_t threadID[5];
 bool wakingUp;
 
-//Ejection
+//Ejection (just invented variables for the sake of testing)
 uint8_t MIN_APOGEE = 20;
 uint8_t MAX_APOGEE = 30;
 uint8_t DEPLOY_ALT_MIN = 60;
@@ -105,9 +105,10 @@ uint8_t GROUND_LEVEL = 20;
 
 //Telemetry
 uint8_t SLEEP_TIME = 10;
-uint8_t DATA_FREQ = 1; //Times per second that you want to save and transmit data
+uint8_t DATA_FREQ = 1; //Times per second that you want to save data
+uint8_t SEND_FREQ = 0.2; //Times per second that you want to transmit data
 
-//MUTEXES
+//MUTEXES TODO we should actually implement real mutexes
 uint8_t sensorsPolling;
 uint8_t dataWriting;
 
@@ -510,9 +511,6 @@ void StartEjection1(void *argument)
 	  sensorsPolling = true;
 	  //Poll altitude (poll pressure)
 
-	  //https://stackoverflow.com/questions/38782389/freertos-stm32-thread-memory-overflow-with-malloc
-	  //https://nadler.com/embedded/newlibAndFreeRTOS.html
-
 
 	  memset(buffer, 0, TX_BUF_DIM);
 	  MRT_ISM330DLC_getTemperature(data_raw_temperature,temperature_degC);
@@ -603,13 +601,9 @@ void StartTelemetry2(void *argument)
   {
 	  //Poll sensor data in other thread
 	  while(sensorsPolling){osDelay(1);}
-		  dataWriting = true;
-
-		  //Write data to sd and flash
 
 
-
-		  //Send data via radios
+		  //Send data via radios:
 
 
 		  //Radio send
@@ -617,15 +611,7 @@ void StartTelemetry2(void *argument)
 		  //Iridium send
 		  MRT_Static_Iridium_getTime();
 
-		  //Check if it's sleep time
-		  if (flagA==1){
-			  MRT_Static_Iridium_Shutdown();
-
-			  MRT_StandByMode(SLEEP_TIME);
-		  }
-		  dataWriting = false;
-
-    osDelay(1000/DATA_FREQ);
+    osDelay(1000/SEND_FREQ);
   }
 
   //In case it leaves the infinite loop
@@ -714,7 +700,22 @@ void StartMemory0(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	  //Poll sensor data in other thread
+	  	  while(sensorsPolling){osDelay(1);}
+	  		  dataWriting = true;
+
+	  		  //Write data to sd and flash
+
+
+	  		  //Check if it's sleep time
+	  		  if (flagA==1){
+	  			  MRT_Static_Iridium_Shutdown();
+
+	  			  MRT_StandByMode(SLEEP_TIME);
+	  		  }
+	  		  dataWriting = false;
+
+	      osDelay(1000/DATA_FREQ);
   }
 
   //In case it leaves the infinite loop
