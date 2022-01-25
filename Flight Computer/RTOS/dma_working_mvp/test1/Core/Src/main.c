@@ -41,6 +41,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart3;
+DMA_HandleTypeDef hdma_usart3_tx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
@@ -52,6 +53,7 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -59,7 +61,10 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void DMA_Complete(DMA_HandleTypeDef *hdma) {
+    huart3.Instance->CR3 &= ~USART_CR3_DMAT;
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
+}
 /* USER CODE END 0 */
 
 /**
@@ -69,7 +74,20 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  char data[] = "I met a traveller from an antique land,\r\n" \
+            "Who said—“Two vast and trunkless legs of stone\r\n" \
+            "Stand in the desert. . . . Near them, on the sand,\r\n" \
+            "Half sunk a shattered visage lies, whose frown,\r\n" \
+            "And wrinkled lip, and sneer of cold command,\r\n" \
+            "Tell that its sculptor well those passions read\r\n" \
+            "Which yet survive, stamped on these lifeless things,\r\n" \
+            "The hand that mocked them, and the heart that fed;\r\n" \
+            "And on the pedestal, these words appear:\r\n" \
+            "My name is Ozymandias, King of Kings;\r\n" \
+            "Look on my Works, ye Mighty, and despair!\r\n" \
+            "Nothing beside remains. Round the decay\r\n" \
+            "Of that colossal Wreck, boundless and bare\r\n" \
+            "The lone and level sands stretch far away.\r\n";
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -90,25 +108,22 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_DMA_RegisterCallback(&hdma_usart3_tx, HAL_DMA_XFER_CPLT_CB_ID, &DMA_Complete);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t *buffer = "test piece of data.\n";
-  int a = 0, b = 0, c = 0;
+  
   while (1) {
-	if(!a) HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0 );
-	if(!b) HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7 );
-	if(!c) HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
-    a++; a%= 3;
-    b++; b%= 5;
-    c++; c%= 7;
-    HAL_UART_Transmit(&huart3, buffer, strlen(buffer), HAL_MAX_DELAY);
-	HAL_Delay(500);
+    huart3.Instance->CR3 |= USART_CR3_DMAT;
+    HAL_DMA_Start_IT(&hdma_usart3_tx, (uint32_t)data, 
+            (uint32_t)&huart3.Instance->DR, strlen(data));
+    HAL_Delay(100);
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -225,6 +240,22 @@ static void MX_USB_OTG_FS_PCD_Init(void)
   /* USER CODE BEGIN USB_OTG_FS_Init 2 */
 
   /* USER CODE END USB_OTG_FS_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
 
 }
 
