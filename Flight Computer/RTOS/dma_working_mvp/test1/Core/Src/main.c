@@ -63,6 +63,7 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 /* USER CODE BEGIN 0 */
 void DMA_Complete(DMA_HandleTypeDef *hdma) {
     huart3.Instance->CR3 &= ~USART_CR3_DMAT;
+    // working call-back should toggle the blue led
     HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
 }
 /* USER CODE END 0 */
@@ -103,7 +104,15 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  // Note: in the below section there's a known cubemx codegen bug where MX_DMA_Init()
+  // is placed after other initialization. move it so it looks as follows
+  /*
+   *   MX_GPIO_Init();
+   *   MX_DMA_Init();
+   *   MX_USART3_UART_Init(); (or other things using dma)
+   *   etc...
+   */
+  // before wasting time messing with register config stuff
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -119,11 +128,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   
   while (1) {
+	// toggle the green led before starting DMA. Blue is toggled in a call-back after finishing.
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
     huart3.Instance->CR3 |= USART_CR3_DMAT;
     HAL_DMA_Start_IT(&hdma_usart3_tx, (uint32_t)data, 
             (uint32_t)&huart3.Instance->DR, strlen(data));
-    HAL_Delay(100);
-    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+    HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -195,7 +205,7 @@ static void MX_USART3_UART_Init(void)
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.Mode = UART_MODE_TX;
   huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart3) != HAL_OK)
@@ -346,4 +356,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
