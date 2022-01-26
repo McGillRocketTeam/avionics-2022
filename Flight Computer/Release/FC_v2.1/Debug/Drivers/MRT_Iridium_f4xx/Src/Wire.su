@@ -1,0 +1,44 @@
+Print.h:22:5:Print::Print()	16	static
+Stream.h:53:5:Stream::Stream()	16	static
+Wire.cpp:14:1:TwoWire::TwoWire(I2C_TypeDef*)	16	static
+Wire.cpp:29:6:void TwoWire::begin()	64	static
+Wire.cpp:139:6:void TwoWire::begin(uint8_t)	16	static
+Wire.cpp:145:6:void TwoWire::begin(int)	16	static
+Wire.cpp:150:6:void TwoWire::setClock(uint32_t)	24	static
+Wire.cpp:168:9:uint8_t TwoWire::requestFrom(uint8_t, uint8_t, uint8_t)	32	static
+Wire.cpp:198:9:uint8_t TwoWire::requestFrom(uint8_t, uint8_t)	16	static
+Wire.cpp:203:9:uint8_t TwoWire::requestFrom(int, int)	24	static
+Wire.cpp:208:9:uint8_t TwoWire::requestFrom(int, int, int)	24	static
+Wire.cpp:213:6:void TwoWire::beginTransmission(uint8_t)	16	static
+Wire.cpp:224:6:void TwoWire::beginTransmission(int)	16	static
+Wire.cpp:242:9:uint8_t TwoWire::endTransmission(uint8_t)	32	static
+Wire.cpp:262:9:uint8_t TwoWire::endTransmission()	16	static
+Wire.cpp:270:8:virtual size_t TwoWire::write(uint8_t)	16	static
+Wire.cpp:301:8:virtual size_t TwoWire::write(const uint8_t*, size_t)	32	static
+Wire.cpp:325:5:virtual int TwoWire::available()	16	static
+Wire.cpp:333:5:virtual int TwoWire::read()	24	static
+Wire.cpp:349:5:virtual int TwoWire::peek()	24	static
+Wire.cpp:360:6:virtual void TwoWire::flush()	16	static
+Wire.cpp:366:6:void TwoWire::onReceive(void (*)(int))	16	static
+Wire.cpp:372:6:void TwoWire::onRequest(void (*)())	16	static
+Wire.cpp:377:5:int TwoWire::i2c_master_start()	24	static
+Wire.cpp:409:5:int TwoWire::i2c_master_stop()	24	static
+Wire.cpp:419:5:int TwoWire::i2c_master_read(uint8_t, char*, uint8_t, uint8_t)	48	static
+Wire.cpp:477:5:int TwoWire::i2c_master_write(int, const char*, int, int)	40	static
+Wire.cpp:520:5:int TwoWire::i2c_master_byte_read(int*, int)	32	static
+Wire.cpp:546:5:int TwoWire::i2c_master_byte_write(int)	24	static
+Wire.cpp:565:5:int TwoWire::i2c_slave_write(const char*, int)	40	static
+Wire.cpp:624:6:void TwoWire::handleInterrupt(uint8_t, uint16_t)	16	static
+Wire.cpp:655:6:void TwoWire::enableInterrupt()	16	static
+Wire.cpp:677:6:void TwoWire::disableInterrupt()	16	static
+Wire.cpp:703:6:void __irq_i2c1_ev()	8	static
+Wire.cpp:711:6:void __irq_i2c1_er()	8	static
+Wire.cpp:716:6:void __irq_i2c2_ev()	8	static
+Wire.cpp:721:6:void __irq_i2c2_er()	8	static
+Wire.cpp:726:6:void __irq_I2C3_EV_IRQHandler()	8	static
+Wire.cpp:731:6:void __irq_I2C3_ER_IRQHandler()	8	static
+Wire.cpp:736:6:void HAL_I2C_AddrCallback(I2C_HandleTypeDef*, uint8_t, uint16_t)	16	static
+Wire.cpp:754:6:void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef*)	16	static
+Wire.cpp:776:6:void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef*)	16	static
+Wire.cpp:816:30:void __static_initialization_and_destruction_0(int, int)	16	static
+Wire.cpp:816:30:cpp)	8	static
