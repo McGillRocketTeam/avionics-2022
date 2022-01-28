@@ -28,7 +28,7 @@
 #include <MRT_RTOS.h>
 #include <IridiumSBD_Static_API.h>
 #include <MRT_Helpers.h>
-#include "ism330dlc_reg.h"
+#include "lsm6dsr_reg.h"
 #include <gps.h>
 
 #include <usbd_cdc_if.h>
@@ -46,7 +46,7 @@
 /* USER CODE BEGIN PD */
 
 #define DIAGNOSTICS false
-#define GPS_DATA_BUF_DIM 50
+#define GPS_DATA_BUF_DIM 100
 
 /* USER CODE END PD */
 
@@ -322,7 +322,7 @@ while(1){
   /*
    * hi2c3:
    * -Barometer: 0x5C
-   * -6 DOF IMU (ISM330DLC): 0x6A
+   * -6 DOF IMU (LSM6DSR): 0x6A
    * -
    */
 
@@ -342,15 +342,16 @@ while(1){
    //wakingUp = MRT_Static_Iridium_Setup(huart3);
 
   /*
-   * For ISM330DLC
+   * For LSM6DSR
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
-   MRT_ISM330DLC_Setup(&dev_ctx,&hi2c3,&DEBUG_USART);
+   MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
 
 
    /*
     * For the GPS:
     * -huart6 on v4.3
+    * -Set its uart to 9600)
     *
     */
    GPS_init(&huart6, &huart8);
@@ -996,7 +997,7 @@ static void MX_USART6_UART_Init(void)
 
   /* USER CODE END USART6_Init 1 */
   huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
+  huart6.Init.BaudRate = 9600;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
   huart6.Init.StopBits = UART_STOPBITS_1;
   huart6.Init.Parity = UART_PARITY_NONE;
@@ -1156,8 +1157,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SX_BANDPASS_FILTER_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EXTI_LPS22HH_DRDY_Pin EXTI_ISM330DCL_INT2_Pin EXTI_ISM330DLC_INT1_Pin */
-  GPIO_InitStruct.Pin = EXTI_LPS22HH_DRDY_Pin|EXTI_ISM330DCL_INT2_Pin|EXTI_ISM330DLC_INT1_Pin;
+  /*Configure GPIO pins : EXTI_LPS22HH_DRDY_Pin EXTI_ISM330DCL_INT2_Pin EXTI_LSM6DSR_INT1_Pin */
+  GPIO_InitStruct.Pin = EXTI_LPS22HH_DRDY_Pin|EXTI_ISM330DCL_INT2_Pin|EXTI_LSM6DSR_INT1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
@@ -1405,33 +1406,45 @@ void StartSensors3(void *argument)
 	  while( xSemaphoreTake( _SENSORS, 0 ) == pdTRUE ) osDelay(10);
 
 	  //GPS
+  	  /*
+  	   * TODO HOW DO WE RESET THE TIME
+  	   */
 	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
-	  HAL_UART_Transmit(GPS_USART,"\r\n\r\nGPS Poll\r\n",16,HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_USART,"\r\n\r\nGPS Poll\r\n",16,HAL_MAX_DELAY);
 	  GPS_Poll(&latitude, &longitude, &time);
-	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %f",latitude, longitude, time);
+	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",latitude, longitude, time);
 	  HAL_UART_Transmit(&DEBUG_USART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
 	  HAL_Delay(1000);
-  	  HAL_UART_Transmit(GPS_USART,"\r\nDone\r\n\r\n",10,HAL_MAX_DELAY);
+  	  HAL_UART_Transmit(&DEBUG_USART,"\r\nDone\r\n\r\n",10,HAL_MAX_DELAY);
 
 
-  	  //ISM330DLC
+  	  //LSM6DSR
   	  memset(buffer, 0, TX_BUF_DIM);
-  	  MRT_ISM330DLC_getAcceleration(data_raw_acceleration,acceleration_mg);
+  	  MRT_LSM6DSR_getAcceleration(data_raw_acceleration,acceleration_mg);
   	  sprintf((char *)buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
   	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
+  	  /*
+  	   * TODO NEEDS FILTERING (maybe acceleration needs filtering too)
+  	   */
   	  memset(buffer, 0, TX_BUF_DIM);
-  	  MRT_ISM330DLC_getAngularRate(data_raw_angular_rate,angular_rate_mdps);
+  	  MRT_LSM6DSR_getAngularRate(data_raw_angular_rate,angular_rate_mdps);
   	  sprintf((char *)buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
   	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  memset(buffer, 0, TX_BUF_DIM);
-	  MRT_ISM330DLC_getTemperature(data_raw_temperature,temperature_degC);
+	  MRT_LSM6DSR_getTemperature(data_raw_temperature,temperature_degC);
 	  sprintf((char *)buffer, "Temperature [degC]:%6.2f\r\n", temperature_degC[0] );
 	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
-	  //Other
+	  //LPS (pressure)
+
+
+	  //Pressure tank (just use an analog sensor if you don't have it)
+
+
+	  //Thermocouple (don't have it)
 
 
 	  xSemaphoreGive( _SENSORS );

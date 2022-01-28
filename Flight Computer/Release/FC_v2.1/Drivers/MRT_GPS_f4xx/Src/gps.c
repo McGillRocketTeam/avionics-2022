@@ -61,12 +61,12 @@ void GPS_print(char *data){
 /*
  * TODO MRT code
  */
-#define LED1_GPIO_Port	OUT_LED1_GPIO_Port
-#define LED1_Pin	OUT_LED1_Pin
-#define LED2_GPIO_Port	OUT_LED2_GPIO_Port
-#define LED2_Pin	OUT_LED2_Pin
-#define LED3_GPIO_Port	OUT_LED3_GPIO_Port
-#define LED3_Pin	OUT_LED3_Pin
+#define LED1_GPIO_Port	((GPIO_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x0800UL))//OUT_LED1_GPIO_Port
+#define LED1_Pin	((uint16_t)0x0002)//OUT_LED1_Pin
+#define LED2_GPIO_Port	((GPIO_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x0800UL))//OUT_LED2_GPIO_Port
+#define LED2_Pin	((uint16_t)0x0004)//OUT_LED2_Pin
+#define LED3_GPIO_Port	((GPIO_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x0800UL))//OUT_LED3_GPIO_Port
+#define LED3_Pin	(uint16_t)0x0008//OUT_LED3_Pin
 
 UART_HandleTypeDef* GPS_USART;
 UART_HandleTypeDef* SERIAL_USART;

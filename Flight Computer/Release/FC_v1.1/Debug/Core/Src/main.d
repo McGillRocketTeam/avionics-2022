@@ -45,7 +45,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/MRT_RTOS_f4xx/Inc/MRT_RTOS.h \
  ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h \
  C:/Users/Jacoby/Desktop/Engineering/MRT/Avionics/Flight\ Computer/avionics-2022/Flight\ Computer/Release/FC_v1.1/Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h \
- C:/Users/Jacoby/Desktop/Engineering/MRT/Avionics/Flight\ Computer/avionics-2022/Flight\ Computer/Release/FC_v1.1/Drivers/MRT_ISM330DLC_f4xx/Inc/ism330dlc_reg.h
+ C:/Users/Jacoby/Desktop/Engineering/MRT/Avionics/Flight\ Computer/avionics-2022/Flight\ Computer/Release/FC_v1.1/Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h
 
 ../Core/Inc/main.h:
 
@@ -141,4 +141,4 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 C:/Users/Jacoby/Desktop/Engineering/MRT/Avionics/Flight\ Computer/avionics-2022/Flight\ Computer/Release/FC_v1.1/Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h:
 
-C:/Users/Jacoby/Desktop/Engineering/MRT/Avionics/Flight\ Computer/avionics-2022/Flight\ Computer/Release/FC_v1.1/Drivers/MRT_ISM330DLC_f4xx/Inc/ism330dlc_reg.h:
+C:/Users/Jacoby/Desktop/Engineering/MRT/Avionics/Flight\ Computer/avionics-2022/Flight\ Computer/Release/FC_v1.1/Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h:

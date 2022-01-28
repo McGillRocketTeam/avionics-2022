@@ -8,7 +8,7 @@
 "./Core/Src/system_stm32f4xx.o"
 "./Core/Startup/startup_stm32f446zetx.o"
 "./Drivers/MRT_Helpers_f4xx/Src/MRT_Helpers.o"
-"./Drivers/MRT_ISM330DLC_f4xx/Src/ism330dlc_reg.o"
+"./Drivers/MRT_LSM6DSR_f4xx/Src/lsm6dsr_reg.o"
 "./Drivers/MRT_Iridium_f4xx/Src/IridiumSBD.o"
 "./Drivers/MRT_Iridium_f4xx/Src/IridiumSBD_Static_API.o"
 "./Drivers/MRT_Iridium_f4xx/Src/Print.o"

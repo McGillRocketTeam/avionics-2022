@@ -53,7 +53,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../USB_DEVICE/Target/usbd_conf.h ../Drivers/MRT_RTOS_f4xx/Inc/MRT_RTOS.h \
  ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h \
  ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h \
- ../Drivers/MRT_ISM330DLC_f4xx/Inc/ism330dlc_reg.h \
+ ../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_GPS_f4xx/Inc/gps.h ../USB_DEVICE/App/usbd_cdc_if.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
@@ -177,7 +177,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h:
 
-../Drivers/MRT_ISM330DLC_f4xx/Inc/ism330dlc_reg.h:
+../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h:
 
 ../Drivers/MRT_GPS_f4xx/Inc/gps.h:
 

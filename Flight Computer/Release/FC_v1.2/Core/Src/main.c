@@ -27,7 +27,7 @@
 #include <MRT_RTOS.h>
 #include <IridiumSBD_Static_API.h>
 #include <MRT_Helpers.h>
-#include "ism330dlc_reg.h"
+#include "lsm6dsr_reg.h"
 
 /* USER CODE END Includes */
 
@@ -189,10 +189,10 @@ int main(void)
    wakingUp = MRT_Static_Iridium_Setup(huart3);
 
   /*
-   * For ISM330DLC
+   * For LSM6DSR
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
-   MRT_ISM330DLC_Setup(&dev_ctx,&hi2c1,&huart3);
+   MRT_LSM6DSR_Setup(&dev_ctx,&hi2c1,&huart3);
 
   /*
    * For RTOS
@@ -513,7 +513,7 @@ void StartEjection1(void *argument)
 
 
 	  memset(buffer, 0, TX_BUF_DIM);
-	  MRT_ISM330DLC_getTemperature(data_raw_temperature,temperature_degC);
+	  MRT_LSM6DSR_getTemperature(data_raw_temperature,temperature_degC);
 	  sprintf((char *)buffer, "Temperature [degC]:%6.2f\r\n", temperature_degC[0] );sprintf((char *)buffer, "Temperature [degC]:%f\r\n", temperature_degC[0] );
 	  HAL_UART_Transmit(&huart3, buffer, strlen(buffer), HAL_MAX_DELAY);
 
@@ -532,12 +532,12 @@ void StartEjection1(void *argument)
 		  for(;;){
 
 			  memset(buffer, 0, TX_BUF_DIM);
-			  MRT_ISM330DLC_getAcceleration(data_raw_acceleration,acceleration_mg);
+			  MRT_LSM6DSR_getAcceleration(data_raw_acceleration,acceleration_mg);
 			  sprintf((char *)buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
 			  HAL_UART_Transmit(&huart3, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 			  memset(buffer, 0, TX_BUF_DIM);
-			  MRT_ISM330DLC_getAngularRate(data_raw_angular_rate,angular_rate_mdps);
+			  MRT_LSM6DSR_getAngularRate(data_raw_angular_rate,angular_rate_mdps);
 			  sprintf((char *)buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
 			  HAL_UART_Transmit(&huart3, buffer, strlen(buffer), HAL_MAX_DELAY);
 

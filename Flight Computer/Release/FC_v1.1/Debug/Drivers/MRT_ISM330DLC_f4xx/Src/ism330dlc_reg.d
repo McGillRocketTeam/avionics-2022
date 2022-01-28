@@ -1,6 +1,6 @@
-Drivers/MRT_ISM330DLC_f4xx/Src/ism330dlc_reg.o: \
- ../Drivers/MRT_ISM330DLC_f4xx/Src/ism330dlc_reg.c \
- ../Drivers/MRT_ISM330DLC_f4xx/Inc/ism330dlc_reg.h \
+Drivers/MRT_LSM6DSR_f4xx/Src/lsm6dsr_reg.o: \
+ ../Drivers/MRT_LSM6DSR_f4xx/Src/lsm6dsr_reg.c \
+ ../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -34,7 +34,7 @@ Drivers/MRT_ISM330DLC_f4xx/Src/ism330dlc_reg.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 
-../Drivers/MRT_ISM330DLC_f4xx/Inc/ism330dlc_reg.h:
+../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 

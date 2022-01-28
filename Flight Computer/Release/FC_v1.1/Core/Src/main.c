@@ -27,7 +27,7 @@
 #include <MRT_RTOS.h>
 #include <IridiumSBD_Static_API.h>
 #include <MRT_Helpers.h>
-#include "ism330dlc_reg.h"
+#include "lsm6dsr_reg.h"
 
 /* USER CODE END Includes */
 
@@ -69,10 +69,10 @@ const osThreadAttr_t Iridium02_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for ISM330DLC03 */
-osThreadId_t ISM330DLC03Handle;
-const osThreadAttr_t ISM330DLC03_attributes = {
-  .name = "ISM330DLC03",
+/* Definitions for LSM6DSR03 */
+osThreadId_t LSM6DSR03Handle;
+const osThreadAttr_t LSM6DSR03_attributes = {
+  .name = "LSM6DSR03",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
@@ -90,7 +90,7 @@ static void MX_RTC_Init(void);
 static void MX_I2C1_Init(void);
 void StartDefaultTask(void *argument);
 void StartIridium02(void *argument);
-void StartISM330DLC03(void *argument);
+void StartLSM6DSR03(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -153,10 +153,10 @@ int main(void)
   //MRT_Static_Iridium_Setup(huart3);
 
   /*
-   * For ISM330DLC
+   * For LSM6DSR
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
-  MRT_ISM330DLC_Setup(&huart3,hi2c1);
+  MRT_LSM6DSR_Setup(&huart3,hi2c1);
 
   /*
    * For RTOS
@@ -198,8 +198,8 @@ int main(void)
   /* creation of Iridium02 */
   Iridium02Handle = osThreadNew(StartIridium02, NULL, &Iridium02_attributes);
 
-  /* creation of ISM330DLC03 */
-  ISM330DLC03Handle = osThreadNew(StartISM330DLC03, NULL, &ISM330DLC03_attributes);
+  /* creation of LSM6DSR03 */
+  LSM6DSR03Handle = osThreadNew(StartLSM6DSR03, NULL, &LSM6DSR03_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -503,16 +503,16 @@ void StartIridium02(void *argument)
   /* USER CODE END StartIridium02 */
 }
 
-/* USER CODE BEGIN Header_StartISM330DLC03 */
+/* USER CODE BEGIN Header_StartLSM6DSR03 */
 /**
-* @brief Function implementing the ISM330DLC03 thread.
+* @brief Function implementing the LSM6DSR03 thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_StartISM330DLC03 */
-void StartISM330DLC03(void *argument)
+/* USER CODE END Header_StartLSM6DSR03 */
+void StartLSM6DSR03(void *argument)
 {
-  /* USER CODE BEGIN StartISM330DLC03 */
+  /* USER CODE BEGIN StartLSM6DSR03 */
 	//Add thread id to the list
 	threadID[3]=osThreadGetId();
 
@@ -520,15 +520,15 @@ void StartISM330DLC03(void *argument)
   for(;;)
   {
 	osDelay(1000);
-	ISM330DLC_getAcceleration(data_raw_acceleration,acceleration_mg,&dev_ctx);
+	LSM6DSR_getAcceleration(data_raw_acceleration,acceleration_mg,&dev_ctx);
 	sprintf((char *)tx_buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
 	HAL_UART_Transmit(&huart3, tx_buffer, strlen(tx_buffer), HAL_MAX_DELAY);
 
-	ISM330DLC_getAngularRate(data_raw_angular_rate,angular_rate_mdps,&dev_ctx);
+	LSM6DSR_getAngularRate(data_raw_angular_rate,angular_rate_mdps,&dev_ctx);
 	sprintf((char *)tx_buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
 	HAL_UART_Transmit(&huart3, tx_buffer, strlen(tx_buffer), HAL_MAX_DELAY);
 
-	ISM330DLC_getTemperature(data_raw_temperature,temperature_degC,&dev_ctx);
+	LSM6DSR_getTemperature(data_raw_temperature,temperature_degC,&dev_ctx);
 	sprintf((char *)tx_buffer, "Temperature [degC]:%6.2f\r\n", temperature_degC[0]);
 	HAL_UART_Transmit(&huart3, tx_buffer, strlen(tx_buffer), HAL_MAX_DELAY);
   }
@@ -536,7 +536,7 @@ void StartISM330DLC03(void *argument)
   //In case it leaves the infinite loop
   HAL_UART_Transmit(&huart3,"Something went wrong with thread 3\r\n",36,HAL_MAX_DELAY);
   osThreadTerminate(NULL);
-  /* USER CODE END StartISM330DLC03 */
+  /* USER CODE END StartLSM6DSR03 */
 }
 
 /**

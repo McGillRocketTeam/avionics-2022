@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    ism330dlc_reg.c
+  * @file    lsm6dsr_reg.c
   * @author  Sensors Software Solution Team
-  * @brief   ISM330DLC driver file
+  * @brief   LSM6DSR driver file
   ******************************************************************************
   * @attention
   *
@@ -17,18 +17,18 @@
   ******************************************************************************
   */
 
-#include "ism330dlc_reg.h"
+#include "lsm6dsr_reg.h"
 
 /**
-  * @defgroup    ISM330DLC
+  * @defgroup    LSM6DSR
   * @brief       This file provides a set of functions needed to drive the
-  *              ism330dlc enanced inertial module.
+  *              lsm6dsr enanced inertial module.
   * @{
   *
   */
 
 /**
-  * @defgroup    ISM330DLC_interfaces_functions
+  * @defgroup    LSM6DSR_interfaces_functions
   * @brief       This section provide a set of functions used to read and
   *              write a generic register of the device.
   *              MANDATORY: return 0 -> no Error.
@@ -46,7 +46,7 @@
   * @retval       interface status (MANDATORY: return 0 -> no Error)
   *
   */
-int32_t ism330dlc_read_reg(stmdev_ctx_t *ctx, uint8_t reg,
+int32_t lsm6dsr_read_reg(stmdev_ctx_t *ctx, uint8_t reg,
                            uint8_t *data,
                            uint16_t len)
 {
@@ -66,7 +66,7 @@ int32_t ism330dlc_read_reg(stmdev_ctx_t *ctx, uint8_t reg,
   * @retval       interface status (MANDATORY: return 0 -> no Error)
   *
   */
-int32_t ism330dlc_write_reg(stmdev_ctx_t *ctx, uint8_t reg,
+int32_t lsm6dsr_write_reg(stmdev_ctx_t *ctx, uint8_t reg,
                             uint8_t *data,
                             uint16_t len)
 {
@@ -82,58 +82,58 @@ int32_t ism330dlc_write_reg(stmdev_ctx_t *ctx, uint8_t reg,
   */
 
 /**
-  * @defgroup    ISM330DLC_Sensitivity
+  * @defgroup    LSM6DSR_Sensitivity
   * @brief       These functions convert raw-data into engineering units.
   * @{
   *
   */
 
-float_t ism330dlc_from_fs2g_to_mg(int16_t lsb)
+float_t lsm6dsr_from_fs2g_to_mg(int16_t lsb)
 {
   return ((float_t)lsb * 0.061f);
 }
 
-float_t ism330dlc_from_fs4g_to_mg(int16_t lsb)
+float_t lsm6dsr_from_fs4g_to_mg(int16_t lsb)
 {
   return ((float_t)lsb * 0.122f);
 }
 
-float_t ism330dlc_from_fs8g_to_mg(int16_t lsb)
+float_t lsm6dsr_from_fs8g_to_mg(int16_t lsb)
 {
   return ((float_t)lsb * 0.244f);
 }
 
-float_t ism330dlc_from_fs16g_to_mg(int16_t lsb)
+float_t lsm6dsr_from_fs16g_to_mg(int16_t lsb)
 {
   return ((float_t)lsb * 0.488f);
 }
 
-float_t ism330dlc_from_fs125dps_to_mdps(int16_t lsb)
+float_t lsm6dsr_from_fs125dps_to_mdps(int16_t lsb)
 {
   return ((float_t)lsb * 4.375f);
 }
 
-float_t ism330dlc_from_fs250dps_to_mdps(int16_t lsb)
+float_t lsm6dsr_from_fs250dps_to_mdps(int16_t lsb)
 {
   return ((float_t)lsb * 8.750f);
 }
 
-float_t ism330dlc_from_fs500dps_to_mdps(int16_t lsb)
+float_t lsm6dsr_from_fs500dps_to_mdps(int16_t lsb)
 {
   return ((float_t)lsb * 17.50f);
 }
 
-float_t ism330dlc_from_fs1000dps_to_mdps(int16_t lsb)
+float_t lsm6dsr_from_fs1000dps_to_mdps(int16_t lsb)
 {
   return ((float_t)lsb * 35.0f);
 }
 
-float_t ism330dlc_from_fs2000dps_to_mdps(int16_t lsb)
+float_t lsm6dsr_from_fs2000dps_to_mdps(int16_t lsb)
 {
   return ((float_t)lsb * 70.0f);
 }
 
-float_t ism330dlc_from_lsb_to_celsius(int16_t lsb)
+float_t lsm6dsr_from_lsb_to_celsius(int16_t lsb)
 {
   return (((float_t)lsb / 256.0f) + 25.0f);
 }
@@ -144,7 +144,7 @@ float_t ism330dlc_from_lsb_to_celsius(int16_t lsb)
   */
 
 /**
-  * @defgroup    ISM330DLC_data_generation
+  * @defgroup    LSM6DSR_data_generation
   * @brief       This section groups all the functions concerning data
   *              generation
   * @{
@@ -159,18 +159,18 @@ float_t ism330dlc_from_lsb_to_celsius(int16_t lsb)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_full_scale_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_fs_xl_t val)
+int32_t lsm6dsr_xl_full_scale_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_fs_xl_t val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                            (uint8_t *)&ctrl1_xl, 1);
 
   if (ret == 0)
   {
     ctrl1_xl.fs_xl = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_XL,
                               (uint8_t *)&ctrl1_xl, 1);
   }
 
@@ -185,34 +185,34 @@ int32_t ism330dlc_xl_full_scale_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_full_scale_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_fs_xl_t *val)
+int32_t lsm6dsr_xl_full_scale_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_fs_xl_t *val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                            (uint8_t *)&ctrl1_xl, 1);
 
   switch (ctrl1_xl.fs_xl)
   {
-    case ISM330DLC_2g:
-      *val = ISM330DLC_2g;
+    case LSM6DSR_2g:
+      *val = LSM6DSR_2g;
       break;
 
-    case ISM330DLC_16g:
-      *val = ISM330DLC_16g;
+    case LSM6DSR_16g:
+      *val = LSM6DSR_16g;
       break;
 
-    case ISM330DLC_4g:
-      *val = ISM330DLC_4g;
+    case LSM6DSR_4g:
+      *val = LSM6DSR_4g;
       break;
 
-    case ISM330DLC_8g:
-      *val = ISM330DLC_8g;
+    case LSM6DSR_8g:
+      *val = LSM6DSR_8g;
       break;
 
     default:
-      *val = ISM330DLC_2g;
+      *val = LSM6DSR_2g;
       break;
   }
 
@@ -227,18 +227,18 @@ int32_t ism330dlc_xl_full_scale_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_data_rate_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_odr_xl_t val)
+int32_t lsm6dsr_xl_data_rate_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_odr_xl_t val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                            (uint8_t *)&ctrl1_xl, 1);
 
   if (ret == 0)
   {
     ctrl1_xl.odr_xl = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_XL,
                               (uint8_t *)&ctrl1_xl, 1);
   }
 
@@ -253,66 +253,66 @@ int32_t ism330dlc_xl_data_rate_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_data_rate_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_odr_xl_t *val)
+int32_t lsm6dsr_xl_data_rate_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_odr_xl_t *val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                            (uint8_t *)&ctrl1_xl, 1);
 
   switch (ctrl1_xl.odr_xl)
   {
-    case ISM330DLC_XL_ODR_OFF:
-      *val = ISM330DLC_XL_ODR_OFF;
+    case LSM6DSR_XL_ODR_OFF:
+      *val = LSM6DSR_XL_ODR_OFF;
       break;
 
-    case ISM330DLC_XL_ODR_12Hz5:
-      *val = ISM330DLC_XL_ODR_12Hz5;
+    case LSM6DSR_XL_ODR_12Hz5:
+      *val = LSM6DSR_XL_ODR_12Hz5;
       break;
 
-    case ISM330DLC_XL_ODR_26Hz:
-      *val = ISM330DLC_XL_ODR_26Hz;
+    case LSM6DSR_XL_ODR_26Hz:
+      *val = LSM6DSR_XL_ODR_26Hz;
       break;
 
-    case ISM330DLC_XL_ODR_52Hz:
-      *val = ISM330DLC_XL_ODR_52Hz;
+    case LSM6DSR_XL_ODR_52Hz:
+      *val = LSM6DSR_XL_ODR_52Hz;
       break;
 
-    case ISM330DLC_XL_ODR_104Hz:
-      *val = ISM330DLC_XL_ODR_104Hz;
+    case LSM6DSR_XL_ODR_104Hz:
+      *val = LSM6DSR_XL_ODR_104Hz;
       break;
 
-    case ISM330DLC_XL_ODR_208Hz:
-      *val = ISM330DLC_XL_ODR_208Hz;
+    case LSM6DSR_XL_ODR_208Hz:
+      *val = LSM6DSR_XL_ODR_208Hz;
       break;
 
-    case ISM330DLC_XL_ODR_416Hz:
-      *val = ISM330DLC_XL_ODR_416Hz;
+    case LSM6DSR_XL_ODR_416Hz:
+      *val = LSM6DSR_XL_ODR_416Hz;
       break;
 
-    case ISM330DLC_XL_ODR_833Hz:
-      *val = ISM330DLC_XL_ODR_833Hz;
+    case LSM6DSR_XL_ODR_833Hz:
+      *val = LSM6DSR_XL_ODR_833Hz;
       break;
 
-    case ISM330DLC_XL_ODR_1k66Hz:
-      *val = ISM330DLC_XL_ODR_1k66Hz;
+    case LSM6DSR_XL_ODR_1k66Hz:
+      *val = LSM6DSR_XL_ODR_1k66Hz;
       break;
 
-    case ISM330DLC_XL_ODR_3k33Hz:
-      *val = ISM330DLC_XL_ODR_3k33Hz;
+    case LSM6DSR_XL_ODR_3k33Hz:
+      *val = LSM6DSR_XL_ODR_3k33Hz;
       break;
 
-    case ISM330DLC_XL_ODR_6k66Hz:
-      *val = ISM330DLC_XL_ODR_6k66Hz;
+    case LSM6DSR_XL_ODR_6k66Hz:
+      *val = LSM6DSR_XL_ODR_6k66Hz;
       break;
 
-    case ISM330DLC_XL_ODR_1Hz6:
-      *val = ISM330DLC_XL_ODR_1Hz6;
+    case LSM6DSR_XL_ODR_1Hz6:
+      *val = LSM6DSR_XL_ODR_1Hz6;
       break;
 
     default:
-      *val = ISM330DLC_XL_ODR_OFF;
+      *val = LSM6DSR_XL_ODR_OFF;
       break;
   }
 
@@ -327,17 +327,17 @@ int32_t ism330dlc_xl_data_rate_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_full_scale_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_fs_g_t val)
+int32_t lsm6dsr_gy_full_scale_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_fs_g_t val)
 {
-  ism330dlc_ctrl2_g_t ctrl2_g;
+  lsm6dsr_ctrl2_g_t ctrl2_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
 
   if (ret == 0)
   {
     ctrl2_g.fs_g = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
   }
 
   return ret;
@@ -351,37 +351,37 @@ int32_t ism330dlc_gy_full_scale_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_full_scale_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_fs_g_t *val)
+int32_t lsm6dsr_gy_full_scale_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_fs_g_t *val)
 {
-  ism330dlc_ctrl2_g_t ctrl2_g;
+  lsm6dsr_ctrl2_g_t ctrl2_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
 
   switch (ctrl2_g.fs_g)
   {
-    case ISM330DLC_250dps:
-      *val = ISM330DLC_250dps;
+    case LSM6DSR_250dps:
+      *val = LSM6DSR_250dps;
       break;
 
-    case ISM330DLC_125dps:
-      *val = ISM330DLC_125dps;
+    case LSM6DSR_125dps:
+      *val = LSM6DSR_125dps;
       break;
 
-    case ISM330DLC_500dps:
-      *val = ISM330DLC_500dps;
+    case LSM6DSR_500dps:
+      *val = LSM6DSR_500dps;
       break;
 
-    case ISM330DLC_1000dps:
-      *val = ISM330DLC_1000dps;
+    case LSM6DSR_1000dps:
+      *val = LSM6DSR_1000dps;
       break;
 
-    case ISM330DLC_2000dps:
-      *val = ISM330DLC_2000dps;
+    case LSM6DSR_2000dps:
+      *val = LSM6DSR_2000dps;
       break;
 
     default:
-      *val = ISM330DLC_250dps;
+      *val = LSM6DSR_250dps;
       break;
   }
 
@@ -396,17 +396,17 @@ int32_t ism330dlc_gy_full_scale_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_data_rate_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_odr_g_t val)
+int32_t lsm6dsr_gy_data_rate_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_odr_g_t val)
 {
-  ism330dlc_ctrl2_g_t ctrl2_g;
+  lsm6dsr_ctrl2_g_t ctrl2_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
 
   if (ret == 0)
   {
     ctrl2_g.odr_g = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
   }
 
   return ret;
@@ -420,61 +420,61 @@ int32_t ism330dlc_gy_data_rate_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_data_rate_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_odr_g_t *val)
+int32_t lsm6dsr_gy_data_rate_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_odr_g_t *val)
 {
-  ism330dlc_ctrl2_g_t ctrl2_g;
+  lsm6dsr_ctrl2_g_t ctrl2_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL2_G, (uint8_t *)&ctrl2_g, 1);
 
   switch (ctrl2_g.odr_g)
   {
-    case ISM330DLC_GY_ODR_OFF:
-      *val = ISM330DLC_GY_ODR_OFF;
+    case LSM6DSR_GY_ODR_OFF:
+      *val = LSM6DSR_GY_ODR_OFF;
       break;
 
-    case ISM330DLC_GY_ODR_12Hz5:
-      *val = ISM330DLC_GY_ODR_12Hz5;
+    case LSM6DSR_GY_ODR_12Hz5:
+      *val = LSM6DSR_GY_ODR_12Hz5;
       break;
 
-    case ISM330DLC_GY_ODR_26Hz:
-      *val = ISM330DLC_GY_ODR_26Hz;
+    case LSM6DSR_GY_ODR_26Hz:
+      *val = LSM6DSR_GY_ODR_26Hz;
       break;
 
-    case ISM330DLC_GY_ODR_52Hz:
-      *val = ISM330DLC_GY_ODR_52Hz;
+    case LSM6DSR_GY_ODR_52Hz:
+      *val = LSM6DSR_GY_ODR_52Hz;
       break;
 
-    case ISM330DLC_GY_ODR_104Hz:
-      *val = ISM330DLC_GY_ODR_104Hz;
+    case LSM6DSR_GY_ODR_104Hz:
+      *val = LSM6DSR_GY_ODR_104Hz;
       break;
 
-    case ISM330DLC_GY_ODR_208Hz:
-      *val = ISM330DLC_GY_ODR_208Hz;
+    case LSM6DSR_GY_ODR_208Hz:
+      *val = LSM6DSR_GY_ODR_208Hz;
       break;
 
-    case ISM330DLC_GY_ODR_416Hz:
-      *val = ISM330DLC_GY_ODR_416Hz;
+    case LSM6DSR_GY_ODR_416Hz:
+      *val = LSM6DSR_GY_ODR_416Hz;
       break;
 
-    case ISM330DLC_GY_ODR_833Hz:
-      *val = ISM330DLC_GY_ODR_833Hz;
+    case LSM6DSR_GY_ODR_833Hz:
+      *val = LSM6DSR_GY_ODR_833Hz;
       break;
 
-    case ISM330DLC_GY_ODR_1k66Hz:
-      *val = ISM330DLC_GY_ODR_1k66Hz;
+    case LSM6DSR_GY_ODR_1k66Hz:
+      *val = LSM6DSR_GY_ODR_1k66Hz;
       break;
 
-    case ISM330DLC_GY_ODR_3k33Hz:
-      *val = ISM330DLC_GY_ODR_3k33Hz;
+    case LSM6DSR_GY_ODR_3k33Hz:
+      *val = LSM6DSR_GY_ODR_3k33Hz;
       break;
 
-    case ISM330DLC_GY_ODR_6k66Hz:
-      *val = ISM330DLC_GY_ODR_6k66Hz;
+    case LSM6DSR_GY_ODR_6k66Hz:
+      *val = LSM6DSR_GY_ODR_6k66Hz;
       break;
 
     default:
-      *val = ISM330DLC_GY_ODR_OFF;
+      *val = LSM6DSR_GY_ODR_OFF;
       break;
   }
 
@@ -489,17 +489,17 @@ int32_t ism330dlc_gy_data_rate_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_block_data_update_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_block_data_update_set(stmdev_ctx_t *ctx,
                                         uint8_t val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   if (ret == 0)
   {
     ctrl3_c.bdu = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   }
 
   return ret;
@@ -513,12 +513,12 @@ int32_t ism330dlc_block_data_update_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_block_data_update_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_block_data_update_get(stmdev_ctx_t *ctx,
                                         uint8_t *val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   *val = ctrl3_c.bdu;
 
   return ret;
@@ -533,17 +533,17 @@ int32_t ism330dlc_block_data_update_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_offset_weight_set(stmdev_ctx_t *ctx,
-                                       ism330dlc_usr_off_w_t val)
+int32_t lsm6dsr_xl_offset_weight_set(stmdev_ctx_t *ctx,
+                                       lsm6dsr_usr_off_w_t val)
 {
-  ism330dlc_ctrl6_c_t ctrl6_c;
+  lsm6dsr_ctrl6_c_t ctrl6_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
 
   if (ret == 0)
   {
     ctrl6_c.usr_off_w = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
   }
 
   return ret;
@@ -558,25 +558,25 @@ int32_t ism330dlc_xl_offset_weight_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_offset_weight_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_usr_off_w_t *val)
+int32_t lsm6dsr_xl_offset_weight_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_usr_off_w_t *val)
 {
-  ism330dlc_ctrl6_c_t ctrl6_c;
+  lsm6dsr_ctrl6_c_t ctrl6_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
 
   switch (ctrl6_c.usr_off_w)
   {
-    case ISM330DLC_LSb_1mg:
-      *val = ISM330DLC_LSb_1mg;
+    case LSM6DSR_LSb_1mg:
+      *val = LSM6DSR_LSb_1mg;
       break;
 
-    case ISM330DLC_LSb_16mg:
-      *val = ISM330DLC_LSb_16mg;
+    case LSM6DSR_LSb_16mg:
+      *val = LSM6DSR_LSb_16mg;
       break;
 
     default:
-      *val = ISM330DLC_LSb_1mg;
+      *val = LSM6DSR_LSb_1mg;
       break;
   }
 
@@ -591,17 +591,17 @@ int32_t ism330dlc_xl_offset_weight_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_power_mode_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_xl_hm_mode_t val)
+int32_t lsm6dsr_xl_power_mode_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_xl_hm_mode_t val)
 {
-  ism330dlc_ctrl6_c_t ctrl6_c;
+  lsm6dsr_ctrl6_c_t ctrl6_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
 
   if (ret == 0)
   {
     ctrl6_c.xl_hm_mode = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
   }
 
   return ret;
@@ -615,25 +615,25 @@ int32_t ism330dlc_xl_power_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_power_mode_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_xl_hm_mode_t *val)
+int32_t lsm6dsr_xl_power_mode_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_xl_hm_mode_t *val)
 {
-  ism330dlc_ctrl6_c_t ctrl6_c;
+  lsm6dsr_ctrl6_c_t ctrl6_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
 
   switch (ctrl6_c.xl_hm_mode)
   {
-    case ISM330DLC_XL_HIGH_PERFORMANCE:
-      *val = ISM330DLC_XL_HIGH_PERFORMANCE;
+    case LSM6DSR_XL_HIGH_PERFORMANCE:
+      *val = LSM6DSR_XL_HIGH_PERFORMANCE;
       break;
 
-    case ISM330DLC_XL_NORMAL:
-      *val = ISM330DLC_XL_NORMAL;
+    case LSM6DSR_XL_NORMAL:
+      *val = LSM6DSR_XL_NORMAL;
       break;
 
     default:
-      *val = ISM330DLC_XL_HIGH_PERFORMANCE;
+      *val = LSM6DSR_XL_HIGH_PERFORMANCE;
       break;
   }
 
@@ -650,17 +650,17 @@ int32_t ism330dlc_xl_power_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_rounding_on_status_set(stmdev_ctx_t *ctx,
-                                         ism330dlc_rounding_status_t val)
+int32_t lsm6dsr_rounding_on_status_set(stmdev_ctx_t *ctx,
+                                         lsm6dsr_rounding_status_t val)
 {
-  ism330dlc_ctrl7_g_t ctrl7_g;
+  lsm6dsr_ctrl7_g_t ctrl7_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
 
   if (ret == 0)
   {
     ctrl7_g.rounding_status = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
   }
 
   return ret;
@@ -676,25 +676,25 @@ int32_t ism330dlc_rounding_on_status_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_rounding_on_status_get(stmdev_ctx_t *ctx,
-                                         ism330dlc_rounding_status_t *val)
+int32_t lsm6dsr_rounding_on_status_get(stmdev_ctx_t *ctx,
+                                         lsm6dsr_rounding_status_t *val)
 {
-  ism330dlc_ctrl7_g_t ctrl7_g;
+  lsm6dsr_ctrl7_g_t ctrl7_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
 
   switch (ctrl7_g.rounding_status)
   {
-    case ISM330DLC_STAT_RND_DISABLE:
-      *val = ISM330DLC_STAT_RND_DISABLE;
+    case LSM6DSR_STAT_RND_DISABLE:
+      *val = LSM6DSR_STAT_RND_DISABLE;
       break;
 
-    case ISM330DLC_STAT_RND_ENABLE:
-      *val = ISM330DLC_STAT_RND_ENABLE;
+    case LSM6DSR_STAT_RND_ENABLE:
+      *val = LSM6DSR_STAT_RND_ENABLE;
       break;
 
     default:
-      *val = ISM330DLC_STAT_RND_DISABLE;
+      *val = LSM6DSR_STAT_RND_DISABLE;
       break;
   }
 
@@ -709,17 +709,17 @@ int32_t ism330dlc_rounding_on_status_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_power_mode_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_g_hm_mode_t val)
+int32_t lsm6dsr_gy_power_mode_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_g_hm_mode_t val)
 {
-  ism330dlc_ctrl7_g_t ctrl7_g;
+  lsm6dsr_ctrl7_g_t ctrl7_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
 
   if (ret == 0)
   {
     ctrl7_g.g_hm_mode = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
   }
 
   return ret;
@@ -733,25 +733,25 @@ int32_t ism330dlc_gy_power_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_power_mode_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_g_hm_mode_t *val)
+int32_t lsm6dsr_gy_power_mode_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_g_hm_mode_t *val)
 {
-  ism330dlc_ctrl7_g_t ctrl7_g;
+  lsm6dsr_ctrl7_g_t ctrl7_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
 
   switch (ctrl7_g.g_hm_mode)
   {
-    case ISM330DLC_GY_HIGH_PERFORMANCE:
-      *val = ISM330DLC_GY_HIGH_PERFORMANCE;
+    case LSM6DSR_GY_HIGH_PERFORMANCE:
+      *val = LSM6DSR_GY_HIGH_PERFORMANCE;
       break;
 
-    case ISM330DLC_GY_NORMAL:
-      *val = ISM330DLC_GY_NORMAL;
+    case LSM6DSR_GY_NORMAL:
+      *val = LSM6DSR_GY_NORMAL;
       break;
 
     default:
-      *val = ISM330DLC_GY_HIGH_PERFORMANCE;
+      *val = LSM6DSR_GY_HIGH_PERFORMANCE;
       break;
   }
 
@@ -767,46 +767,46 @@ int32_t ism330dlc_gy_power_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_all_sources_get(stmdev_ctx_t *ctx,
-                                  ism330dlc_all_sources_t *val)
+int32_t lsm6dsr_all_sources_get(stmdev_ctx_t *ctx,
+                                  lsm6dsr_all_sources_t *val)
 {
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_SRC,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_SRC,
                            (uint8_t *) & (val->wake_up_src), 1);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_SRC,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_SRC,
                              (uint8_t *) & (val->tap_src), 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_D6D_SRC,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_D6D_SRC,
                              (uint8_t *) & (val->d6d_src), 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_STATUS_REG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_REG,
                              (uint8_t *) & (val->status_reg), 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_FUNC_SRC1,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_FUNC_SRC1,
                              (uint8_t *) & (val->func_src1), 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_FUNC_SRC2,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_FUNC_SRC2,
                              (uint8_t *) & (val->func_src2), 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+    ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
   }
 
   return ret;
@@ -819,11 +819,11 @@ int32_t ism330dlc_all_sources_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_status_reg_get(stmdev_ctx_t *ctx,
-                                 ism330dlc_status_reg_t *val)
+int32_t lsm6dsr_status_reg_get(stmdev_ctx_t *ctx,
+                                 lsm6dsr_status_reg_t *val)
 {
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_STATUS_REG, (uint8_t *) val, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_REG, (uint8_t *) val, 1);
 
   return ret;
 }
@@ -836,12 +836,12 @@ int32_t ism330dlc_status_reg_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_flag_data_ready_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_xl_flag_data_ready_get(stmdev_ctx_t *ctx,
                                          uint8_t *val)
 {
-  ism330dlc_status_reg_t status_reg;
+  lsm6dsr_status_reg_t status_reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_STATUS_REG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_REG,
                            (uint8_t *)&status_reg, 1);
   *val = status_reg.xlda;
 
@@ -856,12 +856,12 @@ int32_t ism330dlc_xl_flag_data_ready_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_flag_data_ready_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_gy_flag_data_ready_get(stmdev_ctx_t *ctx,
                                          uint8_t *val)
 {
-  ism330dlc_status_reg_t status_reg;
+  lsm6dsr_status_reg_t status_reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_STATUS_REG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_REG,
                            (uint8_t *)&status_reg, 1);
   *val = status_reg.gda;
 
@@ -876,12 +876,12 @@ int32_t ism330dlc_gy_flag_data_ready_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_temp_flag_data_ready_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_temp_flag_data_ready_get(stmdev_ctx_t *ctx,
                                            uint8_t *val)
 {
-  ism330dlc_status_reg_t status_reg;
+  lsm6dsr_status_reg_t status_reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_STATUS_REG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_REG,
                            (uint8_t *)&status_reg, 1);
   *val = status_reg.tda;
 
@@ -898,10 +898,10 @@ int32_t ism330dlc_temp_flag_data_ready_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_usr_offset_set(stmdev_ctx_t *ctx, uint8_t *buff)
+int32_t lsm6dsr_xl_usr_offset_set(stmdev_ctx_t *ctx, uint8_t *buff)
 {
   int32_t ret;
-  ret = ism330dlc_write_reg(ctx, ISM330DLC_X_OFS_USR, buff, 3);
+  ret = lsm6dsr_write_reg(ctx, LSM6DSR_X_OFS_USR, buff, 3);
 
   return ret;
 }
@@ -916,10 +916,10 @@ int32_t ism330dlc_xl_usr_offset_set(stmdev_ctx_t *ctx, uint8_t *buff)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_usr_offset_get(stmdev_ctx_t *ctx, uint8_t *buff)
+int32_t lsm6dsr_xl_usr_offset_get(stmdev_ctx_t *ctx, uint8_t *buff)
 {
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_X_OFS_USR, buff, 3);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_X_OFS_USR, buff, 3);
 
   return ret;
 }
@@ -930,7 +930,7 @@ int32_t ism330dlc_xl_usr_offset_get(stmdev_ctx_t *ctx, uint8_t *buff)
   */
 
 /**
-  * @defgroup    ISM330DLC_Timestamp
+  * @defgroup    LSM6DSR_Timestamp
   * @brief       This section groups all the functions that manage the
   *              timestamp generation.
   * @{
@@ -946,11 +946,11 @@ int32_t ism330dlc_xl_usr_offset_get(stmdev_ctx_t *ctx, uint8_t *buff)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_timestamp_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_timestamp_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl10_c_t ctrl10_c;
+  lsm6dsr_ctrl10_c_t ctrl10_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL10_C,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL10_C,
                            (uint8_t *)&ctrl10_c, 1);
 
   if (ret == 0)
@@ -960,7 +960,7 @@ int32_t ism330dlc_timestamp_set(stmdev_ctx_t *ctx, uint8_t val)
     if (val != 0x00U)
     {
       ctrl10_c.func_en = val;
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL10_C,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL10_C,
                                 (uint8_t *)&ctrl10_c, 1);
     }
   }
@@ -977,11 +977,11 @@ int32_t ism330dlc_timestamp_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_timestamp_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_timestamp_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl10_c_t ctrl10_c;
+  lsm6dsr_ctrl10_c_t ctrl10_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL10_C,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL10_C,
                            (uint8_t *)&ctrl10_c, 1);
   *val = ctrl10_c.timer_en;
 
@@ -1001,18 +1001,18 @@ int32_t ism330dlc_timestamp_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_timestamp_res_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_timer_hr_t val)
+int32_t lsm6dsr_timestamp_res_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_timer_hr_t val)
 {
-  ism330dlc_wake_up_dur_t wake_up_dur;
+  lsm6dsr_wake_up_dur_t wake_up_dur;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                            (uint8_t *)&wake_up_dur, 1);
 
   if (ret == 0)
   {
     wake_up_dur.timer_hr = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                               (uint8_t *)&wake_up_dur, 1);
   }
 
@@ -1032,26 +1032,26 @@ int32_t ism330dlc_timestamp_res_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_timestamp_res_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_timer_hr_t *val)
+int32_t lsm6dsr_timestamp_res_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_timer_hr_t *val)
 {
-  ism330dlc_wake_up_dur_t wake_up_dur;
+  lsm6dsr_wake_up_dur_t wake_up_dur;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                            (uint8_t *)&wake_up_dur, 1);
 
   switch (wake_up_dur.timer_hr)
   {
-    case ISM330DLC_LSB_6ms4:
-      *val = ISM330DLC_LSB_6ms4;
+    case LSM6DSR_LSB_6ms4:
+      *val = LSM6DSR_LSB_6ms4;
       break;
 
-    case ISM330DLC_LSB_25us:
-      *val = ISM330DLC_LSB_25us;
+    case LSM6DSR_LSB_25us:
+      *val = LSM6DSR_LSB_25us;
       break;
 
     default:
-      *val = ISM330DLC_LSB_6ms4;
+      *val = LSM6DSR_LSB_6ms4;
       break;
   }
 
@@ -1064,7 +1064,7 @@ int32_t ism330dlc_timestamp_res_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_Dataoutput
+  * @defgroup    LSM6DSR_Dataoutput
   * @brief       This section groups all the data output functions.
   * @{
   *
@@ -1079,17 +1079,17 @@ int32_t ism330dlc_timestamp_res_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_rounding_mode_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_rounding_t val)
+int32_t lsm6dsr_rounding_mode_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_rounding_t val)
 {
-  ism330dlc_ctrl5_c_t ctrl5_c;
+  lsm6dsr_ctrl5_c_t ctrl5_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
 
   if (ret == 0)
   {
     ctrl5_c.rounding = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
   }
 
   return ret;
@@ -1104,49 +1104,49 @@ int32_t ism330dlc_rounding_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_rounding_mode_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_rounding_t *val)
+int32_t lsm6dsr_rounding_mode_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_rounding_t *val)
 {
-  ism330dlc_ctrl5_c_t ctrl5_c;
+  lsm6dsr_ctrl5_c_t ctrl5_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
 
   switch (ctrl5_c.rounding)
   {
-    case ISM330DLC_ROUND_DISABLE:
-      *val = ISM330DLC_ROUND_DISABLE;
+    case LSM6DSR_ROUND_DISABLE:
+      *val = LSM6DSR_ROUND_DISABLE;
       break;
 
-    case ISM330DLC_ROUND_XL:
-      *val = ISM330DLC_ROUND_XL;
+    case LSM6DSR_ROUND_XL:
+      *val = LSM6DSR_ROUND_XL;
       break;
 
-    case ISM330DLC_ROUND_GY:
-      *val = ISM330DLC_ROUND_GY;
+    case LSM6DSR_ROUND_GY:
+      *val = LSM6DSR_ROUND_GY;
       break;
 
-    case ISM330DLC_ROUND_GY_XL:
-      *val = ISM330DLC_ROUND_GY_XL;
+    case LSM6DSR_ROUND_GY_XL:
+      *val = LSM6DSR_ROUND_GY_XL;
       break;
 
-    case ISM330DLC_ROUND_SH1_TO_SH6:
-      *val = ISM330DLC_ROUND_SH1_TO_SH6;
+    case LSM6DSR_ROUND_SH1_TO_SH6:
+      *val = LSM6DSR_ROUND_SH1_TO_SH6;
       break;
 
-    case ISM330DLC_ROUND_XL_SH1_TO_SH6:
-      *val = ISM330DLC_ROUND_XL_SH1_TO_SH6;
+    case LSM6DSR_ROUND_XL_SH1_TO_SH6:
+      *val = LSM6DSR_ROUND_XL_SH1_TO_SH6;
       break;
 
-    case ISM330DLC_ROUND_GY_XL_SH1_TO_SH12:
-      *val = ISM330DLC_ROUND_GY_XL_SH1_TO_SH12;
+    case LSM6DSR_ROUND_GY_XL_SH1_TO_SH12:
+      *val = LSM6DSR_ROUND_GY_XL_SH1_TO_SH12;
       break;
 
-    case ISM330DLC_ROUND_GY_XL_SH1_TO_SH6:
-      *val = ISM330DLC_ROUND_GY_XL_SH1_TO_SH6;
+    case LSM6DSR_ROUND_GY_XL_SH1_TO_SH6:
+      *val = LSM6DSR_ROUND_GY_XL_SH1_TO_SH6;
       break;
 
     default:
-      *val = ISM330DLC_ROUND_DISABLE;
+      *val = LSM6DSR_ROUND_DISABLE;
       break;
   }
 
@@ -1162,11 +1162,11 @@ int32_t ism330dlc_rounding_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_temperature_raw_get(stmdev_ctx_t *ctx, int16_t *val)
+int32_t lsm6dsr_temperature_raw_get(stmdev_ctx_t *ctx, int16_t *val)
 {
   uint8_t buff[2];
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_OUT_TEMP_L, buff, 2);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_OUT_TEMP_L, buff, 2);
   *val = (int16_t)buff[1];
   *val = (*val * 256) + (int16_t)buff[0];
 
@@ -1182,12 +1182,12 @@ int32_t ism330dlc_temperature_raw_get(stmdev_ctx_t *ctx, int16_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_angular_rate_raw_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_angular_rate_raw_get(stmdev_ctx_t *ctx,
                                        int16_t *val)
 {
   uint8_t buff[6];
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_OUTX_L_G, buff, 6);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_OUTX_L_G, buff, 6);
   val[0] = (int16_t)buff[1];
   val[0] = (val[0] * 256) + (int16_t)buff[0];
   val[1] = (int16_t)buff[3];
@@ -1207,12 +1207,12 @@ int32_t ism330dlc_angular_rate_raw_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_acceleration_raw_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_acceleration_raw_get(stmdev_ctx_t *ctx,
                                        int16_t *val)
 {
   uint8_t buff[6];
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_OUTX_L_XL, buff, 6);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_OUTX_L_XL, buff, 6);
   val[0] = (int16_t)buff[1];
   val[0] = (val[0] * 256) + (int16_t)buff[0];
   val[1] = (int16_t)buff[3];
@@ -1231,12 +1231,12 @@ int32_t ism330dlc_acceleration_raw_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_calibrated_raw_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_mag_calibrated_raw_get(stmdev_ctx_t *ctx,
                                          int16_t *val)
 {
   uint8_t buff[6];
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_OUT_MAG_RAW_X_L, buff, 6);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_OUT_MAG_RAW_X_L, buff, 6);
   val[0] = (int16_t)buff[1];
   val[0] = (val[0] * 256) + (int16_t)buff[0];
   val[1] = (int16_t)buff[3];
@@ -1256,12 +1256,12 @@ int32_t ism330dlc_mag_calibrated_raw_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_raw_data_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_fifo_raw_data_get(stmdev_ctx_t *ctx,
                                     uint8_t *buffer,
                                     uint8_t len)
 {
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_DATA_OUT_L, buffer, len);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_DATA_OUT_L, buffer, len);
 
   return ret;
 }
@@ -1272,7 +1272,7 @@ int32_t ism330dlc_fifo_raw_data_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_common
+  * @defgroup    LSM6DSR_common
   * @brief       This section groups common useful functions.
   * @{
   *
@@ -1287,18 +1287,18 @@ int32_t ism330dlc_fifo_raw_data_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mem_bank_set(stmdev_ctx_t *ctx,
-                               ism330dlc_func_cfg_en_t val)
+int32_t lsm6dsr_mem_bank_set(stmdev_ctx_t *ctx,
+                               lsm6dsr_func_cfg_en_t val)
 {
-  ism330dlc_func_cfg_access_t func_cfg_access;
+  lsm6dsr_func_cfg_access_t func_cfg_access;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FUNC_CFG_ACCESS,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FUNC_CFG_ACCESS,
                            (uint8_t *)&func_cfg_access, 1);
 
   if (ret == 0)
   {
     func_cfg_access.func_cfg_en = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FUNC_CFG_ACCESS,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FUNC_CFG_ACCESS,
                               (uint8_t *)&func_cfg_access, 1);
   }
 
@@ -1314,22 +1314,22 @@ int32_t ism330dlc_mem_bank_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mem_bank_get(stmdev_ctx_t *ctx,
-                               ism330dlc_func_cfg_en_t *val)
+int32_t lsm6dsr_mem_bank_get(stmdev_ctx_t *ctx,
+                               lsm6dsr_func_cfg_en_t *val)
 {
-  ism330dlc_func_cfg_access_t func_cfg_access;
+  lsm6dsr_func_cfg_access_t func_cfg_access;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FUNC_CFG_ACCESS,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FUNC_CFG_ACCESS,
                            (uint8_t *)&func_cfg_access, 1);
 
   switch (func_cfg_access.func_cfg_en)
   {
-    case ISM330DLC_USER_BANK:
-      *val = ISM330DLC_USER_BANK;
+    case LSM6DSR_USER_BANK:
+      *val = LSM6DSR_USER_BANK;
       break;
 
     default:
-      *val = ISM330DLC_USER_BANK;
+      *val = LSM6DSR_USER_BANK;
       break;
   }
 
@@ -1344,18 +1344,18 @@ int32_t ism330dlc_mem_bank_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_data_ready_mode_set(stmdev_ctx_t *ctx,
-                                      ism330dlc_drdy_pulsed_t val)
+int32_t lsm6dsr_data_ready_mode_set(stmdev_ctx_t *ctx,
+                                      lsm6dsr_drdy_pulsed_t val)
 {
-  ism330dlc_drdy_pulse_cfg_t drdy_pulse_cfg_g;
+  lsm6dsr_drdy_pulse_cfg_t drdy_pulse_cfg_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_DRDY_PULSE_CFG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_DRDY_PULSE_CFG,
                            (uint8_t *)&drdy_pulse_cfg_g, 1);
 
   if (ret == 0)
   {
     drdy_pulse_cfg_g.drdy_pulsed = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_DRDY_PULSE_CFG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_DRDY_PULSE_CFG,
                               (uint8_t *)&drdy_pulse_cfg_g, 1);
   }
 
@@ -1370,26 +1370,26 @@ int32_t ism330dlc_data_ready_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_data_ready_mode_get(stmdev_ctx_t *ctx,
-                                      ism330dlc_drdy_pulsed_t *val)
+int32_t lsm6dsr_data_ready_mode_get(stmdev_ctx_t *ctx,
+                                      lsm6dsr_drdy_pulsed_t *val)
 {
-  ism330dlc_drdy_pulse_cfg_t drdy_pulse_cfg_g;
+  lsm6dsr_drdy_pulse_cfg_t drdy_pulse_cfg_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_DRDY_PULSE_CFG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_DRDY_PULSE_CFG,
                            (uint8_t *)&drdy_pulse_cfg_g, 1);
 
   switch (drdy_pulse_cfg_g.drdy_pulsed)
   {
-    case ISM330DLC_DRDY_LATCHED:
-      *val = ISM330DLC_DRDY_LATCHED;
+    case LSM6DSR_DRDY_LATCHED:
+      *val = LSM6DSR_DRDY_LATCHED;
       break;
 
-    case ISM330DLC_DRDY_PULSED:
-      *val = ISM330DLC_DRDY_PULSED;
+    case LSM6DSR_DRDY_PULSED:
+      *val = LSM6DSR_DRDY_PULSED;
       break;
 
     default:
-      *val = ISM330DLC_DRDY_LATCHED;
+      *val = LSM6DSR_DRDY_LATCHED;
       break;
   }
 
@@ -1404,10 +1404,10 @@ int32_t ism330dlc_data_ready_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_device_id_get(stmdev_ctx_t *ctx, uint8_t *buff)
+int32_t lsm6dsr_device_id_get(stmdev_ctx_t *ctx, uint8_t *buff)
 {
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WHO_AM_I, buff, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WHO_AM_I, buff, 1);
 
   return ret;
 }
@@ -1420,16 +1420,16 @@ int32_t ism330dlc_device_id_get(stmdev_ctx_t *ctx, uint8_t *buff)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_reset_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_reset_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   if (ret == 0)
   {
     ctrl3_c.sw_reset = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   }
 
   return ret;
@@ -1443,11 +1443,11 @@ int32_t ism330dlc_reset_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_reset_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_reset_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   *val = ctrl3_c.sw_reset;
 
   return ret;
@@ -1461,17 +1461,17 @@ int32_t ism330dlc_reset_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_data_format_set(stmdev_ctx_t *ctx,
-                                  ism330dlc_ble_t val)
+int32_t lsm6dsr_data_format_set(stmdev_ctx_t *ctx,
+                                  lsm6dsr_ble_t val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   if (ret == 0)
   {
     ctrl3_c.ble = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   }
 
   return ret;
@@ -1485,25 +1485,25 @@ int32_t ism330dlc_data_format_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_data_format_get(stmdev_ctx_t *ctx,
-                                  ism330dlc_ble_t *val)
+int32_t lsm6dsr_data_format_get(stmdev_ctx_t *ctx,
+                                  lsm6dsr_ble_t *val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   switch (ctrl3_c.ble)
   {
-    case ISM330DLC_LSB_AT_LOW_ADD:
-      *val = ISM330DLC_LSB_AT_LOW_ADD;
+    case LSM6DSR_LSB_AT_LOW_ADD:
+      *val = LSM6DSR_LSB_AT_LOW_ADD;
       break;
 
-    case ISM330DLC_MSB_AT_LOW_ADD:
-      *val = ISM330DLC_MSB_AT_LOW_ADD;
+    case LSM6DSR_MSB_AT_LOW_ADD:
+      *val = LSM6DSR_MSB_AT_LOW_ADD;
       break;
 
     default:
-      *val = ISM330DLC_LSB_AT_LOW_ADD;
+      *val = LSM6DSR_LSB_AT_LOW_ADD;
       break;
   }
 
@@ -1519,16 +1519,16 @@ int32_t ism330dlc_data_format_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_auto_increment_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_auto_increment_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   if (ret == 0)
   {
     ctrl3_c.if_inc = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   }
 
   return ret;
@@ -1543,11 +1543,11 @@ int32_t ism330dlc_auto_increment_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_auto_increment_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_auto_increment_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   *val = ctrl3_c.if_inc;
 
   return ret;
@@ -1561,16 +1561,16 @@ int32_t ism330dlc_auto_increment_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_boot_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_boot_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   if (ret == 0)
   {
     ctrl3_c.boot = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   }
 
   return ret;
@@ -1584,11 +1584,11 @@ int32_t ism330dlc_boot_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_boot_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_boot_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   *val = ctrl3_c.boot;
 
   return ret;
@@ -1602,17 +1602,17 @@ int32_t ism330dlc_boot_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_self_test_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_st_xl_t val)
+int32_t lsm6dsr_xl_self_test_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_st_xl_t val)
 {
-  ism330dlc_ctrl5_c_t ctrl5_c;
+  lsm6dsr_ctrl5_c_t ctrl5_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
 
   if (ret == 0)
   {
     ctrl5_c.st_xl = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
   }
 
   return ret;
@@ -1626,29 +1626,29 @@ int32_t ism330dlc_xl_self_test_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_self_test_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_st_xl_t *val)
+int32_t lsm6dsr_xl_self_test_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_st_xl_t *val)
 {
-  ism330dlc_ctrl5_c_t ctrl5_c;
+  lsm6dsr_ctrl5_c_t ctrl5_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
 
   switch (ctrl5_c.st_xl)
   {
-    case ISM330DLC_XL_ST_DISABLE:
-      *val = ISM330DLC_XL_ST_DISABLE;
+    case LSM6DSR_XL_ST_DISABLE:
+      *val = LSM6DSR_XL_ST_DISABLE;
       break;
 
-    case ISM330DLC_XL_ST_POSITIVE:
-      *val = ISM330DLC_XL_ST_POSITIVE;
+    case LSM6DSR_XL_ST_POSITIVE:
+      *val = LSM6DSR_XL_ST_POSITIVE;
       break;
 
-    case ISM330DLC_XL_ST_NEGATIVE:
-      *val = ISM330DLC_XL_ST_NEGATIVE;
+    case LSM6DSR_XL_ST_NEGATIVE:
+      *val = LSM6DSR_XL_ST_NEGATIVE;
       break;
 
     default:
-      *val = ISM330DLC_XL_ST_DISABLE;
+      *val = LSM6DSR_XL_ST_DISABLE;
       break;
   }
 
@@ -1663,17 +1663,17 @@ int32_t ism330dlc_xl_self_test_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_self_test_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_st_g_t val)
+int32_t lsm6dsr_gy_self_test_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_st_g_t val)
 {
-  ism330dlc_ctrl5_c_t ctrl5_c;
+  lsm6dsr_ctrl5_c_t ctrl5_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
 
   if (ret == 0)
   {
     ctrl5_c.st_g = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
   }
 
   return ret;
@@ -1687,29 +1687,29 @@ int32_t ism330dlc_gy_self_test_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_self_test_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_st_g_t *val)
+int32_t lsm6dsr_gy_self_test_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_st_g_t *val)
 {
-  ism330dlc_ctrl5_c_t ctrl5_c;
+  lsm6dsr_ctrl5_c_t ctrl5_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
 
   switch (ctrl5_c.st_g)
   {
-    case ISM330DLC_GY_ST_DISABLE:
-      *val = ISM330DLC_GY_ST_DISABLE;
+    case LSM6DSR_GY_ST_DISABLE:
+      *val = LSM6DSR_GY_ST_DISABLE;
       break;
 
-    case ISM330DLC_GY_ST_POSITIVE:
-      *val = ISM330DLC_GY_ST_POSITIVE;
+    case LSM6DSR_GY_ST_POSITIVE:
+      *val = LSM6DSR_GY_ST_POSITIVE;
       break;
 
-    case ISM330DLC_GY_ST_NEGATIVE:
-      *val = ISM330DLC_GY_ST_NEGATIVE;
+    case LSM6DSR_GY_ST_NEGATIVE:
+      *val = LSM6DSR_GY_ST_NEGATIVE;
       break;
 
     default:
-      *val = ISM330DLC_GY_ST_DISABLE;
+      *val = LSM6DSR_GY_ST_DISABLE;
       break;
   }
 
@@ -1722,7 +1722,7 @@ int32_t ism330dlc_gy_self_test_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_filters
+  * @defgroup    LSM6DSR_filters
   * @brief       This section group all the functions concerning the filters
   *              configuration that impact both accelerometer and gyro.
   * @{
@@ -1738,17 +1738,17 @@ int32_t ism330dlc_gy_self_test_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_filter_settling_mask_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_filter_settling_mask_set(stmdev_ctx_t *ctx,
                                            uint8_t val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
 
   if (ret == 0)
   {
     ctrl4_c.drdy_mask = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   }
 
   return ret;
@@ -1763,12 +1763,12 @@ int32_t ism330dlc_filter_settling_mask_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_filter_settling_mask_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_filter_settling_mask_get(stmdev_ctx_t *ctx,
                                            uint8_t *val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   *val = ctrl4_c.drdy_mask;
 
   return ret;
@@ -1783,17 +1783,17 @@ int32_t ism330dlc_filter_settling_mask_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_hp_path_internal_set(stmdev_ctx_t *ctx,
-                                          ism330dlc_slope_fds_t val)
+int32_t lsm6dsr_xl_hp_path_internal_set(stmdev_ctx_t *ctx,
+                                          lsm6dsr_slope_fds_t val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   if (ret == 0)
   {
     tap_cfg.slope_fds = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   }
 
   return ret;
@@ -1808,25 +1808,25 @@ int32_t ism330dlc_xl_hp_path_internal_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_hp_path_internal_get(stmdev_ctx_t *ctx,
-                                          ism330dlc_slope_fds_t *val)
+int32_t lsm6dsr_xl_hp_path_internal_get(stmdev_ctx_t *ctx,
+                                          lsm6dsr_slope_fds_t *val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   switch (tap_cfg.slope_fds)
   {
-    case ISM330DLC_USE_SLOPE:
-      *val = ISM330DLC_USE_SLOPE;
+    case LSM6DSR_USE_SLOPE:
+      *val = LSM6DSR_USE_SLOPE;
       break;
 
-    case ISM330DLC_USE_HPF:
-      *val = ISM330DLC_USE_HPF;
+    case LSM6DSR_USE_HPF:
+      *val = LSM6DSR_USE_HPF;
       break;
 
     default:
-      *val = ISM330DLC_USE_SLOPE;
+      *val = LSM6DSR_USE_SLOPE;
       break;
   }
 
@@ -1839,7 +1839,7 @@ int32_t ism330dlc_xl_hp_path_internal_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_accelerometer_filters
+  * @defgroup    LSM6DSR_accelerometer_filters
   * @brief       This section group all the functions concerning the filters
   *              configuration that impact accelerometer in every mode.
   * @{
@@ -1855,18 +1855,18 @@ int32_t ism330dlc_xl_hp_path_internal_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_filter_analog_set(stmdev_ctx_t *ctx,
-                                       ism330dlc_bw0_xl_t val)
+int32_t lsm6dsr_xl_filter_analog_set(stmdev_ctx_t *ctx,
+                                       lsm6dsr_bw0_xl_t val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                            (uint8_t *)&ctrl1_xl, 1);
 
   if (ret == 0)
   {
     ctrl1_xl.bw0_xl = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_XL,
                               (uint8_t *)&ctrl1_xl, 1);
   }
 
@@ -1882,26 +1882,26 @@ int32_t ism330dlc_xl_filter_analog_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_filter_analog_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_bw0_xl_t *val)
+int32_t lsm6dsr_xl_filter_analog_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_bw0_xl_t *val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                            (uint8_t *)&ctrl1_xl, 1);
 
   switch (ctrl1_xl.bw0_xl)
   {
-    case ISM330DLC_XL_ANA_BW_1k5Hz:
-      *val = ISM330DLC_XL_ANA_BW_1k5Hz;
+    case LSM6DSR_XL_ANA_BW_1k5Hz:
+      *val = LSM6DSR_XL_ANA_BW_1k5Hz;
       break;
 
-    case ISM330DLC_XL_ANA_BW_400Hz:
-      *val = ISM330DLC_XL_ANA_BW_400Hz;
+    case LSM6DSR_XL_ANA_BW_400Hz:
+      *val = LSM6DSR_XL_ANA_BW_400Hz;
       break;
 
     default:
-      *val = ISM330DLC_XL_ANA_BW_1k5Hz;
+      *val = LSM6DSR_XL_ANA_BW_1k5Hz;
       break;
   }
 
@@ -1914,7 +1914,7 @@ int32_t ism330dlc_xl_filter_analog_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_accelerometer_filters
+  * @defgroup    LSM6DSR_accelerometer_filters
   * @brief       This section group all the functions concerning the filters
   *              configuration that impact accelerometer.
   * @{
@@ -1930,31 +1930,31 @@ int32_t ism330dlc_xl_filter_analog_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_lp1_bandwidth_set(stmdev_ctx_t *ctx,
-                                       ism330dlc_lpf1_bw_sel_t val)
+int32_t lsm6dsr_xl_lp1_bandwidth_set(stmdev_ctx_t *ctx,
+                                       lsm6dsr_lpf1_bw_sel_t val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                            (uint8_t *)&ctrl1_xl, 1);
 
   if (ret == 0)
   {
     ctrl1_xl.lpf1_bw_sel = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_XL,
                               (uint8_t *)&ctrl1_xl, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+      ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                                (uint8_t *)&ctrl8_xl, 1);
 
       if (ret == 0)
       {
         ctrl8_xl.lpf2_xl_en = 0;
         ctrl8_xl.hp_slope_xl_en = 0;
-        ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL8_XL,
+        ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL8_XL,
                                   (uint8_t *)&ctrl8_xl, 1);
       }
     }
@@ -1972,13 +1972,13 @@ int32_t ism330dlc_xl_lp1_bandwidth_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_lp1_bandwidth_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_lpf1_bw_sel_t *val)
+int32_t lsm6dsr_xl_lp1_bandwidth_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_lpf1_bw_sel_t *val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   if (ret == 0)
@@ -1986,26 +1986,26 @@ int32_t ism330dlc_xl_lp1_bandwidth_get(stmdev_ctx_t *ctx,
     if ((ctrl8_xl.lpf2_xl_en != 0x00U) ||
         (ctrl8_xl.hp_slope_xl_en != 0x00U))
     {
-      *val = ISM330DLC_XL_LP1_NA;
+      *val = LSM6DSR_XL_LP1_NA;
     }
 
     else
     {
-      ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+      ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                                (uint8_t *)&ctrl1_xl, 1);
 
       switch (ctrl1_xl.lpf1_bw_sel)
       {
-        case ISM330DLC_XL_LP1_ODR_DIV_2:
-          *val = ISM330DLC_XL_LP1_ODR_DIV_2;
+        case LSM6DSR_XL_LP1_ODR_DIV_2:
+          *val = LSM6DSR_XL_LP1_ODR_DIV_2;
           break;
 
-        case ISM330DLC_XL_LP1_ODR_DIV_4:
-          *val = ISM330DLC_XL_LP1_ODR_DIV_4;
+        case LSM6DSR_XL_LP1_ODR_DIV_4:
+          *val = LSM6DSR_XL_LP1_ODR_DIV_4;
           break;
 
         default:
-          *val = ISM330DLC_XL_LP1_NA;
+          *val = LSM6DSR_XL_LP1_NA;
           break;
       }
     }
@@ -2022,12 +2022,12 @@ int32_t ism330dlc_xl_lp1_bandwidth_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_lp2_bandwidth_set(stmdev_ctx_t *ctx,
-                                       ism330dlc_input_composite_t val)
+int32_t lsm6dsr_xl_lp2_bandwidth_set(stmdev_ctx_t *ctx,
+                                       lsm6dsr_input_composite_t val)
 {
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   if (ret == 0)
@@ -2036,7 +2036,7 @@ int32_t ism330dlc_xl_lp2_bandwidth_set(stmdev_ctx_t *ctx,
     ctrl8_xl.hpcf_xl = (uint8_t) val & 0x03U;
     ctrl8_xl.lpf2_xl_en = 1;
     ctrl8_xl.hp_slope_xl_en = 0;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL8_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL8_XL,
                               (uint8_t *)&ctrl8_xl, 1);
   }
 
@@ -2051,12 +2051,12 @@ int32_t ism330dlc_xl_lp2_bandwidth_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_lp2_bandwidth_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_input_composite_t *val)
+int32_t lsm6dsr_xl_lp2_bandwidth_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_input_composite_t *val)
 {
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   if (ret == 0)
@@ -2064,47 +2064,47 @@ int32_t ism330dlc_xl_lp2_bandwidth_get(stmdev_ctx_t *ctx,
     if ((ctrl8_xl.lpf2_xl_en == 0x00U) ||
         (ctrl8_xl.hp_slope_xl_en != 0x00U))
     {
-      *val = ISM330DLC_XL_LP_NA;
+      *val = LSM6DSR_XL_LP_NA;
     }
 
     else
     {
       switch ((ctrl8_xl.input_composite << 4) + ctrl8_xl.hpcf_xl)
       {
-        case ISM330DLC_XL_LOW_LAT_LP_ODR_DIV_50:
-          *val = ISM330DLC_XL_LOW_LAT_LP_ODR_DIV_50;
+        case LSM6DSR_XL_LOW_LAT_LP_ODR_DIV_50:
+          *val = LSM6DSR_XL_LOW_LAT_LP_ODR_DIV_50;
           break;
 
-        case ISM330DLC_XL_LOW_LAT_LP_ODR_DIV_100:
-          *val = ISM330DLC_XL_LOW_LAT_LP_ODR_DIV_100;
+        case LSM6DSR_XL_LOW_LAT_LP_ODR_DIV_100:
+          *val = LSM6DSR_XL_LOW_LAT_LP_ODR_DIV_100;
           break;
 
-        case ISM330DLC_XL_LOW_LAT_LP_ODR_DIV_9:
-          *val = ISM330DLC_XL_LOW_LAT_LP_ODR_DIV_9;
+        case LSM6DSR_XL_LOW_LAT_LP_ODR_DIV_9:
+          *val = LSM6DSR_XL_LOW_LAT_LP_ODR_DIV_9;
           break;
 
-        case ISM330DLC_XL_LOW_LAT_LP_ODR_DIV_400:
-          *val = ISM330DLC_XL_LOW_LAT_LP_ODR_DIV_400;
+        case LSM6DSR_XL_LOW_LAT_LP_ODR_DIV_400:
+          *val = LSM6DSR_XL_LOW_LAT_LP_ODR_DIV_400;
           break;
 
-        case ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_50:
-          *val = ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_50;
+        case LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_50:
+          *val = LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_50;
           break;
 
-        case ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_100:
-          *val = ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_100;
+        case LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_100:
+          *val = LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_100;
           break;
 
-        case ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_9:
-          *val = ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_9;
+        case LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_9:
+          *val = LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_9;
           break;
 
-        case ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_400:
-          *val = ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_400;
+        case LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_400:
+          *val = LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_400;
           break;
 
         default:
-          *val = ISM330DLC_XL_LP_NA;
+          *val = LSM6DSR_XL_LP_NA;
           break;
       }
     }
@@ -2121,18 +2121,18 @@ int32_t ism330dlc_xl_lp2_bandwidth_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_reference_mode_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_xl_reference_mode_set(stmdev_ctx_t *ctx,
                                         uint8_t val)
 {
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   if (ret == 0)
   {
     ctrl8_xl.hp_ref_mode = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL8_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL8_XL,
                               (uint8_t *)&ctrl8_xl, 1);
   }
 
@@ -2147,12 +2147,12 @@ int32_t ism330dlc_xl_reference_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_reference_mode_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_xl_reference_mode_get(stmdev_ctx_t *ctx,
                                         uint8_t *val)
 {
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
   *val = ctrl8_xl.hp_ref_mode;
 
@@ -2167,12 +2167,12 @@ int32_t ism330dlc_xl_reference_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_hp_bandwidth_set(stmdev_ctx_t *ctx,
-                                      ism330dlc_hpcf_xl_t val)
+int32_t lsm6dsr_xl_hp_bandwidth_set(stmdev_ctx_t *ctx,
+                                      lsm6dsr_hpcf_xl_t val)
 {
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   if (ret == 0)
@@ -2180,7 +2180,7 @@ int32_t ism330dlc_xl_hp_bandwidth_set(stmdev_ctx_t *ctx,
     ctrl8_xl.input_composite = 0;
     ctrl8_xl.hpcf_xl = (uint8_t)val & 0x03U;
     ctrl8_xl.hp_slope_xl_en = 1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL8_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL8_XL,
                               (uint8_t *)&ctrl8_xl, 1);
   }
 
@@ -2195,39 +2195,39 @@ int32_t ism330dlc_xl_hp_bandwidth_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_hp_bandwidth_get(stmdev_ctx_t *ctx,
-                                      ism330dlc_hpcf_xl_t *val)
+int32_t lsm6dsr_xl_hp_bandwidth_get(stmdev_ctx_t *ctx,
+                                      lsm6dsr_hpcf_xl_t *val)
 {
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   if (ctrl8_xl.hp_slope_xl_en == 0x00U)
   {
-    *val = ISM330DLC_XL_HP_NA;
+    *val = LSM6DSR_XL_HP_NA;
   }
 
   switch (ctrl8_xl.hpcf_xl)
   {
-    case ISM330DLC_XL_HP_ODR_DIV_4:
-      *val = ISM330DLC_XL_HP_ODR_DIV_4;
+    case LSM6DSR_XL_HP_ODR_DIV_4:
+      *val = LSM6DSR_XL_HP_ODR_DIV_4;
       break;
 
-    case ISM330DLC_XL_HP_ODR_DIV_100:
-      *val = ISM330DLC_XL_HP_ODR_DIV_100;
+    case LSM6DSR_XL_HP_ODR_DIV_100:
+      *val = LSM6DSR_XL_HP_ODR_DIV_100;
       break;
 
-    case ISM330DLC_XL_HP_ODR_DIV_9:
-      *val = ISM330DLC_XL_HP_ODR_DIV_9;
+    case LSM6DSR_XL_HP_ODR_DIV_9:
+      *val = LSM6DSR_XL_HP_ODR_DIV_9;
       break;
 
-    case ISM330DLC_XL_HP_ODR_DIV_400:
-      *val = ISM330DLC_XL_HP_ODR_DIV_400;
+    case LSM6DSR_XL_HP_ODR_DIV_400:
+      *val = LSM6DSR_XL_HP_ODR_DIV_400;
       break;
 
     default:
-      *val = ISM330DLC_XL_HP_NA;
+      *val = LSM6DSR_XL_HP_NA;
       break;
   }
 
@@ -2240,7 +2240,7 @@ int32_t ism330dlc_xl_hp_bandwidth_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_accelerometer_filters_mode:4
+  * @defgroup    LSM6DSR_accelerometer_filters_mode:4
   * @brief       This section group all the functions concerning the filters
   *              configuration that impact accelerometer when mode 4
   *              (accelerometer on aux interface enable).
@@ -2257,32 +2257,32 @@ int32_t ism330dlc_xl_hp_bandwidth_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_ui_lp1_bandwidth_set(stmdev_ctx_t *ctx,
-                                          ism330dlc_ui_lpf1_bw_sel_t val)
+int32_t lsm6dsr_xl_ui_lp1_bandwidth_set(stmdev_ctx_t *ctx,
+                                          lsm6dsr_ui_lpf1_bw_sel_t val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                            (uint8_t *)&ctrl1_xl, 1);
 
   if (ret == 0)
   {
     ctrl1_xl.lpf1_bw_sel = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_XL,
                               (uint8_t *)&ctrl1_xl, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                              (uint8_t *)&ctrl8_xl, 1);
   }
 
   if (ret == 0)
   {
     ctrl8_xl.hp_slope_xl_en = 0;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL8_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL8_XL,
                               (uint8_t *)&ctrl8_xl, 1);
   }
 
@@ -2299,41 +2299,41 @@ int32_t ism330dlc_xl_ui_lp1_bandwidth_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_ui_lp1_bandwidth_get(stmdev_ctx_t *ctx,
-                                          ism330dlc_ui_lpf1_bw_sel_t *val)
+int32_t lsm6dsr_xl_ui_lp1_bandwidth_get(stmdev_ctx_t *ctx,
+                                          lsm6dsr_ui_lpf1_bw_sel_t *val)
 {
-  ism330dlc_ctrl1_xl_t ctrl1_xl;
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl1_xl_t ctrl1_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   if (ret == 0)
   {
     if (ctrl8_xl.hp_slope_xl_en == PROPERTY_DISABLE)
     {
-      *val = ISM330DLC_XL_UI_LP1_NA;
+      *val = LSM6DSR_XL_UI_LP1_NA;
     }
 
     else
     {
     }
 
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_XL,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_XL,
                              (uint8_t *)&ctrl1_xl, 1);
 
     switch (ctrl1_xl.lpf1_bw_sel)
     {
-      case ISM330DLC_XL_UI_LP1_ODR_DIV_2:
-        *val = ISM330DLC_XL_UI_LP1_ODR_DIV_2;
+      case LSM6DSR_XL_UI_LP1_ODR_DIV_2:
+        *val = LSM6DSR_XL_UI_LP1_ODR_DIV_2;
         break;
 
-      case ISM330DLC_XL_UI_LP1_ODR_DIV_4:
-        *val = ISM330DLC_XL_UI_LP1_ODR_DIV_4;
+      case LSM6DSR_XL_UI_LP1_ODR_DIV_4:
+        *val = LSM6DSR_XL_UI_LP1_ODR_DIV_4;
         break;
 
       default:
-        *val = ISM330DLC_XL_UI_LP1_NA;
+        *val = LSM6DSR_XL_UI_LP1_NA;
         break;
     }
   }
@@ -2349,16 +2349,16 @@ int32_t ism330dlc_xl_ui_lp1_bandwidth_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_ui_slope_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_xl_ui_slope_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl8_xl_t reg;
+  lsm6dsr_ctrl8_xl_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.hp_slope_xl_en = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL8_XL, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL8_XL, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -2372,11 +2372,11 @@ int32_t ism330dlc_xl_ui_slope_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_ui_slope_get(stmdev_ctx_t *ctx,  uint8_t *val)
+int32_t lsm6dsr_xl_ui_slope_get(stmdev_ctx_t *ctx,  uint8_t *val)
 {
-  ism330dlc_ctrl8_xl_t reg;
+  lsm6dsr_ctrl8_xl_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL, (uint8_t *)&reg, 1);
   *val = reg.hp_slope_xl_en;
 
   return ret;
@@ -2403,17 +2403,17 @@ int32_t ism330dlc_xl_ui_slope_get(stmdev_ctx_t *ctx,  uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_aux_lp_bandwidth_set(stmdev_ctx_t *ctx,
-                                          ism330dlc_filter_xl_conf_ois_t val)
+int32_t lsm6dsr_xl_aux_lp_bandwidth_set(stmdev_ctx_t *ctx,
+                                          lsm6dsr_filter_xl_conf_ois_t val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.filter_xl_conf_ois = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -2440,33 +2440,33 @@ int32_t ism330dlc_xl_aux_lp_bandwidth_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_xl_aux_lp_bandwidth_get(stmdev_ctx_t *ctx,
-                                          ism330dlc_filter_xl_conf_ois_t *val)
+int32_t lsm6dsr_xl_aux_lp_bandwidth_get(stmdev_ctx_t *ctx,
+                                          lsm6dsr_filter_xl_conf_ois_t *val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   switch (reg.filter_xl_conf_ois)
   {
-    case ISM330DLC_AUX_LP_LIGHT:
-      *val = ISM330DLC_AUX_LP_LIGHT;
+    case LSM6DSR_AUX_LP_LIGHT:
+      *val = LSM6DSR_AUX_LP_LIGHT;
       break;
 
-    case ISM330DLC_AUX_LP_NORMAL:
-      *val = ISM330DLC_AUX_LP_NORMAL;
+    case LSM6DSR_AUX_LP_NORMAL:
+      *val = LSM6DSR_AUX_LP_NORMAL;
       break;
 
-    case ISM330DLC_AUX_LP_STRONG:
-      *val = ISM330DLC_AUX_LP_STRONG;
+    case LSM6DSR_AUX_LP_STRONG:
+      *val = LSM6DSR_AUX_LP_STRONG;
       break;
 
-    case ISM330DLC_AUX_LP_AGGRESSIVE:
-      *val = ISM330DLC_AUX_LP_AGGRESSIVE;
+    case LSM6DSR_AUX_LP_AGGRESSIVE:
+      *val = LSM6DSR_AUX_LP_AGGRESSIVE;
       break;
 
     default:
-      *val = ISM330DLC_AUX_LP_LIGHT;
+      *val = LSM6DSR_AUX_LP_LIGHT;
       break;
   }
 
@@ -2479,7 +2479,7 @@ int32_t ism330dlc_xl_aux_lp_bandwidth_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_gyroscope_filters_mode:1,2
+  * @defgroup    LSM6DSR_gyroscope_filters_mode:1,2
   * @brief       This section group all the functions concerning the filters
   *              configuration that impact gyroscope mode 1, 2
   *              (gyroscope on aux interface disable).
@@ -2495,40 +2495,40 @@ int32_t ism330dlc_xl_aux_lp_bandwidth_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_band_pass_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_lpf1_sel_g_t val)
+int32_t lsm6dsr_gy_band_pass_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_lpf1_sel_g_t val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
-  ism330dlc_ctrl6_c_t ctrl6_c;
-  ism330dlc_ctrl7_g_t ctrl7_g;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl6_c_t ctrl6_c;
+  lsm6dsr_ctrl7_g_t ctrl7_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
 
   if (ret == 0)
   {
     ctrl7_g.hpm_g  = ((uint8_t)val & 0x30U) >> 4;
     ctrl7_g.hp_en_g = ((uint8_t)val & 0x80U) >> 7;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+      ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
 
       if (ret == 0)
       {
         ctrl6_c.ftype = (uint8_t)val & 0x03U;
-        ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL6_C,
+        ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL6_C,
                                   (uint8_t *)&ctrl6_c, 1);
 
         if (ret == 0)
         {
-          ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C,
+          ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C,
                                    (uint8_t *)&ctrl4_c, 1);
 
           if (ret == 0)
           {
             ctrl4_c.lpf1_sel_g = ((uint8_t)val & 0x08U) >> 3;
-            ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL4_C,
+            ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL4_C,
                                       (uint8_t *)&ctrl4_c, 1);
           }
         }
@@ -2547,76 +2547,76 @@ int32_t ism330dlc_gy_band_pass_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_band_pass_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_lpf1_sel_g_t *val)
+int32_t lsm6dsr_gy_band_pass_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_lpf1_sel_g_t *val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
-  ism330dlc_ctrl6_c_t ctrl6_c;
-  ism330dlc_ctrl7_g_t ctrl7_g;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl6_c_t ctrl6_c;
+  lsm6dsr_ctrl7_g_t ctrl7_g;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+      ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
 
       switch ((ctrl7_g.hp_en_g << 7) + (ctrl7_g.hpm_g << 4) +
               (ctrl4_c.lpf1_sel_g << 3) + ctrl6_c.ftype)
       {
-        case ISM330DLC_HP_16mHz_LP2:
-          *val = ISM330DLC_HP_16mHz_LP2;
+        case LSM6DSR_HP_16mHz_LP2:
+          *val = LSM6DSR_HP_16mHz_LP2;
           break;
 
-        case ISM330DLC_HP_65mHz_LP2:
-          *val = ISM330DLC_HP_65mHz_LP2;
+        case LSM6DSR_HP_65mHz_LP2:
+          *val = LSM6DSR_HP_65mHz_LP2;
           break;
 
-        case ISM330DLC_HP_260mHz_LP2:
-          *val = ISM330DLC_HP_260mHz_LP2;
+        case LSM6DSR_HP_260mHz_LP2:
+          *val = LSM6DSR_HP_260mHz_LP2;
           break;
 
-        case ISM330DLC_HP_1Hz04_LP2:
-          *val = ISM330DLC_HP_1Hz04_LP2;
+        case LSM6DSR_HP_1Hz04_LP2:
+          *val = LSM6DSR_HP_1Hz04_LP2;
           break;
 
-        case ISM330DLC_HP_DISABLE_LP1_LIGHT:
-          *val = ISM330DLC_HP_DISABLE_LP1_LIGHT;
+        case LSM6DSR_HP_DISABLE_LP1_LIGHT:
+          *val = LSM6DSR_HP_DISABLE_LP1_LIGHT;
           break;
 
-        case ISM330DLC_HP_DISABLE_LP1_NORMAL:
-          *val = ISM330DLC_HP_DISABLE_LP1_NORMAL;
+        case LSM6DSR_HP_DISABLE_LP1_NORMAL:
+          *val = LSM6DSR_HP_DISABLE_LP1_NORMAL;
           break;
 
-        case ISM330DLC_HP_DISABLE_LP_STRONG:
-          *val = ISM330DLC_HP_DISABLE_LP_STRONG;
+        case LSM6DSR_HP_DISABLE_LP_STRONG:
+          *val = LSM6DSR_HP_DISABLE_LP_STRONG;
           break;
 
-        case ISM330DLC_HP_DISABLE_LP1_AGGRESSIVE:
-          *val = ISM330DLC_HP_DISABLE_LP1_AGGRESSIVE;
+        case LSM6DSR_HP_DISABLE_LP1_AGGRESSIVE:
+          *val = LSM6DSR_HP_DISABLE_LP1_AGGRESSIVE;
           break;
 
-        case ISM330DLC_HP_16mHz_LP1_LIGHT:
-          *val = ISM330DLC_HP_16mHz_LP1_LIGHT;
+        case LSM6DSR_HP_16mHz_LP1_LIGHT:
+          *val = LSM6DSR_HP_16mHz_LP1_LIGHT;
           break;
 
-        case ISM330DLC_HP_65mHz_LP1_NORMAL:
-          *val = ISM330DLC_HP_65mHz_LP1_NORMAL;
+        case LSM6DSR_HP_65mHz_LP1_NORMAL:
+          *val = LSM6DSR_HP_65mHz_LP1_NORMAL;
           break;
 
-        case ISM330DLC_HP_260mHz_LP1_STRONG:
-          *val = ISM330DLC_HP_260mHz_LP1_STRONG;
+        case LSM6DSR_HP_260mHz_LP1_STRONG:
+          *val = LSM6DSR_HP_260mHz_LP1_STRONG;
           break;
 
-        case ISM330DLC_HP_1Hz04_LP1_AGGRESSIVE:
-          *val = ISM330DLC_HP_1Hz04_LP1_AGGRESSIVE;
+        case LSM6DSR_HP_1Hz04_LP1_AGGRESSIVE:
+          *val = LSM6DSR_HP_1Hz04_LP1_AGGRESSIVE;
           break;
 
         default:
-          *val = ISM330DLC_HP_16mHz_LP2;
+          *val = LSM6DSR_HP_16mHz_LP2;
           break;
       }
     }
@@ -2631,7 +2631,7 @@ int32_t ism330dlc_gy_band_pass_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_gyroscope_filters_mode:3,4
+  * @defgroup    LSM6DSR_gyroscope_filters_mode:3,4
   * @brief       This section group all the functions concerning the filters
   *              configuration that impact gyroscope when mode 3, 4
   *              (gyroscope on aux interface enable).
@@ -2648,16 +2648,16 @@ int32_t ism330dlc_gy_band_pass_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_ui_high_pass_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_gy_ui_high_pass_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl7_g_t reg;
+  lsm6dsr_ctrl7_g_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.hp_en_g = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -2672,11 +2672,11 @@ int32_t ism330dlc_gy_ui_high_pass_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_ui_high_pass_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_gy_ui_high_pass_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl7_g_t reg;
+  lsm6dsr_ctrl7_g_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&reg, 1);
   *val = reg.hp_en_g;
 
   return ret;
@@ -2693,23 +2693,23 @@ int32_t ism330dlc_gy_ui_high_pass_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_aux_bandwidth_set(stmdev_ctx_t *ctx,
-                                       ism330dlc_hp_en_ois_t val)
+int32_t lsm6dsr_gy_aux_bandwidth_set(stmdev_ctx_t *ctx,
+                                       lsm6dsr_hp_en_ois_t val)
 {
-  ism330dlc_ctrl7_g_t ctrl7_g;
-  ism330dlc_ctrl2_ois_t ctrl2_ois;
+  lsm6dsr_ctrl7_g_t ctrl7_g;
+  lsm6dsr_ctrl2_ois_t ctrl2_ois;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
 
   if (ret == 0)
   {
     ctrl7_g.hp_en_g = 0;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL7_G, (uint8_t *)&ctrl7_g, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL2_OIS,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL2_OIS,
                              (uint8_t *)&ctrl2_ois, 1);
   }
 
@@ -2718,7 +2718,7 @@ int32_t ism330dlc_gy_aux_bandwidth_set(stmdev_ctx_t *ctx,
     ctrl2_ois.ftype_ois = (uint8_t)val & 0x03U;
     ctrl2_ois.hp_en_ois = ((uint8_t)val & 0x80U) >> 7;
     ctrl2_ois.hpm_ois = ((uint8_t)val & 0x30U) >> 4;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL2_OIS,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL2_OIS,
                               (uint8_t *)&ctrl2_ois, 1);
   }
 
@@ -2735,50 +2735,50 @@ int32_t ism330dlc_gy_aux_bandwidth_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_aux_bandwidth_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_hp_en_ois_t *val)
+int32_t lsm6dsr_gy_aux_bandwidth_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_hp_en_ois_t *val)
 {
-  ism330dlc_ctrl2_ois_t reg;
+  lsm6dsr_ctrl2_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL2_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL2_OIS, (uint8_t *)&reg, 1);
 
   switch ((reg.hp_en_ois << 7) + (reg.hpm_ois << 4) +
           reg.ftype_ois)
   {
-    case ISM330DLC_HP_DISABLE_LP_173Hz:
-      *val = ISM330DLC_HP_DISABLE_LP_173Hz;
+    case LSM6DSR_HP_DISABLE_LP_173Hz:
+      *val = LSM6DSR_HP_DISABLE_LP_173Hz;
       break;
 
-    case ISM330DLC_HP_DISABLE_LP_237Hz:
-      *val = ISM330DLC_HP_DISABLE_LP_237Hz;
+    case LSM6DSR_HP_DISABLE_LP_237Hz:
+      *val = LSM6DSR_HP_DISABLE_LP_237Hz;
       break;
 
-    case ISM330DLC_HP_DISABLE_LP_351Hz:
-      *val = ISM330DLC_HP_DISABLE_LP_351Hz;
+    case LSM6DSR_HP_DISABLE_LP_351Hz:
+      *val = LSM6DSR_HP_DISABLE_LP_351Hz;
       break;
 
-    case ISM330DLC_HP_DISABLE_LP_937Hz:
-      *val = ISM330DLC_HP_DISABLE_LP_937Hz;
+    case LSM6DSR_HP_DISABLE_LP_937Hz:
+      *val = LSM6DSR_HP_DISABLE_LP_937Hz;
       break;
 
-    case ISM330DLC_HP_16mHz_LP_173Hz:
-      *val = ISM330DLC_HP_16mHz_LP_173Hz;
+    case LSM6DSR_HP_16mHz_LP_173Hz:
+      *val = LSM6DSR_HP_16mHz_LP_173Hz;
       break;
 
-    case ISM330DLC_HP_65mHz_LP_237Hz:
-      *val = ISM330DLC_HP_65mHz_LP_237Hz;
+    case LSM6DSR_HP_65mHz_LP_237Hz:
+      *val = LSM6DSR_HP_65mHz_LP_237Hz;
       break;
 
-    case ISM330DLC_HP_260mHz_LP_351Hz:
-      *val = ISM330DLC_HP_260mHz_LP_351Hz;
+    case LSM6DSR_HP_260mHz_LP_351Hz:
+      *val = LSM6DSR_HP_260mHz_LP_351Hz;
       break;
 
-    case ISM330DLC_HP_1Hz04_LP_937Hz:
-      *val = ISM330DLC_HP_1Hz04_LP_937Hz;
+    case LSM6DSR_HP_1Hz04_LP_937Hz:
+      *val = LSM6DSR_HP_1Hz04_LP_937Hz;
       break;
 
     default:
-      *val = ISM330DLC_HP_DISABLE_LP_173Hz;
+      *val = LSM6DSR_HP_DISABLE_LP_173Hz;
       break;
   }
 
@@ -2791,7 +2791,7 @@ int32_t ism330dlc_gy_aux_bandwidth_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_Auxiliary_interface
+  * @defgroup    LSM6DSR_Auxiliary_interface
   * @brief       This section groups all the functions concerning
   *              auxiliary interface.
   * @{
@@ -2806,11 +2806,11 @@ int32_t ism330dlc_gy_aux_bandwidth_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_status_reg_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_status_spiaux_t *val)
+int32_t lsm6dsr_aux_status_reg_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_status_spiaux_t *val)
 {
   int32_t ret;
-  ret =  ism330dlc_read_reg(ctx, ISM330DLC_STATUS_SPIAUX,
+  ret =  lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_SPIAUX,
                             (uint8_t *) val, 1);
 
   return ret;
@@ -2824,12 +2824,12 @@ int32_t ism330dlc_aux_status_reg_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_xl_flag_data_ready_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_aux_xl_flag_data_ready_get(stmdev_ctx_t *ctx,
                                              uint8_t *val)
 {
-  ism330dlc_status_spiaux_t reg;
+  lsm6dsr_status_spiaux_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_STATUS_SPIAUX,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_SPIAUX,
                            (uint8_t *)&reg, 1);
   *val = reg.xlda;
 
@@ -2844,12 +2844,12 @@ int32_t ism330dlc_aux_xl_flag_data_ready_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_gy_flag_data_ready_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_aux_gy_flag_data_ready_get(stmdev_ctx_t *ctx,
                                              uint8_t *val)
 {
-  ism330dlc_status_spiaux_t reg;
+  lsm6dsr_status_spiaux_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_STATUS_SPIAUX,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_SPIAUX,
                            (uint8_t *)&reg, 1);
   *val = reg.gda;
 
@@ -2864,12 +2864,12 @@ int32_t ism330dlc_aux_gy_flag_data_ready_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_gy_flag_settling_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_aux_gy_flag_settling_get(stmdev_ctx_t *ctx,
                                            uint8_t *val)
 {
-  ism330dlc_status_spiaux_t reg;
+  lsm6dsr_status_spiaux_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_STATUS_SPIAUX,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_STATUS_SPIAUX,
                            (uint8_t *)&reg, 1);
   *val = reg.gyro_settling;
 
@@ -2884,31 +2884,31 @@ int32_t ism330dlc_aux_gy_flag_settling_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_den_mode_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_lvl_ois_t val)
+int32_t lsm6dsr_aux_den_mode_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_lvl_ois_t val)
 {
-  ism330dlc_ctrl1_ois_t ctrl1_ois;
-  ism330dlc_int_ois_t int_ois;
+  lsm6dsr_ctrl1_ois_t ctrl1_ois;
+  lsm6dsr_int_ois_t int_ois;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_OIS, (uint8_t *)&int_ois, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_OIS, (uint8_t *)&int_ois, 1);
 
   if (ret == 0)
   {
     int_ois.lvl2_ois = (uint8_t)val & 0x01U;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_INT_OIS,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_INT_OIS,
                               (uint8_t *)&int_ois, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS,
                              (uint8_t *)&ctrl1_ois, 1);
   }
 
   if (ret == 0)
   {
     ctrl1_ois.lvl1_ois = ((uint8_t)val & 0x02U) >> 1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_OIS,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_OIS,
                               (uint8_t *)&ctrl1_ois, 1);
   }
 
@@ -2923,36 +2923,36 @@ int32_t ism330dlc_aux_den_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_den_mode_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_lvl_ois_t *val)
+int32_t lsm6dsr_aux_den_mode_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_lvl_ois_t *val)
 {
-  ism330dlc_ctrl1_ois_t ctrl1_ois;
-  ism330dlc_int_ois_t int_ois;
+  lsm6dsr_ctrl1_ois_t ctrl1_ois;
+  lsm6dsr_int_ois_t int_ois;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_OIS, (uint8_t *)&int_ois, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_OIS, (uint8_t *)&int_ois, 1);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS,
                              (uint8_t *)&ctrl1_ois, 1);
   }
 
   switch ((ctrl1_ois.lvl1_ois << 1) | int_ois.lvl2_ois)
   {
-    case ISM330DLC_AUX_DEN_DISABLE:
-      *val = ISM330DLC_AUX_DEN_DISABLE;
+    case LSM6DSR_AUX_DEN_DISABLE:
+      *val = LSM6DSR_AUX_DEN_DISABLE;
       break;
 
-    case ISM330DLC_AUX_DEN_LEVEL_LATCH:
-      *val = ISM330DLC_AUX_DEN_LEVEL_LATCH;
+    case LSM6DSR_AUX_DEN_LEVEL_LATCH:
+      *val = LSM6DSR_AUX_DEN_LEVEL_LATCH;
       break;
 
-    case ISM330DLC_AUX_DEN_LEVEL_TRIG:
-      *val = ISM330DLC_AUX_DEN_LEVEL_TRIG;
+    case LSM6DSR_AUX_DEN_LEVEL_TRIG:
+      *val = LSM6DSR_AUX_DEN_LEVEL_TRIG;
       break;
 
     default:
-      *val = ISM330DLC_AUX_DEN_DISABLE;
+      *val = LSM6DSR_AUX_DEN_DISABLE;
       break;
   }
 
@@ -2968,16 +2968,16 @@ int32_t ism330dlc_aux_den_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_drdy_on_int2_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_aux_drdy_on_int2_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_int_ois_t reg;
+  lsm6dsr_int_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.int2_drdy_ois = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_INT_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_INT_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -2992,12 +2992,12 @@ int32_t ism330dlc_aux_drdy_on_int2_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_drdy_on_int2_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_aux_drdy_on_int2_get(stmdev_ctx_t *ctx,
                                        uint8_t *val)
 {
-  ism330dlc_int_ois_t reg;
+  lsm6dsr_int_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_OIS, (uint8_t *)&reg, 1);
   *val = reg.int2_drdy_ois;
 
   return ret;
@@ -3018,18 +3018,18 @@ int32_t ism330dlc_aux_drdy_on_int2_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_mode_set(stmdev_ctx_t *ctx,
-                               ism330dlc_ois_en_spi2_t val)
+int32_t lsm6dsr_aux_mode_set(stmdev_ctx_t *ctx,
+                               lsm6dsr_ois_en_spi2_t val)
 {
-  ism330dlc_ctrl1_ois_t reg;
+  lsm6dsr_ctrl1_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.ois_en_spi2 = (uint8_t)val & 0x01U;
     reg.mode4_en = ((uint8_t)val & 0x02U) >> 1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -3050,29 +3050,29 @@ int32_t ism330dlc_aux_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_mode_get(stmdev_ctx_t *ctx,
-                               ism330dlc_ois_en_spi2_t *val)
+int32_t lsm6dsr_aux_mode_get(stmdev_ctx_t *ctx,
+                               lsm6dsr_ois_en_spi2_t *val)
 {
-  ism330dlc_ctrl1_ois_t reg;
+  lsm6dsr_ctrl1_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
 
   switch ((reg.mode4_en << 1) + reg.ois_en_spi2)
   {
-    case ISM330DLC_AUX_DISABLE:
-      *val = ISM330DLC_AUX_DISABLE;
+    case LSM6DSR_AUX_DISABLE:
+      *val = LSM6DSR_AUX_DISABLE;
       break;
 
-    case ISM330DLC_MODE_3_GY:
-      *val = ISM330DLC_MODE_3_GY;
+    case LSM6DSR_MODE_3_GY:
+      *val = LSM6DSR_MODE_3_GY;
       break;
 
-    case ISM330DLC_MODE_4_GY_XL:
-      *val = ISM330DLC_MODE_4_GY_XL;
+    case LSM6DSR_MODE_4_GY_XL:
+      *val = LSM6DSR_MODE_4_GY_XL;
       break;
 
     default:
-      *val = ISM330DLC_AUX_DISABLE;
+      *val = LSM6DSR_AUX_DISABLE;
       break;
   }
 
@@ -3087,17 +3087,17 @@ int32_t ism330dlc_aux_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_gy_full_scale_set(stmdev_ctx_t *ctx,
-                                        ism330dlc_fs_g_ois_t val)
+int32_t lsm6dsr_aux_gy_full_scale_set(stmdev_ctx_t *ctx,
+                                        lsm6dsr_fs_g_ois_t val)
 {
-  ism330dlc_ctrl1_ois_t reg;
+  lsm6dsr_ctrl1_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.fs_g_ois = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -3111,37 +3111,37 @@ int32_t ism330dlc_aux_gy_full_scale_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_gy_full_scale_get(stmdev_ctx_t *ctx,
-                                        ism330dlc_fs_g_ois_t *val)
+int32_t lsm6dsr_aux_gy_full_scale_get(stmdev_ctx_t *ctx,
+                                        lsm6dsr_fs_g_ois_t *val)
 {
-  ism330dlc_ctrl1_ois_t reg;
+  lsm6dsr_ctrl1_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
 
   switch (reg.fs_g_ois)
   {
-    case ISM330DLC_250dps_AUX:
-      *val = ISM330DLC_250dps_AUX;
+    case LSM6DSR_250dps_AUX:
+      *val = LSM6DSR_250dps_AUX;
       break;
 
-    case ISM330DLC_125dps_AUX:
-      *val = ISM330DLC_125dps_AUX;
+    case LSM6DSR_125dps_AUX:
+      *val = LSM6DSR_125dps_AUX;
       break;
 
-    case ISM330DLC_500dps_AUX:
-      *val = ISM330DLC_500dps_AUX;
+    case LSM6DSR_500dps_AUX:
+      *val = LSM6DSR_500dps_AUX;
       break;
 
-    case ISM330DLC_1000dps_AUX:
-      *val = ISM330DLC_1000dps_AUX;
+    case LSM6DSR_1000dps_AUX:
+      *val = LSM6DSR_1000dps_AUX;
       break;
 
-    case ISM330DLC_2000dps_AUX:
-      *val = ISM330DLC_2000dps_AUX;
+    case LSM6DSR_2000dps_AUX:
+      *val = LSM6DSR_2000dps_AUX;
       break;
 
     default:
-      *val = ISM330DLC_250dps_AUX;
+      *val = LSM6DSR_250dps_AUX;
       break;
   }
 
@@ -3156,17 +3156,17 @@ int32_t ism330dlc_aux_gy_full_scale_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_spi_mode_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_sim_ois_t val)
+int32_t lsm6dsr_aux_spi_mode_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_sim_ois_t val)
 {
-  ism330dlc_ctrl1_ois_t reg;
+  lsm6dsr_ctrl1_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.sim_ois = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -3180,25 +3180,25 @@ int32_t ism330dlc_aux_spi_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_spi_mode_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_sim_ois_t *val)
+int32_t lsm6dsr_aux_spi_mode_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_sim_ois_t *val)
 {
-  ism330dlc_ctrl1_ois_t reg;
+  lsm6dsr_ctrl1_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
 
   switch (reg.sim_ois)
   {
-    case ISM330DLC_AUX_SPI_4_WIRE:
-      *val = ISM330DLC_AUX_SPI_4_WIRE;
+    case LSM6DSR_AUX_SPI_4_WIRE:
+      *val = LSM6DSR_AUX_SPI_4_WIRE;
       break;
 
-    case ISM330DLC_AUX_SPI_3_WIRE:
-      *val = ISM330DLC_AUX_SPI_3_WIRE;
+    case LSM6DSR_AUX_SPI_3_WIRE:
+      *val = LSM6DSR_AUX_SPI_3_WIRE;
       break;
 
     default:
-      *val = ISM330DLC_AUX_SPI_4_WIRE;
+      *val = LSM6DSR_AUX_SPI_4_WIRE;
       break;
   }
 
@@ -3213,17 +3213,17 @@ int32_t ism330dlc_aux_spi_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_data_format_set(stmdev_ctx_t *ctx,
-                                      ism330dlc_ble_ois_t val)
+int32_t lsm6dsr_aux_data_format_set(stmdev_ctx_t *ctx,
+                                      lsm6dsr_ble_ois_t val)
 {
-  ism330dlc_ctrl1_ois_t reg;
+  lsm6dsr_ctrl1_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.ble_ois = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -3237,25 +3237,25 @@ int32_t ism330dlc_aux_data_format_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_data_format_get(stmdev_ctx_t *ctx,
-                                      ism330dlc_ble_ois_t *val)
+int32_t lsm6dsr_aux_data_format_get(stmdev_ctx_t *ctx,
+                                      lsm6dsr_ble_ois_t *val)
 {
-  ism330dlc_ctrl1_ois_t reg;
+  lsm6dsr_ctrl1_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL1_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL1_OIS, (uint8_t *)&reg, 1);
 
   switch (reg.ble_ois)
   {
-    case ISM330DLC_AUX_LSB_AT_LOW_ADD:
-      *val = ISM330DLC_AUX_LSB_AT_LOW_ADD;
+    case LSM6DSR_AUX_LSB_AT_LOW_ADD:
+      *val = LSM6DSR_AUX_LSB_AT_LOW_ADD;
       break;
 
-    case ISM330DLC_AUX_MSB_AT_LOW_ADD:
-      *val = ISM330DLC_AUX_MSB_AT_LOW_ADD;
+    case LSM6DSR_AUX_MSB_AT_LOW_ADD:
+      *val = LSM6DSR_AUX_MSB_AT_LOW_ADD;
       break;
 
     default:
-      *val = ISM330DLC_AUX_LSB_AT_LOW_ADD;
+      *val = LSM6DSR_AUX_LSB_AT_LOW_ADD;
       break;
   }
 
@@ -3273,17 +3273,17 @@ int32_t ism330dlc_aux_data_format_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_gy_clamp_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_st_ois_clampdis_t val)
+int32_t lsm6dsr_aux_gy_clamp_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_st_ois_clampdis_t val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.st_ois_clampdis = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -3300,25 +3300,25 @@ int32_t ism330dlc_aux_gy_clamp_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_gy_clamp_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_st_ois_clampdis_t *val)
+int32_t lsm6dsr_aux_gy_clamp_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_st_ois_clampdis_t *val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   switch (reg.st_ois_clampdis)
   {
-    case ISM330DLC_ENABLE_CLAMP:
-      *val = ISM330DLC_ENABLE_CLAMP;
+    case LSM6DSR_ENABLE_CLAMP:
+      *val = LSM6DSR_ENABLE_CLAMP;
       break;
 
-    case ISM330DLC_DISABLE_CLAMP:
-      *val = ISM330DLC_DISABLE_CLAMP;
+    case LSM6DSR_DISABLE_CLAMP:
+      *val = LSM6DSR_DISABLE_CLAMP;
       break;
 
     default:
-      *val = ISM330DLC_ENABLE_CLAMP;
+      *val = LSM6DSR_ENABLE_CLAMP;
       break;
   }
 
@@ -3333,17 +3333,17 @@ int32_t ism330dlc_aux_gy_clamp_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_gy_self_test_set(stmdev_ctx_t *ctx,
-                                       ism330dlc_st_ois_t val)
+int32_t lsm6dsr_aux_gy_self_test_set(stmdev_ctx_t *ctx,
+                                       lsm6dsr_st_ois_t val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.st_ois = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -3357,29 +3357,29 @@ int32_t ism330dlc_aux_gy_self_test_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_gy_self_test_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_st_ois_t *val)
+int32_t lsm6dsr_aux_gy_self_test_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_st_ois_t *val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   switch (reg.st_ois)
   {
-    case ISM330DLC_AUX_GY_DISABLE:
-      *val = ISM330DLC_AUX_GY_DISABLE;
+    case LSM6DSR_AUX_GY_DISABLE:
+      *val = LSM6DSR_AUX_GY_DISABLE;
       break;
 
-    case ISM330DLC_AUX_GY_POS:
-      *val = ISM330DLC_AUX_GY_POS;
+    case LSM6DSR_AUX_GY_POS:
+      *val = LSM6DSR_AUX_GY_POS;
       break;
 
-    case ISM330DLC_AUX_GY_NEG:
-      *val = ISM330DLC_AUX_GY_NEG;
+    case LSM6DSR_AUX_GY_NEG:
+      *val = LSM6DSR_AUX_GY_NEG;
       break;
 
     default:
-      *val = ISM330DLC_AUX_GY_DISABLE;
+      *val = LSM6DSR_AUX_GY_DISABLE;
       break;
   }
 
@@ -3394,17 +3394,17 @@ int32_t ism330dlc_aux_gy_self_test_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_xl_full_scale_set(stmdev_ctx_t *ctx,
-                                        ism330dlc_fs_xl_ois_t val)
+int32_t lsm6dsr_aux_xl_full_scale_set(stmdev_ctx_t *ctx,
+                                        lsm6dsr_fs_xl_ois_t val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.fs_xl_ois = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -3418,33 +3418,33 @@ int32_t ism330dlc_aux_xl_full_scale_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_xl_full_scale_get(stmdev_ctx_t *ctx,
-                                        ism330dlc_fs_xl_ois_t *val)
+int32_t lsm6dsr_aux_xl_full_scale_get(stmdev_ctx_t *ctx,
+                                        lsm6dsr_fs_xl_ois_t *val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   switch (reg.fs_xl_ois)
   {
-    case ISM330DLC_AUX_2g:
-      *val = ISM330DLC_AUX_2g;
+    case LSM6DSR_AUX_2g:
+      *val = LSM6DSR_AUX_2g;
       break;
 
-    case ISM330DLC_AUX_16g:
-      *val = ISM330DLC_AUX_16g;
+    case LSM6DSR_AUX_16g:
+      *val = LSM6DSR_AUX_16g;
       break;
 
-    case ISM330DLC_AUX_4g:
-      *val = ISM330DLC_AUX_4g;
+    case LSM6DSR_AUX_4g:
+      *val = LSM6DSR_AUX_4g;
       break;
 
-    case ISM330DLC_AUX_8g:
-      *val = ISM330DLC_AUX_8g;
+    case LSM6DSR_AUX_8g:
+      *val = LSM6DSR_AUX_8g;
       break;
 
     default:
-      *val = ISM330DLC_AUX_2g;
+      *val = LSM6DSR_AUX_2g;
       break;
   }
 
@@ -3459,17 +3459,17 @@ int32_t ism330dlc_aux_xl_full_scale_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_den_polarity_set(stmdev_ctx_t *ctx,
-                                       ism330dlc_den_lh_ois_t val)
+int32_t lsm6dsr_aux_den_polarity_set(stmdev_ctx_t *ctx,
+                                       lsm6dsr_den_lh_ois_t val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   if (ret == 0)
   {
     reg.den_lh_ois = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
   }
 
   return ret;
@@ -3483,25 +3483,25 @@ int32_t ism330dlc_aux_den_polarity_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_aux_den_polarity_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_den_lh_ois_t *val)
+int32_t lsm6dsr_aux_den_polarity_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_den_lh_ois_t *val)
 {
-  ism330dlc_ctrl3_ois_t reg;
+  lsm6dsr_ctrl3_ois_t reg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_OIS, (uint8_t *)&reg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_OIS, (uint8_t *)&reg, 1);
 
   switch (reg.den_lh_ois)
   {
-    case ISM330DLC_AUX_DEN_ACTIVE_LOW:
-      *val = ISM330DLC_AUX_DEN_ACTIVE_LOW;
+    case LSM6DSR_AUX_DEN_ACTIVE_LOW:
+      *val = LSM6DSR_AUX_DEN_ACTIVE_LOW;
       break;
 
-    case ISM330DLC_AUX_DEN_ACTIVE_HIGH:
-      *val = ISM330DLC_AUX_DEN_ACTIVE_HIGH;
+    case LSM6DSR_AUX_DEN_ACTIVE_HIGH:
+      *val = LSM6DSR_AUX_DEN_ACTIVE_HIGH;
       break;
 
     default:
-      *val = ISM330DLC_AUX_DEN_ACTIVE_LOW;
+      *val = LSM6DSR_AUX_DEN_ACTIVE_LOW;
       break;
   }
 
@@ -3514,7 +3514,7 @@ int32_t ism330dlc_aux_den_polarity_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_main_serial_interface
+  * @defgroup    LSM6DSR_main_serial_interface
   * @brief       This section groups all the functions concerning serial
   *              interface management
   * @{
@@ -3529,16 +3529,16 @@ int32_t ism330dlc_aux_den_polarity_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_spi_mode_set(stmdev_ctx_t *ctx, ism330dlc_sim_t val)
+int32_t lsm6dsr_spi_mode_set(stmdev_ctx_t *ctx, lsm6dsr_sim_t val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   if (ret == 0)
   {
     ctrl3_c.sim = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   }
 
   return ret;
@@ -3552,25 +3552,25 @@ int32_t ism330dlc_spi_mode_set(stmdev_ctx_t *ctx, ism330dlc_sim_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_spi_mode_get(stmdev_ctx_t *ctx,
-                               ism330dlc_sim_t *val)
+int32_t lsm6dsr_spi_mode_get(stmdev_ctx_t *ctx,
+                               lsm6dsr_sim_t *val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   switch (ctrl3_c.sim)
   {
-    case ISM330DLC_SPI_4_WIRE:
-      *val = ISM330DLC_SPI_4_WIRE;
+    case LSM6DSR_SPI_4_WIRE:
+      *val = LSM6DSR_SPI_4_WIRE;
       break;
 
-    case ISM330DLC_SPI_3_WIRE:
-      *val = ISM330DLC_SPI_3_WIRE;
+    case LSM6DSR_SPI_3_WIRE:
+      *val = LSM6DSR_SPI_3_WIRE;
       break;
 
     default:
-      *val = ISM330DLC_SPI_4_WIRE;
+      *val = LSM6DSR_SPI_4_WIRE;
       break;
   }
 
@@ -3585,17 +3585,17 @@ int32_t ism330dlc_spi_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_i2c_interface_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_i2c_disable_t val)
+int32_t lsm6dsr_i2c_interface_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_i2c_disable_t val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
 
   if (ret == 0)
   {
     ctrl4_c.i2c_disable = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   }
 
   return ret;
@@ -3609,25 +3609,25 @@ int32_t ism330dlc_i2c_interface_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_i2c_interface_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_i2c_disable_t *val)
+int32_t lsm6dsr_i2c_interface_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_i2c_disable_t *val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
 
   switch (ctrl4_c.i2c_disable)
   {
-    case ISM330DLC_I2C_ENABLE:
-      *val = ISM330DLC_I2C_ENABLE;
+    case LSM6DSR_I2C_ENABLE:
+      *val = LSM6DSR_I2C_ENABLE;
       break;
 
-    case ISM330DLC_I2C_DISABLE:
-      *val = ISM330DLC_I2C_DISABLE;
+    case LSM6DSR_I2C_DISABLE:
+      *val = LSM6DSR_I2C_DISABLE;
       break;
 
     default:
-      *val = ISM330DLC_I2C_ENABLE;
+      *val = LSM6DSR_I2C_ENABLE;
       break;
   }
 
@@ -3640,7 +3640,7 @@ int32_t ism330dlc_i2c_interface_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_interrupt_pins
+  * @defgroup    LSM6DSR_interrupt_pins
   * @brief       This section groups all the functions that manage
   *              interrupt pins
   * @{
@@ -3656,17 +3656,17 @@ int32_t ism330dlc_i2c_interface_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_pin_int1_route_set(stmdev_ctx_t *ctx,
-                                     ism330dlc_int1_route_t val)
+int32_t lsm6dsr_pin_int1_route_set(stmdev_ctx_t *ctx,
+                                     lsm6dsr_int1_route_t val)
 {
-  ism330dlc_master_config_t master_config;
-  ism330dlc_int1_ctrl_t int1_ctrl;
-  ism330dlc_md1_cfg_t md1_cfg;
-  ism330dlc_md2_cfg_t md2_cfg;
-  ism330dlc_ctrl4_c_t ctrl4_c;
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_master_config_t master_config;
+  lsm6dsr_int1_ctrl_t int1_ctrl;
+  lsm6dsr_md1_cfg_t md1_cfg;
+  lsm6dsr_md2_cfg_t md2_cfg;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT1_CTRL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT1_CTRL,
                            (uint8_t *)&int1_ctrl, 1);
 
   if (ret == 0)
@@ -3677,18 +3677,18 @@ int32_t ism330dlc_pin_int1_route_set(stmdev_ctx_t *ctx,
     int1_ctrl.int1_fth            = val.int1_fth;
     int1_ctrl.int1_fifo_ovr       = val.int1_fifo_ovr;
     int1_ctrl.int1_full_flag      = val.int1_full_flag;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_INT1_CTRL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_INT1_CTRL,
                               (uint8_t *)&int1_ctrl, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MD1_CFG, (uint8_t *)&md1_cfg, 1);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MD1_CFG, (uint8_t *)&md1_cfg, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MD2_CFG, (uint8_t *)&md2_cfg, 1);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MD2_CFG, (uint8_t *)&md2_cfg, 1);
   }
 
   if (ret == 0)
@@ -3700,37 +3700,37 @@ int32_t ism330dlc_pin_int1_route_set(stmdev_ctx_t *ctx,
     md1_cfg.int1_wu              = val.int1_wu;
     md1_cfg.int1_single_tap      = val.int1_single_tap;
     md1_cfg.int1_inact_state     = val.int1_inact_state;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MD1_CFG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MD1_CFG,
                               (uint8_t *)&md1_cfg, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   }
 
   if (ret == 0)
   {
     ctrl4_c.den_drdy_int1 = val.den_drdy_int1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                              (uint8_t *)&master_config, 1);
   }
 
   if (ret == 0)
   {
     master_config.drdy_on_int1   = val.den_drdy_int1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CONFIG,
                               (uint8_t *)&master_config, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
     if ((val.int1_6d != 0x00U) ||
         (val.int1_ff != 0x00U) ||
@@ -3756,7 +3756,7 @@ int32_t ism330dlc_pin_int1_route_set(stmdev_ctx_t *ctx,
 
   if (ret == 0)
   {
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   }
 
   return ret;
@@ -3771,15 +3771,15 @@ int32_t ism330dlc_pin_int1_route_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_pin_int1_route_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_int1_route_t *val)
+int32_t lsm6dsr_pin_int1_route_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_int1_route_t *val)
 {
-  ism330dlc_master_config_t master_config;
-  ism330dlc_int1_ctrl_t int1_ctrl;
-  ism330dlc_md1_cfg_t md1_cfg;
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_master_config_t master_config;
+  lsm6dsr_int1_ctrl_t int1_ctrl;
+  lsm6dsr_md1_cfg_t md1_cfg;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT1_CTRL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT1_CTRL,
                            (uint8_t *)&int1_ctrl, 1);
 
   if (ret == 0)
@@ -3790,7 +3790,7 @@ int32_t ism330dlc_pin_int1_route_get(stmdev_ctx_t *ctx,
     val->int1_fth           = int1_ctrl.int1_fth;
     val->int1_fifo_ovr      = int1_ctrl.int1_fifo_ovr;
     val->int1_full_flag     = int1_ctrl.int1_full_flag;
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MD1_CFG, (uint8_t *)&md1_cfg, 1);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MD1_CFG, (uint8_t *)&md1_cfg, 1);
 
     if (ret == 0)
     {
@@ -3801,12 +3801,12 @@ int32_t ism330dlc_pin_int1_route_get(stmdev_ctx_t *ctx,
       val->int1_wu          = md1_cfg.int1_wu;
       val->int1_single_tap  = md1_cfg.int1_single_tap;
       val->int1_inact_state = md1_cfg.int1_inact_state;
-      ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+      ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
 
       if (ret == 0)
       {
         val->den_drdy_int1 = ctrl4_c.den_drdy_int1;
-        ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+        ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                                  (uint8_t *)&master_config, 1);
         val->den_drdy_int1 = master_config.drdy_on_int1;
       }
@@ -3824,16 +3824,16 @@ int32_t ism330dlc_pin_int1_route_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_pin_int2_route_set(stmdev_ctx_t *ctx,
-                                     ism330dlc_int2_route_t val)
+int32_t lsm6dsr_pin_int2_route_set(stmdev_ctx_t *ctx,
+                                     lsm6dsr_int2_route_t val)
 {
-  ism330dlc_int2_ctrl_t int2_ctrl;
-  ism330dlc_md1_cfg_t md1_cfg;
-  ism330dlc_md2_cfg_t md2_cfg;
-  ism330dlc_drdy_pulse_cfg_t drdy_pulse_cfg;
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_int2_ctrl_t int2_ctrl;
+  lsm6dsr_md1_cfg_t md1_cfg;
+  lsm6dsr_md2_cfg_t md2_cfg;
+  lsm6dsr_drdy_pulse_cfg_t drdy_pulse_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT2_CTRL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT2_CTRL,
                            (uint8_t *)&int2_ctrl, 1);
 
   if (ret == 0)
@@ -3844,19 +3844,19 @@ int32_t ism330dlc_pin_int2_route_set(stmdev_ctx_t *ctx,
     int2_ctrl.int2_fth            = val.int2_fth;
     int2_ctrl.int2_fifo_ovr       = val.int2_fifo_ovr;
     int2_ctrl.int2_full_flag      = val.int2_full_flag;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_INT2_CTRL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_INT2_CTRL,
                               (uint8_t *)&int2_ctrl, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MD1_CFG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MD1_CFG,
                              (uint8_t *)&md1_cfg, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MD2_CFG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MD2_CFG,
                              (uint8_t *)&md2_cfg, 1);
   }
 
@@ -3870,24 +3870,24 @@ int32_t ism330dlc_pin_int2_route_set(stmdev_ctx_t *ctx,
     md2_cfg.int2_wu                = val.int2_wu;
     md2_cfg.int2_single_tap        = val.int2_single_tap;
     md2_cfg.int2_inact_state       = val.int2_inact_state;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MD2_CFG, (uint8_t *)&md2_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MD2_CFG, (uint8_t *)&md2_cfg, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_DRDY_PULSE_CFG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_DRDY_PULSE_CFG,
                              (uint8_t *)&drdy_pulse_cfg, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_DRDY_PULSE_CFG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_DRDY_PULSE_CFG,
                               (uint8_t *)&drdy_pulse_cfg, 1);
   }
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
     if ((md1_cfg.int1_6d != 0x00U) ||
         (md1_cfg.int1_ff != 0x00U) ||
@@ -3913,7 +3913,7 @@ int32_t ism330dlc_pin_int2_route_set(stmdev_ctx_t *ctx,
 
   if (ret == 0)
   {
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   }
 
   return ret;
@@ -3927,13 +3927,13 @@ int32_t ism330dlc_pin_int2_route_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_pin_int2_route_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_int2_route_t *val)
+int32_t lsm6dsr_pin_int2_route_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_int2_route_t *val)
 {
-  ism330dlc_int2_ctrl_t int2_ctrl;
-  ism330dlc_md2_cfg_t md2_cfg;
+  lsm6dsr_int2_ctrl_t int2_ctrl;
+  lsm6dsr_md2_cfg_t md2_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT2_CTRL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT2_CTRL,
                            (uint8_t *)&int2_ctrl, 1);
 
   if (ret == 0)
@@ -3944,7 +3944,7 @@ int32_t ism330dlc_pin_int2_route_get(stmdev_ctx_t *ctx,
     val->int2_fth             = int2_ctrl.int2_fth;
     val->int2_fifo_ovr        = int2_ctrl.int2_fifo_ovr;
     val->int2_full_flag       = int2_ctrl.int2_full_flag;
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MD2_CFG, (uint8_t *)&md2_cfg, 1);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MD2_CFG, (uint8_t *)&md2_cfg, 1);
 
     if (ret == 0)
     {
@@ -3970,17 +3970,17 @@ int32_t ism330dlc_pin_int2_route_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_pin_mode_set(stmdev_ctx_t *ctx,
-                               ism330dlc_pp_od_t val)
+int32_t lsm6dsr_pin_mode_set(stmdev_ctx_t *ctx,
+                               lsm6dsr_pp_od_t val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   if (ret == 0)
   {
     ctrl3_c.pp_od = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   }
 
   return ret;
@@ -3994,25 +3994,25 @@ int32_t ism330dlc_pin_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_pin_mode_get(stmdev_ctx_t *ctx,
-                               ism330dlc_pp_od_t *val)
+int32_t lsm6dsr_pin_mode_get(stmdev_ctx_t *ctx,
+                               lsm6dsr_pp_od_t *val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   switch (ctrl3_c.pp_od)
   {
-    case ISM330DLC_PUSH_PULL:
-      *val = ISM330DLC_PUSH_PULL;
+    case LSM6DSR_PUSH_PULL:
+      *val = LSM6DSR_PUSH_PULL;
       break;
 
-    case ISM330DLC_OPEN_DRAIN:
-      *val = ISM330DLC_OPEN_DRAIN;
+    case LSM6DSR_OPEN_DRAIN:
+      *val = LSM6DSR_OPEN_DRAIN;
       break;
 
     default:
-      *val = ISM330DLC_PUSH_PULL;
+      *val = LSM6DSR_PUSH_PULL;
       break;
   }
 
@@ -4027,17 +4027,17 @@ int32_t ism330dlc_pin_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_pin_polarity_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_h_lactive_t val)
+int32_t lsm6dsr_pin_polarity_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_h_lactive_t val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   if (ret == 0)
   {
     ctrl3_c.h_lactive = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
   }
 
   return ret;
@@ -4051,25 +4051,25 @@ int32_t ism330dlc_pin_polarity_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_pin_polarity_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_h_lactive_t *val)
+int32_t lsm6dsr_pin_polarity_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_h_lactive_t *val)
 {
-  ism330dlc_ctrl3_c_t ctrl3_c;
+  lsm6dsr_ctrl3_c_t ctrl3_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL3_C, (uint8_t *)&ctrl3_c, 1);
 
   switch (ctrl3_c.h_lactive)
   {
-    case ISM330DLC_ACTIVE_HIGH:
-      *val = ISM330DLC_ACTIVE_HIGH;
+    case LSM6DSR_ACTIVE_HIGH:
+      *val = LSM6DSR_ACTIVE_HIGH;
       break;
 
-    case ISM330DLC_ACTIVE_LOW:
-      *val = ISM330DLC_ACTIVE_LOW;
+    case LSM6DSR_ACTIVE_LOW:
+      *val = LSM6DSR_ACTIVE_LOW;
       break;
 
     default:
-      *val = ISM330DLC_ACTIVE_HIGH;
+      *val = LSM6DSR_ACTIVE_HIGH;
       break;
   }
 
@@ -4084,16 +4084,16 @@ int32_t ism330dlc_pin_polarity_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_all_on_int1_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_all_on_int1_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
 
   if (ret == 0)
   {
     ctrl4_c.int2_on_int1 = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   }
 
   return ret;
@@ -4107,11 +4107,11 @@ int32_t ism330dlc_all_on_int1_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_all_on_int1_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_all_on_int1_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   *val = ctrl4_c.int2_on_int1;
 
   return ret;
@@ -4125,17 +4125,17 @@ int32_t ism330dlc_all_on_int1_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_int_notification_set(stmdev_ctx_t *ctx,
-                                       ism330dlc_lir_t val)
+int32_t lsm6dsr_int_notification_set(stmdev_ctx_t *ctx,
+                                       lsm6dsr_lir_t val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   if (ret == 0)
   {
     tap_cfg.lir = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   }
 
   return ret;
@@ -4149,25 +4149,25 @@ int32_t ism330dlc_int_notification_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_int_notification_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_lir_t *val)
+int32_t lsm6dsr_int_notification_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_lir_t *val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   switch (tap_cfg.lir)
   {
-    case ISM330DLC_INT_PULSED:
-      *val = ISM330DLC_INT_PULSED;
+    case LSM6DSR_INT_PULSED:
+      *val = LSM6DSR_INT_PULSED;
       break;
 
-    case ISM330DLC_INT_LATCHED:
-      *val = ISM330DLC_INT_LATCHED;
+    case LSM6DSR_INT_LATCHED:
+      *val = LSM6DSR_INT_LATCHED;
       break;
 
     default:
-      *val = ISM330DLC_INT_PULSED;
+      *val = LSM6DSR_INT_PULSED;
       break;
   }
 
@@ -4180,7 +4180,7 @@ int32_t ism330dlc_int_notification_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_Wake_Up_event
+  * @defgroup    LSM6DSR_Wake_Up_event
   * @brief       This section groups all the functions that manage the
   *              Wake Up event generation.
   * @{
@@ -4195,17 +4195,17 @@ int32_t ism330dlc_int_notification_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_wkup_threshold_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_wkup_threshold_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_wake_up_ths_t wake_up_ths;
+  lsm6dsr_wake_up_ths_t wake_up_ths;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_THS,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_THS,
                            (uint8_t *)&wake_up_ths, 1);
 
   if (ret == 0)
   {
     wake_up_ths.wk_ths = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_WAKE_UP_THS,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_WAKE_UP_THS,
                               (uint8_t *)&wake_up_ths, 1);
   }
 
@@ -4220,11 +4220,11 @@ int32_t ism330dlc_wkup_threshold_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_wkup_threshold_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_wkup_threshold_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_wake_up_ths_t wake_up_ths;
+  lsm6dsr_wake_up_ths_t wake_up_ths;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_THS,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_THS,
                            (uint8_t *)&wake_up_ths, 1);
   *val = wake_up_ths.wk_ths;
 
@@ -4239,17 +4239,17 @@ int32_t ism330dlc_wkup_threshold_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_wkup_dur_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_wkup_dur_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_wake_up_dur_t wake_up_dur;
+  lsm6dsr_wake_up_dur_t wake_up_dur;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                            (uint8_t *)&wake_up_dur, 1);
 
   if (ret == 0)
   {
     wake_up_dur.wake_dur = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                               (uint8_t *)&wake_up_dur, 1);
   }
 
@@ -4264,11 +4264,11 @@ int32_t ism330dlc_wkup_dur_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_wkup_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_wkup_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_wake_up_dur_t wake_up_dur;
+  lsm6dsr_wake_up_dur_t wake_up_dur;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                            (uint8_t *)&wake_up_dur, 1);
   *val = wake_up_dur.wake_dur;
 
@@ -4281,7 +4281,7 @@ int32_t ism330dlc_wkup_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
   */
 
 /**
-  * @defgroup    ISM330DLC_Activity/Inactivity_detection
+  * @defgroup    LSM6DSR_Activity/Inactivity_detection
   * @brief       This section groups all the functions concerning
   *              activity/inactivity detection.
   * @{
@@ -4296,16 +4296,16 @@ int32_t ism330dlc_wkup_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_sleep_mode_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_gy_sleep_mode_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
 
   if (ret == 0)
   {
     ctrl4_c.sleep = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   }
 
   return ret;
@@ -4319,11 +4319,11 @@ int32_t ism330dlc_gy_sleep_mode_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_gy_sleep_mode_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_gy_sleep_mode_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
   *val = ctrl4_c.sleep;
 
   return ret;
@@ -4337,17 +4337,17 @@ int32_t ism330dlc_gy_sleep_mode_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_act_mode_set(stmdev_ctx_t *ctx,
-                               ism330dlc_inact_en_t val)
+int32_t lsm6dsr_act_mode_set(stmdev_ctx_t *ctx,
+                               lsm6dsr_inact_en_t val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   if (ret == 0)
   {
     tap_cfg.inact_en = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   }
 
   return ret;
@@ -4361,33 +4361,33 @@ int32_t ism330dlc_act_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_act_mode_get(stmdev_ctx_t *ctx,
-                               ism330dlc_inact_en_t *val)
+int32_t lsm6dsr_act_mode_get(stmdev_ctx_t *ctx,
+                               lsm6dsr_inact_en_t *val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   switch (tap_cfg.inact_en)
   {
-    case ISM330DLC_PROPERTY_DISABLE:
-      *val = ISM330DLC_PROPERTY_DISABLE;
+    case LSM6DSR_PROPERTY_DISABLE:
+      *val = LSM6DSR_PROPERTY_DISABLE;
       break;
 
-    case ISM330DLC_XL_12Hz5_GY_NOT_AFFECTED:
-      *val = ISM330DLC_XL_12Hz5_GY_NOT_AFFECTED;
+    case LSM6DSR_XL_12Hz5_GY_NOT_AFFECTED:
+      *val = LSM6DSR_XL_12Hz5_GY_NOT_AFFECTED;
       break;
 
-    case ISM330DLC_XL_12Hz5_GY_SLEEP:
-      *val = ISM330DLC_XL_12Hz5_GY_SLEEP;
+    case LSM6DSR_XL_12Hz5_GY_SLEEP:
+      *val = LSM6DSR_XL_12Hz5_GY_SLEEP;
       break;
 
-    case ISM330DLC_XL_12Hz5_GY_PD:
-      *val = ISM330DLC_XL_12Hz5_GY_PD;
+    case LSM6DSR_XL_12Hz5_GY_PD:
+      *val = LSM6DSR_XL_12Hz5_GY_PD;
       break;
 
     default:
-      *val = ISM330DLC_PROPERTY_DISABLE;
+      *val = LSM6DSR_PROPERTY_DISABLE;
       break;
   }
 
@@ -4402,17 +4402,17 @@ int32_t ism330dlc_act_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_act_sleep_dur_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_act_sleep_dur_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_wake_up_dur_t wake_up_dur;
+  lsm6dsr_wake_up_dur_t wake_up_dur;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                            (uint8_t *)&wake_up_dur, 1);
 
   if (ret == 0)
   {
     wake_up_dur.sleep_dur = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                               (uint8_t *)&wake_up_dur, 1);
   }
 
@@ -4427,11 +4427,11 @@ int32_t ism330dlc_act_sleep_dur_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_act_sleep_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_act_sleep_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_wake_up_dur_t wake_up_dur;
+  lsm6dsr_wake_up_dur_t wake_up_dur;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                            (uint8_t *)&wake_up_dur, 1);
   *val = wake_up_dur.sleep_dur;
 
@@ -4444,7 +4444,7 @@ int32_t ism330dlc_act_sleep_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
   */
 
 /**
-  * @defgroup    ISM330DLC_tap_generator
+  * @defgroup    LSM6DSR_tap_generator
   * @brief       This section groups all the functions that manage the
   *              tap and double tap event generation.
   * @{
@@ -4459,11 +4459,11 @@ int32_t ism330dlc_act_sleep_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_src_get(stmdev_ctx_t *ctx,
-                              ism330dlc_tap_src_t *val)
+int32_t lsm6dsr_tap_src_get(stmdev_ctx_t *ctx,
+                              lsm6dsr_tap_src_t *val)
 {
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_SRC, (uint8_t *) val, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_SRC, (uint8_t *) val, 1);
 
   return ret;
 }
@@ -4475,17 +4475,17 @@ int32_t ism330dlc_tap_src_get(stmdev_ctx_t *ctx,
   * @param  val    Change the values of tap_z_en in reg TAP_CFG
   *
   */
-int32_t ism330dlc_tap_detection_on_z_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_tap_detection_on_z_set(stmdev_ctx_t *ctx,
                                          uint8_t val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   if (ret == 0)
   {
     tap_cfg.tap_z_en = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   }
 
   return ret;
@@ -4499,12 +4499,12 @@ int32_t ism330dlc_tap_detection_on_z_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_detection_on_z_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_tap_detection_on_z_get(stmdev_ctx_t *ctx,
                                          uint8_t *val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   *val = tap_cfg.tap_z_en;
 
   return ret;
@@ -4518,17 +4518,17 @@ int32_t ism330dlc_tap_detection_on_z_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_detection_on_y_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_tap_detection_on_y_set(stmdev_ctx_t *ctx,
                                          uint8_t val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   if (ret == 0)
   {
     tap_cfg.tap_y_en = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   }
 
   return ret;
@@ -4542,12 +4542,12 @@ int32_t ism330dlc_tap_detection_on_y_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_detection_on_y_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_tap_detection_on_y_get(stmdev_ctx_t *ctx,
                                          uint8_t *val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   *val = tap_cfg.tap_y_en;
 
   return ret;
@@ -4561,17 +4561,17 @@ int32_t ism330dlc_tap_detection_on_y_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_detection_on_x_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_tap_detection_on_x_set(stmdev_ctx_t *ctx,
                                          uint8_t val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
 
   if (ret == 0)
   {
     tap_cfg.tap_x_en = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   }
 
   return ret;
@@ -4585,12 +4585,12 @@ int32_t ism330dlc_tap_detection_on_x_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_detection_on_x_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_tap_detection_on_x_get(stmdev_ctx_t *ctx,
                                          uint8_t *val)
 {
-  ism330dlc_tap_cfg_t tap_cfg;
+  lsm6dsr_tap_cfg_t tap_cfg;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_CFG, (uint8_t *)&tap_cfg, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_CFG, (uint8_t *)&tap_cfg, 1);
   *val = tap_cfg.tap_x_en;
 
   return ret;
@@ -4604,17 +4604,17 @@ int32_t ism330dlc_tap_detection_on_x_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_threshold_x_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_tap_threshold_x_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_tap_ths_6d_t tap_ths_6d;
+  lsm6dsr_tap_ths_6d_t tap_ths_6d;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_THS_6D,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_THS_6D,
                            (uint8_t *)&tap_ths_6d, 1);
 
   if (ret == 0)
   {
     tap_ths_6d.tap_ths = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_THS_6D,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_THS_6D,
                               (uint8_t *)&tap_ths_6d, 1);
   }
 
@@ -4629,11 +4629,11 @@ int32_t ism330dlc_tap_threshold_x_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_threshold_x_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_tap_threshold_x_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_tap_ths_6d_t tap_ths_6d;
+  lsm6dsr_tap_ths_6d_t tap_ths_6d;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_THS_6D,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_THS_6D,
                            (uint8_t *)&tap_ths_6d, 1);
   *val = tap_ths_6d.tap_ths;
 
@@ -4653,17 +4653,17 @@ int32_t ism330dlc_tap_threshold_x_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_shock_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_tap_shock_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_int_dur2_t int_dur2;
+  lsm6dsr_int_dur2_t int_dur2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_DUR2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_DUR2,
                            (uint8_t *)&int_dur2, 1);
 
   if (ret == 0)
   {
     int_dur2.shock = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_INT_DUR2,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_INT_DUR2,
                               (uint8_t *)&int_dur2, 1);
   }
 
@@ -4683,11 +4683,11 @@ int32_t ism330dlc_tap_shock_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_shock_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_tap_shock_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_int_dur2_t int_dur2;
+  lsm6dsr_int_dur2_t int_dur2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_DUR2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_DUR2,
                            (uint8_t *)&int_dur2, 1);
   *val = int_dur2.shock;
 
@@ -4707,17 +4707,17 @@ int32_t ism330dlc_tap_shock_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_quiet_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_tap_quiet_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_int_dur2_t int_dur2;
+  lsm6dsr_int_dur2_t int_dur2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_DUR2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_DUR2,
                            (uint8_t *)&int_dur2, 1);
 
   if (ret == 0)
   {
     int_dur2.quiet = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_INT_DUR2,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_INT_DUR2,
                               (uint8_t *)&int_dur2, 1);
   }
 
@@ -4737,11 +4737,11 @@ int32_t ism330dlc_tap_quiet_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_quiet_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_tap_quiet_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_int_dur2_t int_dur2;
+  lsm6dsr_int_dur2_t int_dur2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_DUR2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_DUR2,
                            (uint8_t *)&int_dur2, 1);
   *val = int_dur2.quiet;
 
@@ -4762,17 +4762,17 @@ int32_t ism330dlc_tap_quiet_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_dur_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_tap_dur_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_int_dur2_t int_dur2;
+  lsm6dsr_int_dur2_t int_dur2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_DUR2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_DUR2,
                            (uint8_t *)&int_dur2, 1);
 
   if (ret == 0)
   {
     int_dur2.dur = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_INT_DUR2,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_INT_DUR2,
                               (uint8_t *)&int_dur2, 1);
   }
 
@@ -4793,11 +4793,11 @@ int32_t ism330dlc_tap_dur_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_tap_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_int_dur2_t int_dur2;
+  lsm6dsr_int_dur2_t int_dur2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_INT_DUR2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_INT_DUR2,
                            (uint8_t *)&int_dur2, 1);
   *val = int_dur2.dur;
 
@@ -4812,18 +4812,18 @@ int32_t ism330dlc_tap_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_mode_set(stmdev_ctx_t *ctx,
-                               ism330dlc_single_double_tap_t val)
+int32_t lsm6dsr_tap_mode_set(stmdev_ctx_t *ctx,
+                               lsm6dsr_single_double_tap_t val)
 {
-  ism330dlc_wake_up_ths_t wake_up_ths;
+  lsm6dsr_wake_up_ths_t wake_up_ths;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_THS,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_THS,
                            (uint8_t *)&wake_up_ths, 1);
 
   if (ret == 0)
   {
     wake_up_ths.single_double_tap = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_WAKE_UP_THS,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_WAKE_UP_THS,
                               (uint8_t *)&wake_up_ths, 1);
   }
 
@@ -4838,26 +4838,26 @@ int32_t ism330dlc_tap_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_tap_mode_get(stmdev_ctx_t *ctx,
-                               ism330dlc_single_double_tap_t *val)
+int32_t lsm6dsr_tap_mode_get(stmdev_ctx_t *ctx,
+                               lsm6dsr_single_double_tap_t *val)
 {
-  ism330dlc_wake_up_ths_t wake_up_ths;
+  lsm6dsr_wake_up_ths_t wake_up_ths;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_THS,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_THS,
                            (uint8_t *)&wake_up_ths, 1);
 
   switch (wake_up_ths.single_double_tap)
   {
-    case ISM330DLC_ONLY_SINGLE:
-      *val = ISM330DLC_ONLY_SINGLE;
+    case LSM6DSR_ONLY_SINGLE:
+      *val = LSM6DSR_ONLY_SINGLE;
       break;
 
-    case ISM330DLC_BOTH_SINGLE_DOUBLE:
-      *val = ISM330DLC_BOTH_SINGLE_DOUBLE;
+    case LSM6DSR_BOTH_SINGLE_DOUBLE:
+      *val = LSM6DSR_BOTH_SINGLE_DOUBLE;
       break;
 
     default:
-      *val = ISM330DLC_ONLY_SINGLE;
+      *val = LSM6DSR_ONLY_SINGLE;
       break;
   }
 
@@ -4870,7 +4870,7 @@ int32_t ism330dlc_tap_mode_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_ Six_position_detection(6D/4D)
+  * @defgroup    LSM6DSR_ Six_position_detection(6D/4D)
   * @brief       This section groups all the functions concerning six
   *              position detection (6D).
   * @{
@@ -4885,18 +4885,18 @@ int32_t ism330dlc_tap_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_6d_feed_data_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_low_pass_on_6d_t val)
+int32_t lsm6dsr_6d_feed_data_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_low_pass_on_6d_t val)
 {
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   if (ret == 0)
   {
     ctrl8_xl.low_pass_on_6d = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL8_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL8_XL,
                               (uint8_t *)&ctrl8_xl, 1);
   }
 
@@ -4911,26 +4911,26 @@ int32_t ism330dlc_6d_feed_data_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_6d_feed_data_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_low_pass_on_6d_t *val)
+int32_t lsm6dsr_6d_feed_data_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_low_pass_on_6d_t *val)
 {
-  ism330dlc_ctrl8_xl_t ctrl8_xl;
+  lsm6dsr_ctrl8_xl_t ctrl8_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL8_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL8_XL,
                            (uint8_t *)&ctrl8_xl, 1);
 
   switch (ctrl8_xl.low_pass_on_6d)
   {
-    case ISM330DLC_ODR_DIV_2_FEED:
-      *val = ISM330DLC_ODR_DIV_2_FEED;
+    case LSM6DSR_ODR_DIV_2_FEED:
+      *val = LSM6DSR_ODR_DIV_2_FEED;
       break;
 
-    case ISM330DLC_LPF2_FEED:
-      *val = ISM330DLC_LPF2_FEED;
+    case LSM6DSR_LPF2_FEED:
+      *val = LSM6DSR_LPF2_FEED;
       break;
 
     default:
-      *val = ISM330DLC_ODR_DIV_2_FEED;
+      *val = LSM6DSR_ODR_DIV_2_FEED;
       break;
   }
 
@@ -4945,18 +4945,18 @@ int32_t ism330dlc_6d_feed_data_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_6d_threshold_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_sixd_ths_t val)
+int32_t lsm6dsr_6d_threshold_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_sixd_ths_t val)
 {
-  ism330dlc_tap_ths_6d_t tap_ths_6d;
+  lsm6dsr_tap_ths_6d_t tap_ths_6d;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_THS_6D,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_THS_6D,
                            (uint8_t *)&tap_ths_6d, 1);
 
   if (ret == 0)
   {
     tap_ths_6d.sixd_ths = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_THS_6D,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_THS_6D,
                               (uint8_t *)&tap_ths_6d, 1);
   }
 
@@ -4971,34 +4971,34 @@ int32_t ism330dlc_6d_threshold_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_6d_threshold_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_sixd_ths_t *val)
+int32_t lsm6dsr_6d_threshold_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_sixd_ths_t *val)
 {
-  ism330dlc_tap_ths_6d_t tap_ths_6d;
+  lsm6dsr_tap_ths_6d_t tap_ths_6d;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_THS_6D,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_THS_6D,
                            (uint8_t *)&tap_ths_6d, 1);
 
   switch (tap_ths_6d.sixd_ths)
   {
-    case ISM330DLC_DEG_80:
-      *val = ISM330DLC_DEG_80;
+    case LSM6DSR_DEG_80:
+      *val = LSM6DSR_DEG_80;
       break;
 
-    case ISM330DLC_DEG_70:
-      *val = ISM330DLC_DEG_70;
+    case LSM6DSR_DEG_70:
+      *val = LSM6DSR_DEG_70;
       break;
 
-    case ISM330DLC_DEG_60:
-      *val = ISM330DLC_DEG_60;
+    case LSM6DSR_DEG_60:
+      *val = LSM6DSR_DEG_60;
       break;
 
-    case ISM330DLC_DEG_50:
-      *val = ISM330DLC_DEG_50;
+    case LSM6DSR_DEG_50:
+      *val = LSM6DSR_DEG_50;
       break;
 
     default:
-      *val = ISM330DLC_DEG_80;
+      *val = LSM6DSR_DEG_80;
       break;
   }
 
@@ -5013,17 +5013,17 @@ int32_t ism330dlc_6d_threshold_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_4d_mode_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_4d_mode_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_tap_ths_6d_t tap_ths_6d;
+  lsm6dsr_tap_ths_6d_t tap_ths_6d;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_THS_6D,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_THS_6D,
                            (uint8_t *)&tap_ths_6d, 1);
 
   if (ret == 0)
   {
     tap_ths_6d.d4d_en = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_TAP_THS_6D,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_TAP_THS_6D,
                               (uint8_t *)&tap_ths_6d, 1);
   }
 
@@ -5038,11 +5038,11 @@ int32_t ism330dlc_4d_mode_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_4d_mode_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_4d_mode_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_tap_ths_6d_t tap_ths_6d;
+  lsm6dsr_tap_ths_6d_t tap_ths_6d;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_TAP_THS_6D,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_TAP_THS_6D,
                            (uint8_t *)&tap_ths_6d, 1);
   *val = tap_ths_6d.d4d_en;
 
@@ -5055,7 +5055,7 @@ int32_t ism330dlc_4d_mode_get(stmdev_ctx_t *ctx, uint8_t *val)
   */
 
 /**
-  * @defgroup    ISM330DLC_free_fall
+  * @defgroup    LSM6DSR_free_fall
   * @brief       This section group all the functions concerning the free
   *              fall detection.
   * @{
@@ -5070,29 +5070,29 @@ int32_t ism330dlc_4d_mode_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_ff_dur_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_ff_dur_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_wake_up_dur_t wake_up_dur;
-  ism330dlc_free_fall_t free_fall;
+  lsm6dsr_wake_up_dur_t wake_up_dur;
+  lsm6dsr_free_fall_t free_fall;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FREE_FALL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FREE_FALL,
                            (uint8_t *)&free_fall, 1);
 
   if (ret == 0)
   {
     free_fall.ff_dur = (val & 0x1FU);
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FREE_FALL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FREE_FALL,
                               (uint8_t *)&free_fall, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+      ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                                (uint8_t *)&wake_up_dur, 1);
 
       if (ret == 0)
       {
         wake_up_dur.ff_dur = (val & 0x20U) >> 5;
-        ret = ism330dlc_write_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+        ret = lsm6dsr_write_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                                   (uint8_t *)&wake_up_dur, 1);
       }
     }
@@ -5109,17 +5109,17 @@ int32_t ism330dlc_ff_dur_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_ff_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_ff_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_wake_up_dur_t wake_up_dur;
-  ism330dlc_free_fall_t free_fall;
+  lsm6dsr_wake_up_dur_t wake_up_dur;
+  lsm6dsr_free_fall_t free_fall;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_WAKE_UP_DUR,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_WAKE_UP_DUR,
                            (uint8_t *)&wake_up_dur, 1);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_FREE_FALL,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_FREE_FALL,
                              (uint8_t *)&free_fall, 1);
   }
 
@@ -5136,18 +5136,18 @@ int32_t ism330dlc_ff_dur_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_ff_threshold_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_ff_ths_t val)
+int32_t lsm6dsr_ff_threshold_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_ff_ths_t val)
 {
-  ism330dlc_free_fall_t free_fall;
+  lsm6dsr_free_fall_t free_fall;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FREE_FALL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FREE_FALL,
                            (uint8_t *)&free_fall, 1);
 
   if (ret == 0)
   {
     free_fall.ff_ths = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FREE_FALL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FREE_FALL,
                               (uint8_t *)&free_fall, 1);
   }
 
@@ -5162,50 +5162,50 @@ int32_t ism330dlc_ff_threshold_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_ff_threshold_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_ff_ths_t *val)
+int32_t lsm6dsr_ff_threshold_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_ff_ths_t *val)
 {
-  ism330dlc_free_fall_t free_fall;
+  lsm6dsr_free_fall_t free_fall;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FREE_FALL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FREE_FALL,
                            (uint8_t *)&free_fall, 1);
 
   switch (free_fall.ff_ths)
   {
-    case ISM330DLC_FF_TSH_156mg:
-      *val = ISM330DLC_FF_TSH_156mg;
+    case LSM6DSR_FF_TSH_156mg:
+      *val = LSM6DSR_FF_TSH_156mg;
       break;
 
-    case ISM330DLC_FF_TSH_219mg:
-      *val = ISM330DLC_FF_TSH_219mg;
+    case LSM6DSR_FF_TSH_219mg:
+      *val = LSM6DSR_FF_TSH_219mg;
       break;
 
-    case ISM330DLC_FF_TSH_250mg:
-      *val = ISM330DLC_FF_TSH_250mg;
+    case LSM6DSR_FF_TSH_250mg:
+      *val = LSM6DSR_FF_TSH_250mg;
       break;
 
-    case ISM330DLC_FF_TSH_312mg:
-      *val = ISM330DLC_FF_TSH_312mg;
+    case LSM6DSR_FF_TSH_312mg:
+      *val = LSM6DSR_FF_TSH_312mg;
       break;
 
-    case ISM330DLC_FF_TSH_344mg:
-      *val = ISM330DLC_FF_TSH_344mg;
+    case LSM6DSR_FF_TSH_344mg:
+      *val = LSM6DSR_FF_TSH_344mg;
       break;
 
-    case ISM330DLC_FF_TSH_406mg:
-      *val = ISM330DLC_FF_TSH_406mg;
+    case LSM6DSR_FF_TSH_406mg:
+      *val = LSM6DSR_FF_TSH_406mg;
       break;
 
-    case ISM330DLC_FF_TSH_469mg:
-      *val = ISM330DLC_FF_TSH_469mg;
+    case LSM6DSR_FF_TSH_469mg:
+      *val = LSM6DSR_FF_TSH_469mg;
       break;
 
-    case ISM330DLC_FF_TSH_500mg:
-      *val = ISM330DLC_FF_TSH_500mg;
+    case LSM6DSR_FF_TSH_500mg:
+      *val = LSM6DSR_FF_TSH_500mg;
       break;
 
     default:
-      *val = ISM330DLC_FF_TSH_156mg;
+      *val = LSM6DSR_FF_TSH_156mg;
       break;
   }
 
@@ -5218,7 +5218,7 @@ int32_t ism330dlc_ff_threshold_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_fifo
+  * @defgroup    LSM6DSR_fifo
   * @brief       This section group all the functions concerning the
   *              fifo usage
   * @{
@@ -5233,24 +5233,24 @@ int32_t ism330dlc_ff_threshold_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_watermark_set(stmdev_ctx_t *ctx, uint16_t val)
+int32_t lsm6dsr_fifo_watermark_set(stmdev_ctx_t *ctx, uint16_t val)
 {
-  ism330dlc_fifo_ctrl1_t fifo_ctrl1;
-  ism330dlc_fifo_ctrl2_t fifo_ctrl2;
+  lsm6dsr_fifo_ctrl1_t fifo_ctrl1;
+  lsm6dsr_fifo_ctrl2_t fifo_ctrl2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL2,
                            (uint8_t *)&fifo_ctrl2, 1);
 
   if (ret == 0)
   {
     fifo_ctrl2.fth = (uint8_t)(uint8_t)(val / 256U);
     fifo_ctrl1.fth = (uint8_t)(uint8_t)(val - (fifo_ctrl2.fth * 256U));
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL1,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL1,
                               (uint8_t *)&fifo_ctrl1, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL2,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL2,
                                 (uint8_t *)&fifo_ctrl2, 1);
     }
   }
@@ -5266,17 +5266,17 @@ int32_t ism330dlc_fifo_watermark_set(stmdev_ctx_t *ctx, uint16_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_watermark_get(stmdev_ctx_t *ctx, uint16_t *val)
+int32_t lsm6dsr_fifo_watermark_get(stmdev_ctx_t *ctx, uint16_t *val)
 {
-  ism330dlc_fifo_ctrl1_t fifo_ctrl1;
-  ism330dlc_fifo_ctrl2_t fifo_ctrl2;
+  lsm6dsr_fifo_ctrl1_t fifo_ctrl1;
+  lsm6dsr_fifo_ctrl2_t fifo_ctrl2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL1,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL1,
                            (uint8_t *)&fifo_ctrl1, 1);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL2,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL2,
                              (uint8_t *)&fifo_ctrl2, 1);
   }
 
@@ -5296,18 +5296,18 @@ int32_t ism330dlc_fifo_watermark_get(stmdev_ctx_t *ctx, uint16_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_data_level_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_fifo_data_level_get(stmdev_ctx_t *ctx,
                                       uint16_t *val)
 {
-  ism330dlc_fifo_status1_t fifo_status1;
-  ism330dlc_fifo_status2_t fifo_status2;
+  lsm6dsr_fifo_status1_t fifo_status1;
+  lsm6dsr_fifo_status2_t fifo_status2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_STATUS1,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_STATUS1,
                            (uint8_t *)&fifo_status1, 1);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_STATUS2,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_STATUS2,
                              (uint8_t *)&fifo_status2, 1);
     *val = fifo_status2.diff_fifo;
     *val = (*val * 256U) +  fifo_status1.diff_fifo;
@@ -5324,11 +5324,11 @@ int32_t ism330dlc_fifo_data_level_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_wtm_flag_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_fifo_wtm_flag_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_fifo_status2_t fifo_status2;
+  lsm6dsr_fifo_status2_t fifo_status2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_STATUS2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_STATUS2,
                            (uint8_t *)&fifo_status2, 1);
   *val = fifo_status2.waterm;
 
@@ -5344,17 +5344,17 @@ int32_t ism330dlc_fifo_wtm_flag_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_pattern_get(stmdev_ctx_t *ctx, uint16_t *val)
+int32_t lsm6dsr_fifo_pattern_get(stmdev_ctx_t *ctx, uint16_t *val)
 {
-  ism330dlc_fifo_status3_t fifo_status3;
-  ism330dlc_fifo_status4_t fifo_status4;
+  lsm6dsr_fifo_status3_t fifo_status3;
+  lsm6dsr_fifo_status4_t fifo_status4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_STATUS3,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_STATUS3,
                            (uint8_t *)&fifo_status3, 1);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_STATUS4,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_STATUS4,
                              (uint8_t *)&fifo_status4, 1);
     *val = fifo_status4.fifo_pattern;
     *val = (*val * 256U) +  fifo_status3.fifo_pattern;
@@ -5371,17 +5371,17 @@ int32_t ism330dlc_fifo_pattern_get(stmdev_ctx_t *ctx, uint16_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_temp_batch_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_fifo_temp_batch_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_fifo_ctrl2_t fifo_ctrl2;
+  lsm6dsr_fifo_ctrl2_t fifo_ctrl2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL2,
                            (uint8_t *)&fifo_ctrl2, 1);
 
   if (ret == 0)
   {
     fifo_ctrl2.fifo_temp_en = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL2,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL2,
                               (uint8_t *)&fifo_ctrl2, 1);
   }
 
@@ -5396,11 +5396,11 @@ int32_t ism330dlc_fifo_temp_batch_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_temp_batch_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_fifo_temp_batch_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_fifo_ctrl2_t fifo_ctrl2;
+  lsm6dsr_fifo_ctrl2_t fifo_ctrl2;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL2,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL2,
                            (uint8_t *)&fifo_ctrl2, 1);
   *val = fifo_ctrl2.fifo_temp_en;
 
@@ -5416,18 +5416,18 @@ int32_t ism330dlc_fifo_temp_batch_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_write_trigger_set(stmdev_ctx_t *ctx,
-                                         ism330dlc_trigger_fifo_t val)
+int32_t lsm6dsr_fifo_write_trigger_set(stmdev_ctx_t *ctx,
+                                         lsm6dsr_trigger_fifo_t val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   if (ret == 0)
   {
     master_config.data_valid_sel_fifo = (((uint8_t)val & 0x02U) >> 1);
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CONFIG,
                               (uint8_t *)&master_config, 1);
   }
 
@@ -5443,18 +5443,18 @@ int32_t ism330dlc_fifo_write_trigger_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_xl_batch_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_dec_fifo_xl_t val)
+int32_t lsm6dsr_fifo_xl_batch_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_dec_fifo_xl_t val)
 {
-  ism330dlc_fifo_ctrl3_t fifo_ctrl3;
+  lsm6dsr_fifo_ctrl3_t fifo_ctrl3;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL3,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL3,
                            (uint8_t *)&fifo_ctrl3, 1);
 
   if (ret == 0)
   {
     fifo_ctrl3.dec_fifo_xl = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL3,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL3,
                               (uint8_t *)&fifo_ctrl3, 1);
   }
 
@@ -5470,50 +5470,50 @@ int32_t ism330dlc_fifo_xl_batch_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_xl_batch_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_dec_fifo_xl_t *val)
+int32_t lsm6dsr_fifo_xl_batch_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_dec_fifo_xl_t *val)
 {
-  ism330dlc_fifo_ctrl3_t fifo_ctrl3;
+  lsm6dsr_fifo_ctrl3_t fifo_ctrl3;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL3,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL3,
                            (uint8_t *)&fifo_ctrl3, 1);
 
   switch (fifo_ctrl3.dec_fifo_xl)
   {
-    case ISM330DLC_FIFO_XL_DISABLE:
-      *val = ISM330DLC_FIFO_XL_DISABLE;
+    case LSM6DSR_FIFO_XL_DISABLE:
+      *val = LSM6DSR_FIFO_XL_DISABLE;
       break;
 
-    case ISM330DLC_FIFO_XL_NO_DEC:
-      *val = ISM330DLC_FIFO_XL_NO_DEC;
+    case LSM6DSR_FIFO_XL_NO_DEC:
+      *val = LSM6DSR_FIFO_XL_NO_DEC;
       break;
 
-    case ISM330DLC_FIFO_XL_DEC_2:
-      *val = ISM330DLC_FIFO_XL_DEC_2;
+    case LSM6DSR_FIFO_XL_DEC_2:
+      *val = LSM6DSR_FIFO_XL_DEC_2;
       break;
 
-    case ISM330DLC_FIFO_XL_DEC_3:
-      *val = ISM330DLC_FIFO_XL_DEC_3;
+    case LSM6DSR_FIFO_XL_DEC_3:
+      *val = LSM6DSR_FIFO_XL_DEC_3;
       break;
 
-    case ISM330DLC_FIFO_XL_DEC_4:
-      *val = ISM330DLC_FIFO_XL_DEC_4;
+    case LSM6DSR_FIFO_XL_DEC_4:
+      *val = LSM6DSR_FIFO_XL_DEC_4;
       break;
 
-    case ISM330DLC_FIFO_XL_DEC_8:
-      *val = ISM330DLC_FIFO_XL_DEC_8;
+    case LSM6DSR_FIFO_XL_DEC_8:
+      *val = LSM6DSR_FIFO_XL_DEC_8;
       break;
 
-    case ISM330DLC_FIFO_XL_DEC_16:
-      *val = ISM330DLC_FIFO_XL_DEC_16;
+    case LSM6DSR_FIFO_XL_DEC_16:
+      *val = LSM6DSR_FIFO_XL_DEC_16;
       break;
 
-    case ISM330DLC_FIFO_XL_DEC_32:
-      *val = ISM330DLC_FIFO_XL_DEC_32;
+    case LSM6DSR_FIFO_XL_DEC_32:
+      *val = LSM6DSR_FIFO_XL_DEC_32;
       break;
 
     default:
-      *val = ISM330DLC_FIFO_XL_DISABLE;
+      *val = LSM6DSR_FIFO_XL_DISABLE;
       break;
   }
 
@@ -5529,18 +5529,18 @@ int32_t ism330dlc_fifo_xl_batch_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_gy_batch_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_dec_fifo_gyro_t val)
+int32_t lsm6dsr_fifo_gy_batch_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_dec_fifo_gyro_t val)
 {
-  ism330dlc_fifo_ctrl3_t fifo_ctrl3;
+  lsm6dsr_fifo_ctrl3_t fifo_ctrl3;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL3,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL3,
                            (uint8_t *)&fifo_ctrl3, 1);
 
   if (ret == 0)
   {
     fifo_ctrl3.dec_fifo_gyro = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL3,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL3,
                               (uint8_t *)&fifo_ctrl3, 1);
   }
 
@@ -5556,50 +5556,50 @@ int32_t ism330dlc_fifo_gy_batch_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_gy_batch_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_dec_fifo_gyro_t *val)
+int32_t lsm6dsr_fifo_gy_batch_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_dec_fifo_gyro_t *val)
 {
-  ism330dlc_fifo_ctrl3_t fifo_ctrl3;
+  lsm6dsr_fifo_ctrl3_t fifo_ctrl3;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL3,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL3,
                            (uint8_t *)&fifo_ctrl3, 1);
 
   switch (fifo_ctrl3.dec_fifo_gyro)
   {
-    case ISM330DLC_FIFO_GY_DISABLE:
-      *val = ISM330DLC_FIFO_GY_DISABLE;
+    case LSM6DSR_FIFO_GY_DISABLE:
+      *val = LSM6DSR_FIFO_GY_DISABLE;
       break;
 
-    case ISM330DLC_FIFO_GY_NO_DEC:
-      *val = ISM330DLC_FIFO_GY_NO_DEC;
+    case LSM6DSR_FIFO_GY_NO_DEC:
+      *val = LSM6DSR_FIFO_GY_NO_DEC;
       break;
 
-    case ISM330DLC_FIFO_GY_DEC_2:
-      *val = ISM330DLC_FIFO_GY_DEC_2;
+    case LSM6DSR_FIFO_GY_DEC_2:
+      *val = LSM6DSR_FIFO_GY_DEC_2;
       break;
 
-    case ISM330DLC_FIFO_GY_DEC_3:
-      *val = ISM330DLC_FIFO_GY_DEC_3;
+    case LSM6DSR_FIFO_GY_DEC_3:
+      *val = LSM6DSR_FIFO_GY_DEC_3;
       break;
 
-    case ISM330DLC_FIFO_GY_DEC_4:
-      *val = ISM330DLC_FIFO_GY_DEC_4;
+    case LSM6DSR_FIFO_GY_DEC_4:
+      *val = LSM6DSR_FIFO_GY_DEC_4;
       break;
 
-    case ISM330DLC_FIFO_GY_DEC_8:
-      *val = ISM330DLC_FIFO_GY_DEC_8;
+    case LSM6DSR_FIFO_GY_DEC_8:
+      *val = LSM6DSR_FIFO_GY_DEC_8;
       break;
 
-    case ISM330DLC_FIFO_GY_DEC_16:
-      *val = ISM330DLC_FIFO_GY_DEC_16;
+    case LSM6DSR_FIFO_GY_DEC_16:
+      *val = LSM6DSR_FIFO_GY_DEC_16;
       break;
 
-    case ISM330DLC_FIFO_GY_DEC_32:
-      *val = ISM330DLC_FIFO_GY_DEC_32;
+    case LSM6DSR_FIFO_GY_DEC_32:
+      *val = LSM6DSR_FIFO_GY_DEC_32;
       break;
 
     default:
-      *val = ISM330DLC_FIFO_GY_DISABLE;
+      *val = LSM6DSR_FIFO_GY_DISABLE;
       break;
   }
 
@@ -5615,18 +5615,18 @@ int32_t ism330dlc_fifo_gy_batch_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_dataset_3_batch_set(stmdev_ctx_t *ctx,
-                                           ism330dlc_dec_ds3_fifo_t val)
+int32_t lsm6dsr_fifo_dataset_3_batch_set(stmdev_ctx_t *ctx,
+                                           lsm6dsr_dec_ds3_fifo_t val)
 {
-  ism330dlc_fifo_ctrl4_t fifo_ctrl4;
+  lsm6dsr_fifo_ctrl4_t fifo_ctrl4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL4,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL4,
                            (uint8_t *)&fifo_ctrl4, 1);
 
   if (ret == 0)
   {
     fifo_ctrl4.dec_ds3_fifo = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL4,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL4,
                               (uint8_t *)&fifo_ctrl4, 1);
   }
 
@@ -5642,50 +5642,50 @@ int32_t ism330dlc_fifo_dataset_3_batch_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_dataset_3_batch_get(stmdev_ctx_t *ctx,
-                                           ism330dlc_dec_ds3_fifo_t *val)
+int32_t lsm6dsr_fifo_dataset_3_batch_get(stmdev_ctx_t *ctx,
+                                           lsm6dsr_dec_ds3_fifo_t *val)
 {
-  ism330dlc_fifo_ctrl4_t fifo_ctrl4;
+  lsm6dsr_fifo_ctrl4_t fifo_ctrl4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL4,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL4,
                            (uint8_t *)&fifo_ctrl4, 1);
 
   switch (fifo_ctrl4.dec_ds3_fifo)
   {
-    case ISM330DLC_FIFO_DS3_DISABLE:
-      *val = ISM330DLC_FIFO_DS3_DISABLE;
+    case LSM6DSR_FIFO_DS3_DISABLE:
+      *val = LSM6DSR_FIFO_DS3_DISABLE;
       break;
 
-    case ISM330DLC_FIFO_DS3_NO_DEC:
-      *val = ISM330DLC_FIFO_DS3_NO_DEC;
+    case LSM6DSR_FIFO_DS3_NO_DEC:
+      *val = LSM6DSR_FIFO_DS3_NO_DEC;
       break;
 
-    case ISM330DLC_FIFO_DS3_DEC_2:
-      *val = ISM330DLC_FIFO_DS3_DEC_2;
+    case LSM6DSR_FIFO_DS3_DEC_2:
+      *val = LSM6DSR_FIFO_DS3_DEC_2;
       break;
 
-    case ISM330DLC_FIFO_DS3_DEC_3:
-      *val = ISM330DLC_FIFO_DS3_DEC_3;
+    case LSM6DSR_FIFO_DS3_DEC_3:
+      *val = LSM6DSR_FIFO_DS3_DEC_3;
       break;
 
-    case ISM330DLC_FIFO_DS3_DEC_4:
-      *val = ISM330DLC_FIFO_DS3_DEC_4;
+    case LSM6DSR_FIFO_DS3_DEC_4:
+      *val = LSM6DSR_FIFO_DS3_DEC_4;
       break;
 
-    case ISM330DLC_FIFO_DS3_DEC_8:
-      *val = ISM330DLC_FIFO_DS3_DEC_8;
+    case LSM6DSR_FIFO_DS3_DEC_8:
+      *val = LSM6DSR_FIFO_DS3_DEC_8;
       break;
 
-    case ISM330DLC_FIFO_DS3_DEC_16:
-      *val = ISM330DLC_FIFO_DS3_DEC_16;
+    case LSM6DSR_FIFO_DS3_DEC_16:
+      *val = LSM6DSR_FIFO_DS3_DEC_16;
       break;
 
-    case ISM330DLC_FIFO_DS3_DEC_32:
-      *val = ISM330DLC_FIFO_DS3_DEC_32;
+    case LSM6DSR_FIFO_DS3_DEC_32:
+      *val = LSM6DSR_FIFO_DS3_DEC_32;
       break;
 
     default:
-      *val = ISM330DLC_FIFO_DS3_DISABLE;
+      *val = LSM6DSR_FIFO_DS3_DISABLE;
       break;
   }
 
@@ -5701,18 +5701,18 @@ int32_t ism330dlc_fifo_dataset_3_batch_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_dataset_4_batch_set(stmdev_ctx_t *ctx,
-                                           ism330dlc_dec_ds4_fifo_t val)
+int32_t lsm6dsr_fifo_dataset_4_batch_set(stmdev_ctx_t *ctx,
+                                           lsm6dsr_dec_ds4_fifo_t val)
 {
-  ism330dlc_fifo_ctrl4_t fifo_ctrl4;
+  lsm6dsr_fifo_ctrl4_t fifo_ctrl4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL4,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL4,
                            (uint8_t *)&fifo_ctrl4, 1);
 
   if (ret == 0)
   {
     fifo_ctrl4.dec_ds4_fifo = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL4,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL4,
                               (uint8_t *)&fifo_ctrl4, 1);
   }
 
@@ -5728,50 +5728,50 @@ int32_t ism330dlc_fifo_dataset_4_batch_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_dataset_4_batch_get(stmdev_ctx_t *ctx,
-                                           ism330dlc_dec_ds4_fifo_t *val)
+int32_t lsm6dsr_fifo_dataset_4_batch_get(stmdev_ctx_t *ctx,
+                                           lsm6dsr_dec_ds4_fifo_t *val)
 {
-  ism330dlc_fifo_ctrl4_t fifo_ctrl4;
+  lsm6dsr_fifo_ctrl4_t fifo_ctrl4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL4,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL4,
                            (uint8_t *)&fifo_ctrl4, 1);
 
   switch (fifo_ctrl4.dec_ds4_fifo)
   {
-    case ISM330DLC_FIFO_DS4_DISABLE:
-      *val = ISM330DLC_FIFO_DS4_DISABLE;
+    case LSM6DSR_FIFO_DS4_DISABLE:
+      *val = LSM6DSR_FIFO_DS4_DISABLE;
       break;
 
-    case ISM330DLC_FIFO_DS4_NO_DEC:
-      *val = ISM330DLC_FIFO_DS4_NO_DEC;
+    case LSM6DSR_FIFO_DS4_NO_DEC:
+      *val = LSM6DSR_FIFO_DS4_NO_DEC;
       break;
 
-    case ISM330DLC_FIFO_DS4_DEC_2:
-      *val = ISM330DLC_FIFO_DS4_DEC_2;
+    case LSM6DSR_FIFO_DS4_DEC_2:
+      *val = LSM6DSR_FIFO_DS4_DEC_2;
       break;
 
-    case ISM330DLC_FIFO_DS4_DEC_3:
-      *val = ISM330DLC_FIFO_DS4_DEC_3;
+    case LSM6DSR_FIFO_DS4_DEC_3:
+      *val = LSM6DSR_FIFO_DS4_DEC_3;
       break;
 
-    case ISM330DLC_FIFO_DS4_DEC_4:
-      *val = ISM330DLC_FIFO_DS4_DEC_4;
+    case LSM6DSR_FIFO_DS4_DEC_4:
+      *val = LSM6DSR_FIFO_DS4_DEC_4;
       break;
 
-    case ISM330DLC_FIFO_DS4_DEC_8:
-      *val = ISM330DLC_FIFO_DS4_DEC_8;
+    case LSM6DSR_FIFO_DS4_DEC_8:
+      *val = LSM6DSR_FIFO_DS4_DEC_8;
       break;
 
-    case ISM330DLC_FIFO_DS4_DEC_16:
-      *val = ISM330DLC_FIFO_DS4_DEC_16;
+    case LSM6DSR_FIFO_DS4_DEC_16:
+      *val = LSM6DSR_FIFO_DS4_DEC_16;
       break;
 
-    case ISM330DLC_FIFO_DS4_DEC_32:
-      *val = ISM330DLC_FIFO_DS4_DEC_32;
+    case LSM6DSR_FIFO_DS4_DEC_32:
+      *val = LSM6DSR_FIFO_DS4_DEC_32;
       break;
 
     default:
-      *val = ISM330DLC_FIFO_DS4_DISABLE;
+      *val = LSM6DSR_FIFO_DS4_DISABLE;
       break;
   }
 
@@ -5786,18 +5786,18 @@ int32_t ism330dlc_fifo_dataset_4_batch_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_xl_gy_8bit_format_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_fifo_xl_gy_8bit_format_set(stmdev_ctx_t *ctx,
                                              uint8_t val)
 {
-  ism330dlc_fifo_ctrl4_t fifo_ctrl4;
+  lsm6dsr_fifo_ctrl4_t fifo_ctrl4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL4,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL4,
                            (uint8_t *)&fifo_ctrl4, 1);
 
   if (ret == 0)
   {
     fifo_ctrl4.only_high_data = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL4,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL4,
                               (uint8_t *)&fifo_ctrl4, 1);
   }
 
@@ -5812,12 +5812,12 @@ int32_t ism330dlc_fifo_xl_gy_8bit_format_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_xl_gy_8bit_format_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_fifo_xl_gy_8bit_format_get(stmdev_ctx_t *ctx,
                                              uint8_t *val)
 {
-  ism330dlc_fifo_ctrl4_t fifo_ctrl4;
+  lsm6dsr_fifo_ctrl4_t fifo_ctrl4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL4,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL4,
                            (uint8_t *)&fifo_ctrl4, 1);
   *val = fifo_ctrl4.only_high_data;
 
@@ -5833,17 +5833,17 @@ int32_t ism330dlc_fifo_xl_gy_8bit_format_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_stop_on_wtm_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_fifo_stop_on_wtm_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_fifo_ctrl4_t fifo_ctrl4;
+  lsm6dsr_fifo_ctrl4_t fifo_ctrl4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL4,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL4,
                            (uint8_t *)&fifo_ctrl4, 1);
 
   if (ret == 0)
   {
     fifo_ctrl4.stop_on_fth = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL4,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL4,
                               (uint8_t *)&fifo_ctrl4, 1);
   }
 
@@ -5859,12 +5859,12 @@ int32_t ism330dlc_fifo_stop_on_wtm_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_stop_on_wtm_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_fifo_stop_on_wtm_get(stmdev_ctx_t *ctx,
                                        uint8_t *val)
 {
-  ism330dlc_fifo_ctrl4_t fifo_ctrl4;
+  lsm6dsr_fifo_ctrl4_t fifo_ctrl4;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL4,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL4,
                            (uint8_t *)&fifo_ctrl4, 1);
   *val = fifo_ctrl4.stop_on_fth;
 
@@ -5879,18 +5879,18 @@ int32_t ism330dlc_fifo_stop_on_wtm_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_mode_set(stmdev_ctx_t *ctx,
-                                ism330dlc_fifo_mode_t val)
+int32_t lsm6dsr_fifo_mode_set(stmdev_ctx_t *ctx,
+                                lsm6dsr_fifo_mode_t val)
 {
-  ism330dlc_fifo_ctrl5_t fifo_ctrl5;
+  lsm6dsr_fifo_ctrl5_t fifo_ctrl5;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL5,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL5,
                            (uint8_t *)&fifo_ctrl5, 1);
 
   if (ret == 0)
   {
     fifo_ctrl5.fifo_mode = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL5,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL5,
                               (uint8_t *)&fifo_ctrl5, 1);
   }
 
@@ -5905,38 +5905,38 @@ int32_t ism330dlc_fifo_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_mode_get(stmdev_ctx_t *ctx,
-                                ism330dlc_fifo_mode_t *val)
+int32_t lsm6dsr_fifo_mode_get(stmdev_ctx_t *ctx,
+                                lsm6dsr_fifo_mode_t *val)
 {
-  ism330dlc_fifo_ctrl5_t fifo_ctrl5;
+  lsm6dsr_fifo_ctrl5_t fifo_ctrl5;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL5,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL5,
                            (uint8_t *)&fifo_ctrl5, 1);
 
   switch (fifo_ctrl5.fifo_mode)
   {
-    case ISM330DLC_BYPASS_MODE:
-      *val = ISM330DLC_BYPASS_MODE;
+    case LSM6DSR_BYPASS_MODE:
+      *val = LSM6DSR_BYPASS_MODE;
       break;
 
-    case ISM330DLC_FIFO_MODE:
-      *val = ISM330DLC_FIFO_MODE;
+    case LSM6DSR_FIFO_MODE:
+      *val = LSM6DSR_FIFO_MODE;
       break;
 
-    case ISM330DLC_STREAM_TO_FIFO_MODE:
-      *val = ISM330DLC_STREAM_TO_FIFO_MODE;
+    case LSM6DSR_STREAM_TO_FIFO_MODE:
+      *val = LSM6DSR_STREAM_TO_FIFO_MODE;
       break;
 
-    case ISM330DLC_BYPASS_TO_STREAM_MODE:
-      *val = ISM330DLC_BYPASS_TO_STREAM_MODE;
+    case LSM6DSR_BYPASS_TO_STREAM_MODE:
+      *val = LSM6DSR_BYPASS_TO_STREAM_MODE;
       break;
 
-    case ISM330DLC_STREAM_MODE:
-      *val = ISM330DLC_STREAM_MODE;
+    case LSM6DSR_STREAM_MODE:
+      *val = LSM6DSR_STREAM_MODE;
       break;
 
     default:
-      *val = ISM330DLC_BYPASS_MODE;
+      *val = LSM6DSR_BYPASS_MODE;
       break;
   }
 
@@ -5951,18 +5951,18 @@ int32_t ism330dlc_fifo_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_data_rate_set(stmdev_ctx_t *ctx,
-                                     ism330dlc_odr_fifo_t val)
+int32_t lsm6dsr_fifo_data_rate_set(stmdev_ctx_t *ctx,
+                                     lsm6dsr_odr_fifo_t val)
 {
-  ism330dlc_fifo_ctrl5_t fifo_ctrl5;
+  lsm6dsr_fifo_ctrl5_t fifo_ctrl5;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL5,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL5,
                            (uint8_t *)&fifo_ctrl5, 1);
 
   if (ret == 0)
   {
     fifo_ctrl5.odr_fifo = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_FIFO_CTRL5,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_FIFO_CTRL5,
                               (uint8_t *)&fifo_ctrl5, 1);
   }
 
@@ -5977,62 +5977,62 @@ int32_t ism330dlc_fifo_data_rate_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_fifo_data_rate_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_odr_fifo_t *val)
+int32_t lsm6dsr_fifo_data_rate_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_odr_fifo_t *val)
 {
-  ism330dlc_fifo_ctrl5_t fifo_ctrl5;
+  lsm6dsr_fifo_ctrl5_t fifo_ctrl5;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_FIFO_CTRL5,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_FIFO_CTRL5,
                            (uint8_t *)&fifo_ctrl5, 1);
 
   switch (fifo_ctrl5.odr_fifo)
   {
-    case ISM330DLC_FIFO_DISABLE:
-      *val = ISM330DLC_FIFO_DISABLE;
+    case LSM6DSR_FIFO_DISABLE:
+      *val = LSM6DSR_FIFO_DISABLE;
       break;
 
-    case ISM330DLC_FIFO_12Hz5:
-      *val = ISM330DLC_FIFO_12Hz5;
+    case LSM6DSR_FIFO_12Hz5:
+      *val = LSM6DSR_FIFO_12Hz5;
       break;
 
-    case ISM330DLC_FIFO_26Hz:
-      *val = ISM330DLC_FIFO_26Hz;
+    case LSM6DSR_FIFO_26Hz:
+      *val = LSM6DSR_FIFO_26Hz;
       break;
 
-    case ISM330DLC_FIFO_52Hz:
-      *val = ISM330DLC_FIFO_52Hz;
+    case LSM6DSR_FIFO_52Hz:
+      *val = LSM6DSR_FIFO_52Hz;
       break;
 
-    case ISM330DLC_FIFO_104Hz:
-      *val = ISM330DLC_FIFO_104Hz;
+    case LSM6DSR_FIFO_104Hz:
+      *val = LSM6DSR_FIFO_104Hz;
       break;
 
-    case ISM330DLC_FIFO_208Hz:
-      *val = ISM330DLC_FIFO_208Hz;
+    case LSM6DSR_FIFO_208Hz:
+      *val = LSM6DSR_FIFO_208Hz;
       break;
 
-    case ISM330DLC_FIFO_416Hz:
-      *val = ISM330DLC_FIFO_416Hz;
+    case LSM6DSR_FIFO_416Hz:
+      *val = LSM6DSR_FIFO_416Hz;
       break;
 
-    case ISM330DLC_FIFO_833Hz:
-      *val = ISM330DLC_FIFO_833Hz;
+    case LSM6DSR_FIFO_833Hz:
+      *val = LSM6DSR_FIFO_833Hz;
       break;
 
-    case ISM330DLC_FIFO_1k66Hz:
-      *val = ISM330DLC_FIFO_1k66Hz;
+    case LSM6DSR_FIFO_1k66Hz:
+      *val = LSM6DSR_FIFO_1k66Hz;
       break;
 
-    case ISM330DLC_FIFO_3k33Hz:
-      *val = ISM330DLC_FIFO_3k33Hz;
+    case LSM6DSR_FIFO_3k33Hz:
+      *val = LSM6DSR_FIFO_3k33Hz;
       break;
 
-    case ISM330DLC_FIFO_6k66Hz:
-      *val = ISM330DLC_FIFO_6k66Hz;
+    case LSM6DSR_FIFO_6k66Hz:
+      *val = LSM6DSR_FIFO_6k66Hz;
       break;
 
     default:
-      *val = ISM330DLC_FIFO_DISABLE;
+      *val = LSM6DSR_FIFO_DISABLE;
       break;
   }
 
@@ -6045,7 +6045,7 @@ int32_t ism330dlc_fifo_data_rate_get(stmdev_ctx_t *ctx,
   */
 
 /**
-  * @defgroup    ISM330DLC_DEN_functionality
+  * @defgroup    LSM6DSR_DEN_functionality
   * @brief       This section groups all the functions concerning DEN
   *              functionality.
   * @{
@@ -6060,17 +6060,17 @@ int32_t ism330dlc_fifo_data_rate_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_polarity_set(stmdev_ctx_t *ctx,
-                                   ism330dlc_den_lh_t val)
+int32_t lsm6dsr_den_polarity_set(stmdev_ctx_t *ctx,
+                                   lsm6dsr_den_lh_t val)
 {
-  ism330dlc_ctrl5_c_t ctrl5_c;
+  lsm6dsr_ctrl5_c_t ctrl5_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
 
   if (ret == 0)
   {
     ctrl5_c.den_lh = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
   }
 
   return ret;
@@ -6084,25 +6084,25 @@ int32_t ism330dlc_den_polarity_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_polarity_get(stmdev_ctx_t *ctx,
-                                   ism330dlc_den_lh_t *val)
+int32_t lsm6dsr_den_polarity_get(stmdev_ctx_t *ctx,
+                                   lsm6dsr_den_lh_t *val)
 {
-  ism330dlc_ctrl5_c_t ctrl5_c;
+  lsm6dsr_ctrl5_c_t ctrl5_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL5_C, (uint8_t *)&ctrl5_c, 1);
 
   switch (ctrl5_c.den_lh)
   {
-    case ISM330DLC_DEN_ACT_LOW:
-      *val = ISM330DLC_DEN_ACT_LOW;
+    case LSM6DSR_DEN_ACT_LOW:
+      *val = LSM6DSR_DEN_ACT_LOW;
       break;
 
-    case ISM330DLC_DEN_ACT_HIGH:
-      *val = ISM330DLC_DEN_ACT_HIGH;
+    case LSM6DSR_DEN_ACT_HIGH:
+      *val = LSM6DSR_DEN_ACT_HIGH;
       break;
 
     default:
-      *val = ISM330DLC_DEN_ACT_LOW;
+      *val = LSM6DSR_DEN_ACT_LOW;
       break;
   }
 
@@ -6117,17 +6117,17 @@ int32_t ism330dlc_den_polarity_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_mode_set(stmdev_ctx_t *ctx,
-                               ism330dlc_den_mode_t val)
+int32_t lsm6dsr_den_mode_set(stmdev_ctx_t *ctx,
+                               lsm6dsr_den_mode_t val)
 {
-  ism330dlc_ctrl6_c_t ctrl6_c;
+  lsm6dsr_ctrl6_c_t ctrl6_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
 
   if (ret == 0)
   {
     ctrl6_c.den_mode = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
   }
 
   return ret;
@@ -6141,33 +6141,33 @@ int32_t ism330dlc_den_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_mode_get(stmdev_ctx_t *ctx,
-                               ism330dlc_den_mode_t *val)
+int32_t lsm6dsr_den_mode_get(stmdev_ctx_t *ctx,
+                               lsm6dsr_den_mode_t *val)
 {
-  ism330dlc_ctrl6_c_t ctrl6_c;
+  lsm6dsr_ctrl6_c_t ctrl6_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL6_C, (uint8_t *)&ctrl6_c, 1);
 
   switch (ctrl6_c.den_mode)
   {
-    case ISM330DLC_DEN_DISABLE:
-      *val = ISM330DLC_DEN_DISABLE;
+    case LSM6DSR_DEN_DISABLE:
+      *val = LSM6DSR_DEN_DISABLE;
       break;
 
-    case ISM330DLC_LEVEL_LETCHED:
-      *val = ISM330DLC_LEVEL_LETCHED;
+    case LSM6DSR_LEVEL_LETCHED:
+      *val = LSM6DSR_LEVEL_LETCHED;
       break;
 
-    case ISM330DLC_LEVEL_TRIGGER:
-      *val = ISM330DLC_LEVEL_TRIGGER;
+    case LSM6DSR_LEVEL_TRIGGER:
+      *val = LSM6DSR_LEVEL_TRIGGER;
       break;
 
-    case ISM330DLC_EDGE_TRIGGER:
-      *val = ISM330DLC_EDGE_TRIGGER;
+    case LSM6DSR_EDGE_TRIGGER:
+      *val = LSM6DSR_EDGE_TRIGGER;
       break;
 
     default:
-      *val = ISM330DLC_DEN_DISABLE;
+      *val = LSM6DSR_DEN_DISABLE;
       break;
   }
 
@@ -6183,30 +6183,30 @@ int32_t ism330dlc_den_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_enable_set(stmdev_ctx_t *ctx,
-                                 ism330dlc_den_xl_en_t val)
+int32_t lsm6dsr_den_enable_set(stmdev_ctx_t *ctx,
+                                 lsm6dsr_den_xl_en_t val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
 
   if (ret == 0)
   {
     ctrl9_xl.den_xl_g = (uint8_t)val & 0x01U;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL9_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL9_XL,
                               (uint8_t *)&ctrl9_xl, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C,
+      ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C,
                                (uint8_t *)&ctrl4_c, 1);
 
       if (ret == 0)
       {
         ctrl4_c.den_xl_en = (uint8_t)val & 0x02U;
-        ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL4_C,
+        ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL4_C,
                                   (uint8_t *)&ctrl4_c, 1);
       }
     }
@@ -6224,35 +6224,35 @@ int32_t ism330dlc_den_enable_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_enable_get(stmdev_ctx_t *ctx,
-                                 ism330dlc_den_xl_en_t *val)
+int32_t lsm6dsr_den_enable_get(stmdev_ctx_t *ctx,
+                                 lsm6dsr_den_xl_en_t *val)
 {
-  ism330dlc_ctrl4_c_t ctrl4_c;
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl4_c_t ctrl4_c;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL4_C, (uint8_t *)&ctrl4_c, 1);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                              (uint8_t *)&ctrl9_xl, 1);
 
     switch ((ctrl4_c.den_xl_en << 1) + ctrl9_xl.den_xl_g)
     {
-      case ISM330DLC_STAMP_IN_GY_DATA:
-        *val = ISM330DLC_STAMP_IN_GY_DATA;
+      case LSM6DSR_STAMP_IN_GY_DATA:
+        *val = LSM6DSR_STAMP_IN_GY_DATA;
         break;
 
-      case ISM330DLC_STAMP_IN_XL_DATA:
-        *val = ISM330DLC_STAMP_IN_XL_DATA;
+      case LSM6DSR_STAMP_IN_XL_DATA:
+        *val = LSM6DSR_STAMP_IN_XL_DATA;
         break;
 
-      case ISM330DLC_STAMP_IN_GY_XL_DATA:
-        *val = ISM330DLC_STAMP_IN_GY_XL_DATA;
+      case LSM6DSR_STAMP_IN_GY_XL_DATA:
+        *val = LSM6DSR_STAMP_IN_GY_XL_DATA;
         break;
 
       default:
-        *val = ISM330DLC_STAMP_IN_GY_DATA;
+        *val = LSM6DSR_STAMP_IN_GY_DATA;
         break;
     }
   }
@@ -6268,17 +6268,17 @@ int32_t ism330dlc_den_enable_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_mark_axis_z_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_den_mark_axis_z_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
 
   if (ret == 0)
   {
     ctrl9_xl.den_z = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL9_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL9_XL,
                               (uint8_t *)&ctrl9_xl, 1);
   }
 
@@ -6293,11 +6293,11 @@ int32_t ism330dlc_den_mark_axis_z_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_mark_axis_z_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_den_mark_axis_z_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
   *val = ctrl9_xl.den_z;
 
@@ -6312,17 +6312,17 @@ int32_t ism330dlc_den_mark_axis_z_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_mark_axis_y_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_den_mark_axis_y_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
 
   if (ret == 0)
   {
     ctrl9_xl.den_y = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL9_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL9_XL,
                               (uint8_t *)&ctrl9_xl, 1);
   }
 
@@ -6337,11 +6337,11 @@ int32_t ism330dlc_den_mark_axis_y_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_mark_axis_y_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_den_mark_axis_y_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
   *val = ctrl9_xl.den_y;
 
@@ -6356,17 +6356,17 @@ int32_t ism330dlc_den_mark_axis_y_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_mark_axis_x_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_den_mark_axis_x_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
 
   if (ret == 0)
   {
     ctrl9_xl.den_x = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL9_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL9_XL,
                               (uint8_t *)&ctrl9_xl, 1);
   }
 
@@ -6381,11 +6381,11 @@ int32_t ism330dlc_den_mark_axis_x_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_den_mark_axis_x_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_den_mark_axis_x_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
   *val = ctrl9_xl.den_x;
 
@@ -6398,7 +6398,7 @@ int32_t ism330dlc_den_mark_axis_x_get(stmdev_ctx_t *ctx, uint8_t *val)
   */
 
 /**
-  * @defgroup    ISM330DLC_ magnetometer_sensor
+  * @defgroup    LSM6DSR_ magnetometer_sensor
   * @brief       This section groups all the functions that manage additional
   *              magnetometer sensor.
   * @{
@@ -6413,17 +6413,17 @@ int32_t ism330dlc_den_mark_axis_x_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_soft_iron_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_mag_soft_iron_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
 
   if (ret == 0)
   {
     ctrl9_xl.soft_en = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL9_XL,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL9_XL,
                               (uint8_t *)&ctrl9_xl, 1);
   }
 
@@ -6438,11 +6438,11 @@ int32_t ism330dlc_mag_soft_iron_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_soft_iron_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_mag_soft_iron_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_ctrl9_xl_t ctrl9_xl;
+  lsm6dsr_ctrl9_xl_t ctrl9_xl;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL9_XL,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL9_XL,
                            (uint8_t *)&ctrl9_xl, 1);
   *val = ctrl9_xl.soft_en;
 
@@ -6457,23 +6457,23 @@ int32_t ism330dlc_mag_soft_iron_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_hard_iron_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_mag_hard_iron_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_master_config_t master_config;
-  ism330dlc_ctrl10_c_t ctrl10_c;
+  lsm6dsr_master_config_t master_config;
+  lsm6dsr_ctrl10_c_t ctrl10_c;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   if (ret == 0)
   {
     master_config.iron_en = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CONFIG,
                               (uint8_t *)&master_config, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_read_reg(ctx, ISM330DLC_CTRL10_C,
+      ret = lsm6dsr_read_reg(ctx, LSM6DSR_CTRL10_C,
                                (uint8_t *)&ctrl10_c, 1);
 
       if (ret == 0)
@@ -6483,7 +6483,7 @@ int32_t ism330dlc_mag_hard_iron_set(stmdev_ctx_t *ctx, uint8_t val)
           ctrl10_c.func_en = val;
         }
 
-        ret = ism330dlc_write_reg(ctx, ISM330DLC_CTRL10_C,
+        ret = lsm6dsr_write_reg(ctx, LSM6DSR_CTRL10_C,
                                   (uint8_t *)&ctrl10_c, 1);
       }
     }
@@ -6500,11 +6500,11 @@ int32_t ism330dlc_mag_hard_iron_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_hard_iron_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_mag_hard_iron_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
   *val = master_config.iron_en;
 
@@ -6520,19 +6520,19 @@ int32_t ism330dlc_mag_hard_iron_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_soft_iron_mat_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_mag_soft_iron_mat_set(stmdev_ctx_t *ctx,
                                         uint8_t *buff)
 {
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MAG_SI_XX, buff, 9);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MAG_SI_XX, buff, 9);
 
     if (ret == 0)
     {
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -6548,19 +6548,19 @@ int32_t ism330dlc_mag_soft_iron_mat_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_soft_iron_mat_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_mag_soft_iron_mat_get(stmdev_ctx_t *ctx,
                                         uint8_t *buff)
 {
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MAG_SI_XX, buff, 9);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MAG_SI_XX, buff, 9);
 
     if (ret == 0)
     {
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -6576,11 +6576,11 @@ int32_t ism330dlc_mag_soft_iron_mat_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_offset_set(stmdev_ctx_t *ctx, int16_t *val)
+int32_t lsm6dsr_mag_offset_set(stmdev_ctx_t *ctx, int16_t *val)
 {
   uint8_t buff[6];
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
@@ -6590,11 +6590,11 @@ int32_t ism330dlc_mag_offset_set(stmdev_ctx_t *ctx, int16_t *val)
     buff[2] = (uint8_t)((uint16_t)val[1] - (buff[3] * 256U));
     buff[5] = (uint8_t)((uint16_t)val[2] / 256U);
     buff[4] = (uint8_t)((uint16_t)val[2] - (buff[5] * 256U));
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MAG_OFFX_L, buff, 6);
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MAG_OFFX_L, buff, 6);
 
     if (ret == 0)
     {
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -6610,15 +6610,15 @@ int32_t ism330dlc_mag_offset_set(stmdev_ctx_t *ctx, int16_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_mag_offset_get(stmdev_ctx_t *ctx, int16_t *val)
+int32_t lsm6dsr_mag_offset_get(stmdev_ctx_t *ctx, int16_t *val)
 {
   uint8_t buff[6];
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_MAG_OFFX_L, buff, 6);
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_MAG_OFFX_L, buff, 6);
     val[0] = (int16_t)buff[1];
     val[0] = (val[0] * 256) + (int16_t)buff[0];
     val[1] = (int16_t)buff[3];
@@ -6628,7 +6628,7 @@ int32_t ism330dlc_mag_offset_get(stmdev_ctx_t *ctx, int16_t *val)
 
     if (ret == 0)
     {
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -6641,7 +6641,7 @@ int32_t ism330dlc_mag_offset_get(stmdev_ctx_t *ctx, int16_t *val)
   */
 
 /**
-  * @defgroup    ISM330DLC_Sensor_hub
+  * @defgroup    LSM6DSR_Sensor_hub
   * @brief       This section groups all the functions that manage the sensor
   *              hub functionality.
   * @{
@@ -6657,18 +6657,18 @@ int32_t ism330dlc_mag_offset_get(stmdev_ctx_t *ctx, int16_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_sync_sens_frame_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_sh_sync_sens_frame_set(stmdev_ctx_t *ctx,
                                          uint8_t val)
 {
-  ism330dlc_sensor_sync_time_frame_t sensor_sync_time_frame;
+  lsm6dsr_sensor_sync_time_frame_t sensor_sync_time_frame;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_SENSOR_SYNC_TIME_FRAME,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_SENSOR_SYNC_TIME_FRAME,
                            (uint8_t *)&sensor_sync_time_frame, 1);
 
   if (ret == 0)
   {
     sensor_sync_time_frame.tph = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_SENSOR_SYNC_TIME_FRAME,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_SENSOR_SYNC_TIME_FRAME,
                               (uint8_t *)&sensor_sync_time_frame, 1);
   }
 
@@ -6684,12 +6684,12 @@ int32_t ism330dlc_sh_sync_sens_frame_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_sync_sens_frame_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_sh_sync_sens_frame_get(stmdev_ctx_t *ctx,
                                          uint8_t *val)
 {
-  ism330dlc_sensor_sync_time_frame_t sensor_sync_time_frame;
+  lsm6dsr_sensor_sync_time_frame_t sensor_sync_time_frame;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_SENSOR_SYNC_TIME_FRAME,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_SENSOR_SYNC_TIME_FRAME,
                            (uint8_t *)&sensor_sync_time_frame, 1);
   *val =  sensor_sync_time_frame.tph;
 
@@ -6704,18 +6704,18 @@ int32_t ism330dlc_sh_sync_sens_frame_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_sync_sens_ratio_set(stmdev_ctx_t *ctx,
-                                         ism330dlc_rr_t val)
+int32_t lsm6dsr_sh_sync_sens_ratio_set(stmdev_ctx_t *ctx,
+                                         lsm6dsr_rr_t val)
 {
-  ism330dlc_sensor_sync_res_ratio_t sensor_sync_res_ratio;
+  lsm6dsr_sensor_sync_res_ratio_t sensor_sync_res_ratio;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_SENSOR_SYNC_RES_RATIO,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_SENSOR_SYNC_RES_RATIO,
                            (uint8_t *)&sensor_sync_res_ratio, 1);
 
   if (ret == 0)
   {
     sensor_sync_res_ratio.rr = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_SENSOR_SYNC_RES_RATIO,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_SENSOR_SYNC_RES_RATIO,
                               (uint8_t *)&sensor_sync_res_ratio, 1);
   }
 
@@ -6730,34 +6730,34 @@ int32_t ism330dlc_sh_sync_sens_ratio_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_sync_sens_ratio_get(stmdev_ctx_t *ctx,
-                                         ism330dlc_rr_t *val)
+int32_t lsm6dsr_sh_sync_sens_ratio_get(stmdev_ctx_t *ctx,
+                                         lsm6dsr_rr_t *val)
 {
-  ism330dlc_sensor_sync_res_ratio_t sensor_sync_res_ratio;
+  lsm6dsr_sensor_sync_res_ratio_t sensor_sync_res_ratio;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_SENSOR_SYNC_RES_RATIO,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_SENSOR_SYNC_RES_RATIO,
                            (uint8_t *)&sensor_sync_res_ratio, 1);
 
   switch (sensor_sync_res_ratio.rr)
   {
-    case ISM330DLC_RES_RATIO_2_11:
-      *val = ISM330DLC_RES_RATIO_2_11;
+    case LSM6DSR_RES_RATIO_2_11:
+      *val = LSM6DSR_RES_RATIO_2_11;
       break;
 
-    case ISM330DLC_RES_RATIO_2_12:
-      *val = ISM330DLC_RES_RATIO_2_12;
+    case LSM6DSR_RES_RATIO_2_12:
+      *val = LSM6DSR_RES_RATIO_2_12;
       break;
 
-    case ISM330DLC_RES_RATIO_2_13:
-      *val = ISM330DLC_RES_RATIO_2_13;
+    case LSM6DSR_RES_RATIO_2_13:
+      *val = LSM6DSR_RES_RATIO_2_13;
       break;
 
-    case ISM330DLC_RES_RATIO_2_14:
-      *val = ISM330DLC_RES_RATIO_2_14;
+    case LSM6DSR_RES_RATIO_2_14:
+      *val = LSM6DSR_RES_RATIO_2_14;
       break;
 
     default:
-      *val = ISM330DLC_RES_RATIO_2_11;
+      *val = LSM6DSR_RES_RATIO_2_11;
       break;
   }
 
@@ -6772,17 +6772,17 @@ int32_t ism330dlc_sh_sync_sens_ratio_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_master_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_sh_master_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   if (ret == 0)
   {
     master_config.master_on = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CONFIG,
                               (uint8_t *)&master_config, 1);
   }
 
@@ -6797,11 +6797,11 @@ int32_t ism330dlc_sh_master_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_master_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_sh_master_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
   *val = master_config.master_on;
 
@@ -6816,17 +6816,17 @@ int32_t ism330dlc_sh_master_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_pass_through_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_sh_pass_through_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   if (ret == 0)
   {
     master_config.pass_through_mode = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CONFIG,
                               (uint8_t *)&master_config, 1);
   }
 
@@ -6841,11 +6841,11 @@ int32_t ism330dlc_sh_pass_through_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_pass_through_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_sh_pass_through_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
   *val = master_config.pass_through_mode;
 
@@ -6860,18 +6860,18 @@ int32_t ism330dlc_sh_pass_through_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_pin_mode_set(stmdev_ctx_t *ctx,
-                                  ism330dlc_pull_up_en_t val)
+int32_t lsm6dsr_sh_pin_mode_set(stmdev_ctx_t *ctx,
+                                  lsm6dsr_pull_up_en_t val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   if (ret == 0)
   {
     master_config.pull_up_en = (uint8_t) val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CONFIG,
                               (uint8_t *)&master_config, 1);
   }
 
@@ -6886,26 +6886,26 @@ int32_t ism330dlc_sh_pin_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_pin_mode_get(stmdev_ctx_t *ctx,
-                                  ism330dlc_pull_up_en_t *val)
+int32_t lsm6dsr_sh_pin_mode_get(stmdev_ctx_t *ctx,
+                                  lsm6dsr_pull_up_en_t *val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   switch (master_config.pull_up_en)
   {
-    case ISM330DLC_EXT_PULL_UP:
-      *val = ISM330DLC_EXT_PULL_UP;
+    case LSM6DSR_EXT_PULL_UP:
+      *val = LSM6DSR_EXT_PULL_UP;
       break;
 
-    case ISM330DLC_INTERNAL_PULL_UP:
-      *val = ISM330DLC_INTERNAL_PULL_UP;
+    case LSM6DSR_INTERNAL_PULL_UP:
+      *val = LSM6DSR_INTERNAL_PULL_UP;
       break;
 
     default:
-      *val = ISM330DLC_EXT_PULL_UP;
+      *val = LSM6DSR_EXT_PULL_UP;
       break;
   }
 
@@ -6920,18 +6920,18 @@ int32_t ism330dlc_sh_pin_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_syncro_mode_set(stmdev_ctx_t *ctx,
-                                     ism330dlc_start_config_t val)
+int32_t lsm6dsr_sh_syncro_mode_set(stmdev_ctx_t *ctx,
+                                     lsm6dsr_start_config_t val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   if (ret == 0)
   {
     master_config.start_config = (uint8_t)val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CONFIG,
                               (uint8_t *)&master_config, 1);
   }
 
@@ -6946,26 +6946,26 @@ int32_t ism330dlc_sh_syncro_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_syncro_mode_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_start_config_t *val)
+int32_t lsm6dsr_sh_syncro_mode_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_start_config_t *val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   switch (master_config.start_config)
   {
-    case ISM330DLC_XL_GY_DRDY:
-      *val = ISM330DLC_XL_GY_DRDY;
+    case LSM6DSR_XL_GY_DRDY:
+      *val = LSM6DSR_XL_GY_DRDY;
       break;
 
-    case ISM330DLC_EXT_ON_INT2_PIN:
-      *val = ISM330DLC_EXT_ON_INT2_PIN;
+    case LSM6DSR_EXT_ON_INT2_PIN:
+      *val = LSM6DSR_EXT_ON_INT2_PIN;
       break;
 
     default:
-      *val = ISM330DLC_XL_GY_DRDY;
+      *val = LSM6DSR_XL_GY_DRDY;
       break;
   }
 
@@ -6980,17 +6980,17 @@ int32_t ism330dlc_sh_syncro_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_drdy_on_int1_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_sh_drdy_on_int1_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
 
   if (ret == 0)
   {
     master_config.drdy_on_int1 = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CONFIG,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CONFIG,
                               (uint8_t *)&master_config, 1);
   }
 
@@ -7005,11 +7005,11 @@ int32_t ism330dlc_sh_drdy_on_int1_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_drdy_on_int1_get(stmdev_ctx_t *ctx, uint8_t *val)
+int32_t lsm6dsr_sh_drdy_on_int1_get(stmdev_ctx_t *ctx, uint8_t *val)
 {
-  ism330dlc_master_config_t master_config;
+  lsm6dsr_master_config_t master_config;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CONFIG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CONFIG,
                            (uint8_t *)&master_config, 1);
   *val = master_config.drdy_on_int1;
 
@@ -7024,16 +7024,16 @@ int32_t ism330dlc_sh_drdy_on_int1_get(stmdev_ctx_t *ctx, uint8_t *val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_read_data_raw_get(stmdev_ctx_t *ctx,
-                                       ism330dlc_emb_sh_read_t *val)
+int32_t lsm6dsr_sh_read_data_raw_get(stmdev_ctx_t *ctx,
+                                       lsm6dsr_emb_sh_read_t *val)
 {
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_SENSORHUB1_REG,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_SENSORHUB1_REG,
                            (uint8_t *) & (val->sh_byte_1), 12);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SENSORHUB13_REG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SENSORHUB13_REG,
                              (uint8_t *) & (val->sh_byte_13), 6);
   }
 
@@ -7049,17 +7049,17 @@ int32_t ism330dlc_sh_read_data_raw_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_cmd_sens_sync_set(stmdev_ctx_t *ctx, uint8_t val)
+int32_t lsm6dsr_sh_cmd_sens_sync_set(stmdev_ctx_t *ctx, uint8_t val)
 {
-  ism330dlc_master_cmd_code_t master_cmd_code;
+  lsm6dsr_master_cmd_code_t master_cmd_code;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CMD_CODE,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CMD_CODE,
                            (uint8_t *)&master_cmd_code, 1);
 
   if (ret == 0)
   {
     master_cmd_code.master_cmd_code = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_MASTER_CMD_CODE,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_MASTER_CMD_CODE,
                               (uint8_t *)&master_cmd_code, 1);
   }
 
@@ -7075,12 +7075,12 @@ int32_t ism330dlc_sh_cmd_sens_sync_set(stmdev_ctx_t *ctx, uint8_t val)
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_cmd_sens_sync_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_sh_cmd_sens_sync_get(stmdev_ctx_t *ctx,
                                        uint8_t *val)
 {
-  ism330dlc_master_cmd_code_t master_cmd_code;
+  lsm6dsr_master_cmd_code_t master_cmd_code;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_MASTER_CMD_CODE,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_MASTER_CMD_CODE,
                            (uint8_t *)&master_cmd_code, 1);
   *val = master_cmd_code.master_cmd_code;
 
@@ -7096,18 +7096,18 @@ int32_t ism330dlc_sh_cmd_sens_sync_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_spi_sync_error_set(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_sh_spi_sync_error_set(stmdev_ctx_t *ctx,
                                         uint8_t val)
 {
-  ism330dlc_sens_sync_spi_error_code_t sens_sync_spi_error_code;
+  lsm6dsr_sens_sync_spi_error_code_t sens_sync_spi_error_code;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_SENS_SYNC_SPI_ERROR_CODE,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_SENS_SYNC_SPI_ERROR_CODE,
                            (uint8_t *)&sens_sync_spi_error_code, 1);
 
   if (ret == 0)
   {
     sens_sync_spi_error_code.error_code = val;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_SENS_SYNC_SPI_ERROR_CODE,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_SENS_SYNC_SPI_ERROR_CODE,
                               (uint8_t *)&sens_sync_spi_error_code, 1);
   }
 
@@ -7123,12 +7123,12 @@ int32_t ism330dlc_sh_spi_sync_error_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_spi_sync_error_get(stmdev_ctx_t *ctx,
+int32_t lsm6dsr_sh_spi_sync_error_get(stmdev_ctx_t *ctx,
                                         uint8_t *val)
 {
-  ism330dlc_sens_sync_spi_error_code_t sens_sync_spi_error_code;
+  lsm6dsr_sens_sync_spi_error_code_t sens_sync_spi_error_code;
   int32_t ret;
-  ret = ism330dlc_read_reg(ctx, ISM330DLC_SENS_SYNC_SPI_ERROR_CODE,
+  ret = lsm6dsr_read_reg(ctx, LSM6DSR_SENS_SYNC_SPI_ERROR_CODE,
                            (uint8_t *)&sens_sync_spi_error_code, 1);
   *val =  sens_sync_spi_error_code.error_code;
 
@@ -7143,27 +7143,27 @@ int32_t ism330dlc_sh_spi_sync_error_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_num_of_dev_connected_set(stmdev_ctx_t *ctx,
-                                              ism330dlc_aux_sens_on_t val)
+int32_t lsm6dsr_sh_num_of_dev_connected_set(stmdev_ctx_t *ctx,
+                                              lsm6dsr_aux_sens_on_t val)
 {
-  ism330dlc_slave0_config_t slave0_config;
+  lsm6dsr_slave0_config_t slave0_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE0_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE0_CONFIG,
                              (uint8_t *)&slave0_config, 1);
 
     if (ret == 0)
     {
       slave0_config.aux_sens_on = (uint8_t) val;
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE0_CONFIG,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE0_CONFIG,
                                 (uint8_t *)&slave0_config, 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+        ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
       }
     }
   }
@@ -7179,44 +7179,44 @@ int32_t ism330dlc_sh_num_of_dev_connected_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_num_of_dev_connected_get(stmdev_ctx_t *ctx,
-                                              ism330dlc_aux_sens_on_t *val)
+int32_t lsm6dsr_sh_num_of_dev_connected_get(stmdev_ctx_t *ctx,
+                                              lsm6dsr_aux_sens_on_t *val)
 {
-  ism330dlc_slave0_config_t slave0_config;
+  lsm6dsr_slave0_config_t slave0_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE0_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE0_CONFIG,
                              (uint8_t *)&slave0_config, 1);
 
     if (ret == 0)
     {
       switch (slave0_config.aux_sens_on)
       {
-        case ISM330DLC_SLV_0:
-          *val = ISM330DLC_SLV_0;
+        case LSM6DSR_SLV_0:
+          *val = LSM6DSR_SLV_0;
           break;
 
-        case ISM330DLC_SLV_0_1:
-          *val = ISM330DLC_SLV_0_1;
+        case LSM6DSR_SLV_0_1:
+          *val = LSM6DSR_SLV_0_1;
           break;
 
-        case ISM330DLC_SLV_0_1_2:
-          *val = ISM330DLC_SLV_0_1_2;
+        case LSM6DSR_SLV_0_1_2:
+          *val = LSM6DSR_SLV_0_1_2;
           break;
 
-        case ISM330DLC_SLV_0_1_2_3:
-          *val = ISM330DLC_SLV_0_1_2_3;
+        case LSM6DSR_SLV_0_1_2_3:
+          *val = LSM6DSR_SLV_0_1_2_3;
           break;
 
         default:
-          *val = ISM330DLC_SLV_0;
+          *val = LSM6DSR_SLV_0;
           break;
       }
 
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -7234,33 +7234,33 @@ int32_t ism330dlc_sh_num_of_dev_connected_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_cfg_write(stmdev_ctx_t *ctx,
-                               ism330dlc_sh_cfg_write_t *val)
+int32_t lsm6dsr_sh_cfg_write(stmdev_ctx_t *ctx,
+                               lsm6dsr_sh_cfg_write_t *val)
 {
-  ism330dlc_slv0_add_t slv0_add;
+  lsm6dsr_slv0_add_t slv0_add;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
     slv0_add.slave0_add = val->slv0_add;
     slv0_add.rw_0 = 0;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV0_ADD,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV0_ADD,
                               (uint8_t *)&slv0_add, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV0_SUBADD,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV0_SUBADD,
                                 &(val->slv0_subadd), 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_write_reg(ctx, ISM330DLC_DATAWRITE_SRC_MODE_SUB_SLV0,
+        ret = lsm6dsr_write_reg(ctx, LSM6DSR_DATAWRITE_SRC_MODE_SUB_SLV0,
                                   &(val->slv0_data), 1);
 
         if (ret == 0)
         {
-          ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+          ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
         }
       }
     }
@@ -7280,40 +7280,40 @@ int32_t ism330dlc_sh_cfg_write(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slv0_cfg_read(stmdev_ctx_t *ctx,
-                                   ism330dlc_sh_cfg_read_t *val)
+int32_t lsm6dsr_sh_slv0_cfg_read(stmdev_ctx_t *ctx,
+                                   lsm6dsr_sh_cfg_read_t *val)
 {
-  ism330dlc_slave0_config_t slave0_config;
-  ism330dlc_slv0_add_t slv0_add;
+  lsm6dsr_slave0_config_t slave0_config;
+  lsm6dsr_slv0_add_t slv0_add;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
     slv0_add.slave0_add = val->slv_add;
     slv0_add.rw_0 = 1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV0_ADD,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV0_ADD,
                               (uint8_t *)&slv0_add, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV0_SUBADD,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV0_SUBADD,
                                 &(val->slv_subadd), 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE0_CONFIG,
+        ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE0_CONFIG,
                                  (uint8_t *)&slave0_config, 1);
         slave0_config.slave0_numop = val->slv_len;
 
         if (ret == 0)
         {
-          ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE0_CONFIG,
+          ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE0_CONFIG,
                                     (uint8_t *)&slave0_config, 1);
 
           if (ret == 0)
           {
-            ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+            ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
           }
         }
       }
@@ -7334,40 +7334,40 @@ int32_t ism330dlc_sh_slv0_cfg_read(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slv1_cfg_read(stmdev_ctx_t *ctx,
-                                   ism330dlc_sh_cfg_read_t *val)
+int32_t lsm6dsr_sh_slv1_cfg_read(stmdev_ctx_t *ctx,
+                                   lsm6dsr_sh_cfg_read_t *val)
 {
-  ism330dlc_slave1_config_t slave1_config;
-  ism330dlc_slv1_add_t slv1_add;
+  lsm6dsr_slave1_config_t slave1_config;
+  lsm6dsr_slv1_add_t slv1_add;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
     slv1_add.slave1_add  = val->slv_add;
     slv1_add.r_1 = 1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV1_ADD,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV1_ADD,
                               (uint8_t *)&slv1_add, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV1_SUBADD,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV1_SUBADD,
                                 &(val->slv_subadd), 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE1_CONFIG,
+        ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE1_CONFIG,
                                  (uint8_t *)&slave1_config, 1);
         slave1_config.slave1_numop = val->slv_len;
 
         if (ret == 0)
         {
-          ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE1_CONFIG,
+          ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE1_CONFIG,
                                     (uint8_t *)&slave1_config, 1);
 
           if (ret == 0)
           {
-            ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+            ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
           }
         }
       }
@@ -7388,40 +7388,40 @@ int32_t ism330dlc_sh_slv1_cfg_read(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slv2_cfg_read(stmdev_ctx_t *ctx,
-                                   ism330dlc_sh_cfg_read_t *val)
+int32_t lsm6dsr_sh_slv2_cfg_read(stmdev_ctx_t *ctx,
+                                   lsm6dsr_sh_cfg_read_t *val)
 {
-  ism330dlc_slv2_add_t slv2_add;
-  ism330dlc_slave2_config_t slave2_config;
+  lsm6dsr_slv2_add_t slv2_add;
+  lsm6dsr_slave2_config_t slave2_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
     slv2_add.slave2_add  = val->slv_add;
     slv2_add.r_2 = 1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV2_ADD,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV2_ADD,
                               (uint8_t *)&slv2_add, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV2_SUBADD,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV2_SUBADD,
                                 &(val->slv_subadd), 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE2_CONFIG,
+        ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE2_CONFIG,
                                  (uint8_t *)&slave2_config, 1);
 
         if (ret == 0)
         {
           slave2_config.slave2_numop = val->slv_len;
-          ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE2_CONFIG,
+          ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE2_CONFIG,
                                     (uint8_t *)&slave2_config, 1);
 
           if (ret == 0)
           {
-            ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+            ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
           }
         }
       }
@@ -7442,40 +7442,40 @@ int32_t ism330dlc_sh_slv2_cfg_read(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slv3_cfg_read(stmdev_ctx_t *ctx,
-                                   ism330dlc_sh_cfg_read_t *val)
+int32_t lsm6dsr_sh_slv3_cfg_read(stmdev_ctx_t *ctx,
+                                   lsm6dsr_sh_cfg_read_t *val)
 {
-  ism330dlc_slave3_config_t slave3_config;
-  ism330dlc_slv3_add_t slv3_add;
+  lsm6dsr_slave3_config_t slave3_config;
+  lsm6dsr_slv3_add_t slv3_add;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
     slv3_add.slave3_add  = val->slv_add;
     slv3_add.r_3 = 1;
-    ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV3_ADD,
+    ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV3_ADD,
                               (uint8_t *)&slv3_add, 1);
 
     if (ret == 0)
     {
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLV3_SUBADD,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLV3_SUBADD,
                                 (uint8_t *) & (val->slv_subadd), 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE3_CONFIG,
+        ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE3_CONFIG,
                                  (uint8_t *)&slave3_config, 1);
 
         if (ret == 0)
         {
           slave3_config.slave3_numop = val->slv_len;
-          ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE3_CONFIG,
+          ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE3_CONFIG,
                                     (uint8_t *)&slave3_config, 1);
 
           if (ret == 0)
           {
-            ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+            ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
           }
         }
       }
@@ -7494,27 +7494,27 @@ int32_t ism330dlc_sh_slv3_cfg_read(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slave_0_dec_set(stmdev_ctx_t *ctx,
-                                     ism330dlc_slave0_rate_t val)
+int32_t lsm6dsr_sh_slave_0_dec_set(stmdev_ctx_t *ctx,
+                                     lsm6dsr_slave0_rate_t val)
 {
-  ism330dlc_slave0_config_t slave0_config;
+  lsm6dsr_slave0_config_t slave0_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE0_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE0_CONFIG,
                              (uint8_t *)&slave0_config, 1);
 
     if (ret == 0)
     {
       slave0_config.slave0_rate = (uint8_t) val;
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE0_CONFIG,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE0_CONFIG,
                                 (uint8_t *)&slave0_config, 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+        ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
       }
     }
   }
@@ -7531,44 +7531,44 @@ int32_t ism330dlc_sh_slave_0_dec_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slave_0_dec_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_slave0_rate_t *val)
+int32_t lsm6dsr_sh_slave_0_dec_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_slave0_rate_t *val)
 {
-  ism330dlc_slave0_config_t slave0_config;
+  lsm6dsr_slave0_config_t slave0_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE0_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE0_CONFIG,
                              (uint8_t *)&slave0_config, 1);
 
     if (ret == 0)
     {
       switch (slave0_config.slave0_rate)
       {
-        case ISM330DLC_SL0_NO_DEC:
-          *val = ISM330DLC_SL0_NO_DEC;
+        case LSM6DSR_SL0_NO_DEC:
+          *val = LSM6DSR_SL0_NO_DEC;
           break;
 
-        case ISM330DLC_SL0_DEC_2:
-          *val = ISM330DLC_SL0_DEC_2;
+        case LSM6DSR_SL0_DEC_2:
+          *val = LSM6DSR_SL0_DEC_2;
           break;
 
-        case ISM330DLC_SL0_DEC_4:
-          *val = ISM330DLC_SL0_DEC_4;
+        case LSM6DSR_SL0_DEC_4:
+          *val = LSM6DSR_SL0_DEC_4;
           break;
 
-        case ISM330DLC_SL0_DEC_8:
-          *val = ISM330DLC_SL0_DEC_8;
+        case LSM6DSR_SL0_DEC_8:
+          *val = LSM6DSR_SL0_DEC_8;
           break;
 
         default:
-          *val = ISM330DLC_SL0_NO_DEC;
+          *val = LSM6DSR_SL0_NO_DEC;
           break;
       }
 
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -7586,27 +7586,27 @@ int32_t ism330dlc_sh_slave_0_dec_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_write_mode_set(stmdev_ctx_t *ctx,
-                                    ism330dlc_write_once_t val)
+int32_t lsm6dsr_sh_write_mode_set(stmdev_ctx_t *ctx,
+                                    lsm6dsr_write_once_t val)
 {
-  ism330dlc_slave1_config_t slave1_config;
+  lsm6dsr_slave1_config_t slave1_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE1_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE1_CONFIG,
                              (uint8_t *)&slave1_config, 1);
     slave1_config.write_once = (uint8_t) val;
 
     if (ret == 0)
     {
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE1_CONFIG,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE1_CONFIG,
                                 (uint8_t *)&slave1_config, 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+        ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
       }
     }
   }
@@ -7625,36 +7625,36 @@ int32_t ism330dlc_sh_write_mode_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_write_mode_get(stmdev_ctx_t *ctx,
-                                    ism330dlc_write_once_t *val)
+int32_t lsm6dsr_sh_write_mode_get(stmdev_ctx_t *ctx,
+                                    lsm6dsr_write_once_t *val)
 {
-  ism330dlc_slave1_config_t slave1_config;
+  lsm6dsr_slave1_config_t slave1_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE1_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE1_CONFIG,
                              (uint8_t *)&slave1_config, 1);
 
     if (ret == 0)
     {
       switch (slave1_config.write_once)
       {
-        case ISM330DLC_EACH_SH_CYCLE:
-          *val = ISM330DLC_EACH_SH_CYCLE;
+        case LSM6DSR_EACH_SH_CYCLE:
+          *val = LSM6DSR_EACH_SH_CYCLE;
           break;
 
-        case ISM330DLC_ONLY_FIRST_CYCLE:
-          *val = ISM330DLC_ONLY_FIRST_CYCLE;
+        case LSM6DSR_ONLY_FIRST_CYCLE:
+          *val = LSM6DSR_ONLY_FIRST_CYCLE;
           break;
 
         default:
-          *val = ISM330DLC_EACH_SH_CYCLE;
+          *val = LSM6DSR_EACH_SH_CYCLE;
           break;
       }
 
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -7670,27 +7670,27 @@ int32_t ism330dlc_sh_write_mode_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slave_1_dec_set(stmdev_ctx_t *ctx,
-                                     ism330dlc_slave1_rate_t val)
+int32_t lsm6dsr_sh_slave_1_dec_set(stmdev_ctx_t *ctx,
+                                     lsm6dsr_slave1_rate_t val)
 {
-  ism330dlc_slave1_config_t slave1_config;
+  lsm6dsr_slave1_config_t slave1_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE1_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE1_CONFIG,
                              (uint8_t *)&slave1_config, 1);
 
     if (ret == 0)
     {
       slave1_config.slave1_rate = (uint8_t) val;
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE1_CONFIG,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE1_CONFIG,
                                 (uint8_t *)&slave1_config, 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+        ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
       }
     }
   }
@@ -7706,44 +7706,44 @@ int32_t ism330dlc_sh_slave_1_dec_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slave_1_dec_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_slave1_rate_t *val)
+int32_t lsm6dsr_sh_slave_1_dec_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_slave1_rate_t *val)
 {
-  ism330dlc_slave1_config_t slave1_config;
+  lsm6dsr_slave1_config_t slave1_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE1_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE1_CONFIG,
                              (uint8_t *)&slave1_config, 1);
 
     if (ret == 0)
     {
       switch (slave1_config.slave1_rate)
       {
-        case ISM330DLC_SL1_NO_DEC:
-          *val = ISM330DLC_SL1_NO_DEC;
+        case LSM6DSR_SL1_NO_DEC:
+          *val = LSM6DSR_SL1_NO_DEC;
           break;
 
-        case ISM330DLC_SL1_DEC_2:
-          *val = ISM330DLC_SL1_DEC_2;
+        case LSM6DSR_SL1_DEC_2:
+          *val = LSM6DSR_SL1_DEC_2;
           break;
 
-        case ISM330DLC_SL1_DEC_4:
-          *val = ISM330DLC_SL1_DEC_4;
+        case LSM6DSR_SL1_DEC_4:
+          *val = LSM6DSR_SL1_DEC_4;
           break;
 
-        case ISM330DLC_SL1_DEC_8:
-          *val = ISM330DLC_SL1_DEC_8;
+        case LSM6DSR_SL1_DEC_8:
+          *val = LSM6DSR_SL1_DEC_8;
           break;
 
         default:
-          *val = ISM330DLC_SL1_NO_DEC;
+          *val = LSM6DSR_SL1_NO_DEC;
           break;
       }
 
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -7759,27 +7759,27 @@ int32_t ism330dlc_sh_slave_1_dec_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slave_2_dec_set(stmdev_ctx_t *ctx,
-                                     ism330dlc_slave2_rate_t val)
+int32_t lsm6dsr_sh_slave_2_dec_set(stmdev_ctx_t *ctx,
+                                     lsm6dsr_slave2_rate_t val)
 {
-  ism330dlc_slave2_config_t slave2_config;
+  lsm6dsr_slave2_config_t slave2_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE2_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE2_CONFIG,
                              (uint8_t *)&slave2_config, 1);
 
     if (ret == 0)
     {
       slave2_config.slave2_rate = (uint8_t) val;
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE2_CONFIG,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE2_CONFIG,
                                 (uint8_t *)&slave2_config, 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+        ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
       }
     }
   }
@@ -7796,44 +7796,44 @@ int32_t ism330dlc_sh_slave_2_dec_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slave_2_dec_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_slave2_rate_t *val)
+int32_t lsm6dsr_sh_slave_2_dec_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_slave2_rate_t *val)
 {
-  ism330dlc_slave2_config_t slave2_config;
+  lsm6dsr_slave2_config_t slave2_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE2_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE2_CONFIG,
                              (uint8_t *)&slave2_config, 1);
 
     if (ret == 0)
     {
       switch (slave2_config.slave2_rate)
       {
-        case ISM330DLC_SL2_NO_DEC:
-          *val = ISM330DLC_SL2_NO_DEC;
+        case LSM6DSR_SL2_NO_DEC:
+          *val = LSM6DSR_SL2_NO_DEC;
           break;
 
-        case ISM330DLC_SL2_DEC_2:
-          *val = ISM330DLC_SL2_DEC_2;
+        case LSM6DSR_SL2_DEC_2:
+          *val = LSM6DSR_SL2_DEC_2;
           break;
 
-        case ISM330DLC_SL2_DEC_4:
-          *val = ISM330DLC_SL2_DEC_4;
+        case LSM6DSR_SL2_DEC_4:
+          *val = LSM6DSR_SL2_DEC_4;
           break;
 
-        case ISM330DLC_SL2_DEC_8:
-          *val = ISM330DLC_SL2_DEC_8;
+        case LSM6DSR_SL2_DEC_8:
+          *val = LSM6DSR_SL2_DEC_8;
           break;
 
         default:
-          *val = ISM330DLC_SL2_NO_DEC;
+          *val = LSM6DSR_SL2_NO_DEC;
           break;
       }
 
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -7849,27 +7849,27 @@ int32_t ism330dlc_sh_slave_2_dec_get(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slave_3_dec_set(stmdev_ctx_t *ctx,
-                                     ism330dlc_slave3_rate_t val)
+int32_t lsm6dsr_sh_slave_3_dec_set(stmdev_ctx_t *ctx,
+                                     lsm6dsr_slave3_rate_t val)
 {
-  ism330dlc_slave3_config_t slave3_config;
+  lsm6dsr_slave3_config_t slave3_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE3_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE3_CONFIG,
                              (uint8_t *)&slave3_config, 1);
     slave3_config.slave3_rate = (uint8_t)val;
 
     if (ret == 0)
     {
-      ret = ism330dlc_write_reg(ctx, ISM330DLC_SLAVE3_CONFIG,
+      ret = lsm6dsr_write_reg(ctx, LSM6DSR_SLAVE3_CONFIG,
                                 (uint8_t *)&slave3_config, 1);
 
       if (ret == 0)
       {
-        ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+        ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
       }
     }
   }
@@ -7886,44 +7886,44 @@ int32_t ism330dlc_sh_slave_3_dec_set(stmdev_ctx_t *ctx,
   * @retval        Interface status (MANDATORY: return 0 -> no Error).
   *
   */
-int32_t ism330dlc_sh_slave_3_dec_get(stmdev_ctx_t *ctx,
-                                     ism330dlc_slave3_rate_t *val)
+int32_t lsm6dsr_sh_slave_3_dec_get(stmdev_ctx_t *ctx,
+                                     lsm6dsr_slave3_rate_t *val)
 {
-  ism330dlc_slave3_config_t slave3_config;
+  lsm6dsr_slave3_config_t slave3_config;
   int32_t ret;
-  ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_BANK_A);
+  ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_BANK_A);
 
   if (ret == 0)
   {
-    ret = ism330dlc_read_reg(ctx, ISM330DLC_SLAVE3_CONFIG,
+    ret = lsm6dsr_read_reg(ctx, LSM6DSR_SLAVE3_CONFIG,
                              (uint8_t *)&slave3_config, 1);
 
     if (ret == 0)
     {
       switch (slave3_config.slave3_rate)
       {
-        case ISM330DLC_SL3_NO_DEC:
-          *val = ISM330DLC_SL3_NO_DEC;
+        case LSM6DSR_SL3_NO_DEC:
+          *val = LSM6DSR_SL3_NO_DEC;
           break;
 
-        case ISM330DLC_SL3_DEC_2:
-          *val = ISM330DLC_SL3_DEC_2;
+        case LSM6DSR_SL3_DEC_2:
+          *val = LSM6DSR_SL3_DEC_2;
           break;
 
-        case ISM330DLC_SL3_DEC_4:
-          *val = ISM330DLC_SL3_DEC_4;
+        case LSM6DSR_SL3_DEC_4:
+          *val = LSM6DSR_SL3_DEC_4;
           break;
 
-        case ISM330DLC_SL3_DEC_8:
-          *val = ISM330DLC_SL3_DEC_8;
+        case LSM6DSR_SL3_DEC_8:
+          *val = LSM6DSR_SL3_DEC_8;
           break;
 
         default:
-          *val = ISM330DLC_SL3_NO_DEC;
+          *val = LSM6DSR_SL3_NO_DEC;
           break;
       }
 
-      ret = ism330dlc_mem_bank_set(ctx, ISM330DLC_USER_BANK);
+      ret = lsm6dsr_mem_bank_set(ctx, LSM6DSR_USER_BANK);
     }
   }
 
@@ -7969,12 +7969,12 @@ static uint8_t tx_buffer[TX_BUF_DIM];
 UART_HandleTypeDef* Guart;
 
 
-void MRT_ISM330DLC_Setup(UART_HandleTypeDef *uart, I2C_HandleTypeDef SENSOR_BUS)
+void MRT_LSM6DSR_Setup(UART_HandleTypeDef *uart, I2C_HandleTypeDef SENSOR_BUS)
 	{
 
 	Guart=uart;
 
-	  HAL_UART_Transmit(uart,"\r\nLISM330DLC Setup Starts\r\n", 29, HAL_MAX_DELAY);
+	  HAL_UART_Transmit(uart,"\r\nLLSM6DSR Setup Starts\r\n", 29, HAL_MAX_DELAY);
 	  /* Initialize mems driver interface */
 	  dev_ctx.write_reg = write;
 	  dev_ctx.read_reg = read;
@@ -7982,52 +7982,52 @@ void MRT_ISM330DLC_Setup(UART_HandleTypeDef *uart, I2C_HandleTypeDef SENSOR_BUS)
 	  /* Wait sensor boot time */
 	  HAL_Delay(BOOT_TIME);
 	  /* Check device ID */
-	  ism330dlc_device_id_get(&dev_ctx, &whoamI);
+	  lsm6dsr_device_id_get(&dev_ctx, &whoamI);
 
 	  	  HAL_UART_Transmit(uart,"Checking Sensor ID...", 21, HAL_MAX_DELAY);
-	  if (whoamI != ISM330DLC_ID){
+	  if (whoamI != LSM6DSR_ID){
 		  HAL_UART_Transmit(uart,"NOT OK\r\n", 10, HAL_MAX_DELAY);
 
 		  char* whoRU[32];
 		  sprintf(whoRU,"This Device is: 0x%X\r\n",whoamI);
 		  HAL_UART_Transmit(uart,whoRU, strlen(whoRU), HAL_MAX_DELAY);
 		  char* whoShould[59];
-		  sprintf(whoShould,"This Device should be: 0x%X\r\nProgram Terminated\r\n",ISM330DLC_ID);
+		  sprintf(whoShould,"This Device should be: 0x%X\r\nProgram Terminated\r\n",LSM6DSR_ID);
 		  HAL_UART_Transmit(uart,whoShould, strlen(whoShould), HAL_MAX_DELAY);
 		  //while(1);
 	  }
 	  	  HAL_UART_Transmit(uart,"OK\n\r", 6, HAL_MAX_DELAY);
 
 	  /* Restore default configuration */
-	  ism330dlc_reset_set(&dev_ctx, PROPERTY_ENABLE);
+	  lsm6dsr_reset_set(&dev_ctx, PROPERTY_ENABLE);
 
 	  do {
-		ism330dlc_reset_get(&dev_ctx, &rst);
+		lsm6dsr_reset_get(&dev_ctx, &rst);
 	  } while (rst);
 
 
 	  /* Enable Block Data Update */
-	    ism330dlc_block_data_update_set(&dev_ctx, PROPERTY_ENABLE);
+	    lsm6dsr_block_data_update_set(&dev_ctx, PROPERTY_ENABLE);
 	    /* Set Output Data Rate */
-	    ism330dlc_xl_data_rate_set(&dev_ctx, ISM330DLC_XL_ODR_12Hz5);
-	    ism330dlc_gy_data_rate_set(&dev_ctx, ISM330DLC_GY_ODR_12Hz5);
+	    lsm6dsr_xl_data_rate_set(&dev_ctx, LSM6DSR_XL_ODR_12Hz5);
+	    lsm6dsr_gy_data_rate_set(&dev_ctx, LSM6DSR_GY_ODR_12Hz5);
 	    /* Set full scale */
-	    ism330dlc_xl_full_scale_set(&dev_ctx, ISM330DLC_2g);
-	    ism330dlc_gy_full_scale_set(&dev_ctx, ISM330DLC_2000dps);
+	    lsm6dsr_xl_full_scale_set(&dev_ctx, LSM6DSR_2g);
+	    lsm6dsr_gy_full_scale_set(&dev_ctx, LSM6DSR_2000dps);
 	    /* Configure filtering chain(No aux interface) */
 	    /* Accelerometer - analog filter */
-	    ism330dlc_xl_filter_analog_set(&dev_ctx, ISM330DLC_XL_ANA_BW_400Hz);
+	    lsm6dsr_xl_filter_analog_set(&dev_ctx, LSM6DSR_XL_ANA_BW_400Hz);
 	    /* Accelerometer - LPF1 path ( LPF2 not used )*/
-	    //ism330dlc_xl_lp1_bandwidth_set(dev_ctx, ISM330DLC_XL_LP1_ODR_DIV_4);
+	    //lsm6dsr_xl_lp1_bandwidth_set(dev_ctx, LSM6DSR_XL_LP1_ODR_DIV_4);
 	    /* Accelerometer - LPF1 + LPF2 path */
-	    ism330dlc_xl_lp2_bandwidth_set(&dev_ctx,
-	                                   ISM330DLC_XL_LOW_NOISE_LP_ODR_DIV_100);
+	    lsm6dsr_xl_lp2_bandwidth_set(&dev_ctx,
+	                                   LSM6DSR_XL_LOW_NOISE_LP_ODR_DIV_100);
 	    /* Accelerometer - High Pass / Slope path */
-	    //ism330dlc_xl_reference_mode_set(&dev_ctx, PROPERTY_DISABLE);
-	    //ism330dlc_xl_hp_bandwidth_set(&dev_ctx, ISM330DLC_XL_HP_ODR_DIV_100);
+	    //lsm6dsr_xl_reference_mode_set(&dev_ctx, PROPERTY_DISABLE);
+	    //lsm6dsr_xl_hp_bandwidth_set(&dev_ctx, LSM6DSR_XL_HP_ODR_DIV_100);
 	    /* Gyroscope - filtering chain */
-	    ism330dlc_gy_band_pass_set(&dev_ctx, ISM330DLC_HP_260mHz_LP1_STRONG);
-	    HAL_UART_Transmit(uart,"LISM330DLC Setup Ends\r\n\r\n", 25, HAL_MAX_DELAY);
+	    lsm6dsr_gy_band_pass_set(&dev_ctx, LSM6DSR_HP_260mHz_LP1_STRONG);
+	    HAL_UART_Transmit(uart,"LLSM6DSR Setup Ends\r\n\r\n", 25, HAL_MAX_DELAY);
 	}
 
 
@@ -8035,21 +8035,21 @@ void MRT_ISM330DLC_Setup(UART_HandleTypeDef *uart, I2C_HandleTypeDef SENSOR_BUS)
 /*
  * Get acceleration values
  */
-void ISM330DLC_getAcceleration(int16_t data_raw_acceleration[3],float acceleration_mg[3],stmdev_ctx_t *dev_ctx){
-		ism330dlc_reg_t reg; //For some reason, this one has to be in the loop
-		ism330dlc_status_reg_get(dev_ctx, &reg.status_reg);
+void LSM6DSR_getAcceleration(int16_t data_raw_acceleration[3],float acceleration_mg[3],stmdev_ctx_t *dev_ctx){
+		lsm6dsr_reg_t reg; //For some reason, this one has to be in the loop
+		lsm6dsr_status_reg_get(dev_ctx, &reg.status_reg);
 
 		HAL_UART_Transmit(Guart,"Start A\r\n",9,HAL_MAX_DELAY);
 
 		if (reg.status_reg.gda) {
 		/* Read magnetic field data */
 		memset(data_raw_acceleration, 0x00, 3 * sizeof(int16_t));
-        ism330dlc_acceleration_raw_get(dev_ctx, data_raw_acceleration);
-        acceleration_mg[0] = ism330dlc_from_fs2g_to_mg(
+        lsm6dsr_acceleration_raw_get(dev_ctx, data_raw_acceleration);
+        acceleration_mg[0] = lsm6dsr_from_fs2g_to_mg(
                                data_raw_acceleration[0]);
-        acceleration_mg[1] = ism330dlc_from_fs2g_to_mg(
+        acceleration_mg[1] = lsm6dsr_from_fs2g_to_mg(
                                data_raw_acceleration[1]);
-        acceleration_mg[2] = ism330dlc_from_fs2g_to_mg(
+        acceleration_mg[2] = lsm6dsr_from_fs2g_to_mg(
                                data_raw_acceleration[2]);
       }
 
@@ -8062,19 +8062,19 @@ void ISM330DLC_getAcceleration(int16_t data_raw_acceleration[3],float accelerati
 /*
  * Get angular rate values
  */
-void ISM330DLC_getAngularRate(int16_t data_raw_angular_rate[3],float angular_rate_mdps[3],stmdev_ctx_t *dev_ctx){
-		ism330dlc_reg_t reg; //For some reason, this one has to be in the loop
-		ism330dlc_status_reg_get(dev_ctx, &reg.status_reg);
+void LSM6DSR_getAngularRate(int16_t data_raw_angular_rate[3],float angular_rate_mdps[3],stmdev_ctx_t *dev_ctx){
+		lsm6dsr_reg_t reg; //For some reason, this one has to be in the loop
+		lsm6dsr_status_reg_get(dev_ctx, &reg.status_reg);
 
 		if (reg.status_reg.xlda) {
 		/* Read magnetic field data */
 		memset(data_raw_angular_rate, 0x00, 3 * sizeof(int16_t));
-		ism330dlc_acceleration_raw_get(dev_ctx, data_raw_angular_rate);
-		angular_rate_mdps[0] = ism330dlc_from_fs2g_to_mg(
+		lsm6dsr_acceleration_raw_get(dev_ctx, data_raw_angular_rate);
+		angular_rate_mdps[0] = lsm6dsr_from_fs2g_to_mg(
 		data_raw_angular_rate[0]);
-		angular_rate_mdps[1] = ism330dlc_from_fs2g_to_mg(
+		angular_rate_mdps[1] = lsm6dsr_from_fs2g_to_mg(
 		data_raw_angular_rate[1]);
-		angular_rate_mdps[2] = ism330dlc_from_fs2g_to_mg(
+		angular_rate_mdps[2] = lsm6dsr_from_fs2g_to_mg(
 		data_raw_angular_rate[2]);
 		}
 
@@ -8085,14 +8085,14 @@ void ISM330DLC_getAngularRate(int16_t data_raw_angular_rate[3],float angular_rat
 /*
  * Get temperature value
  */
-void ISM330DLC_getTemperature(int16_t data_raw_temperature[1],float temperature_degC[1],stmdev_ctx_t *dev_ctx){
-	ism330dlc_reg_t reg; //For some reason, this one has to be in the loop
-	ism330dlc_status_reg_get(dev_ctx, &reg.status_reg);
+void LSM6DSR_getTemperature(int16_t data_raw_temperature[1],float temperature_degC[1],stmdev_ctx_t *dev_ctx){
+	lsm6dsr_reg_t reg; //For some reason, this one has to be in the loop
+	lsm6dsr_status_reg_get(dev_ctx, &reg.status_reg);
 	if (reg.status_reg.tda) {
 		//Read temperature data
 		memset(data_raw_temperature, 0x00, sizeof(int16_t));
-		ism330dlc_temperature_raw_get(dev_ctx, data_raw_temperature);
-		temperature_degC[0] = ism330dlc_from_lsb_to_celsius(data_raw_temperature[0]);
+		lsm6dsr_temperature_raw_get(dev_ctx, data_raw_temperature);
+		temperature_degC[0] = lsm6dsr_from_lsb_to_celsius(data_raw_temperature[0]);
 	}
 }
 
@@ -8111,7 +8111,7 @@ void ISM330DLC_getTemperature(int16_t data_raw_temperature[1],float temperature_
 static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp,
                               uint16_t len)
 {
-  HAL_I2C_Mem_Write(handle, ISM330DLC_I2C_ADD_L, reg,
+  HAL_I2C_Mem_Write(handle, LSM6DSR_I2C_ADD_L, reg,
                     I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
   return 0;
 }
@@ -8132,7 +8132,7 @@ static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp,
 static int32_t read(void *handle, uint8_t reg, uint8_t *bufp,
                              uint16_t len)
 {
-  HAL_I2C_Mem_Read(handle, ISM330DLC_I2C_ADD_L, reg,
+  HAL_I2C_Mem_Read(handle, LSM6DSR_I2C_ADD_L, reg,
                    I2C_MEMADD_SIZE_8BIT, bufp, len, 1000);
   return 0;
 }

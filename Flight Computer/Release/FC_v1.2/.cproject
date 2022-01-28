@@ -53,7 +53,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_Helpers_f4xx/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_Iridium_f4xx/Inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_ISM330DLC_f4xx/Inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_LSM6DSR_f4xx/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_RTOS_f4xx/Inc}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.868618927" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
@@ -131,7 +131,7 @@
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_Helpers_f4xx/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_Iridium_f4xx/Inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_ISM330DLC_f4xx/Inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_LSM6DSR_f4xx/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/FC_v1.2/Drivers/MRT_RTOS_f4xx/Inc}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.1562376126" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp"/>

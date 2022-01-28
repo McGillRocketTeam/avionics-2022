@@ -16,7 +16,7 @@ RM := rm -rf
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Drivers/MRT_RTOS_f4xx/Src/subdir.mk
 -include Drivers/MRT_Iridium_f4xx/Src/subdir.mk
--include Drivers/MRT_ISM330DLC_f4xx/Src/subdir.mk
+-include Drivers/MRT_LSM6DSR_f4xx/Src/subdir.mk
 -include Drivers/MRT_Helpers_f4xx/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
