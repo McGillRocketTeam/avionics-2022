@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+uint8_t UART2_rxBuffer[64] = {0};
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,7 +56,6 @@ static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
-
 /* USER CODE BEGIN PFP */
 static void XTend_Transmit(char *Msg);
 /* USER CODE END PFP */
@@ -94,15 +93,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART3_UART_Init(); // Serial monitor
+  MX_USART3_UART_Init();
   MX_I2C1_Init();
-  MX_USART2_UART_Init(); // XTend DIn, DOut, !CTS
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   uint8_t Start[] = "Starting XTend\r\n";
+  XTend_Transmit(Start);
   HAL_UART_Transmit(&huart3, Start, 16, HAL_MAX_DELAY);
 
-  XTend_Transmit("You would not believe your eyes\r\n");
+  // Stops here until it receives 8 bits
+  HAL_UART_Receive(&huart2, UART2_rxBuffer, 8, HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart3, UART2_rxBuffer, 8, HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart3,"Continuing\r\n",12,HAL_MAX_DELAY);
 
   /* USER CODE END 2 */
 
@@ -111,10 +114,14 @@ int main(void)
   while (1)
   {
 
-	  uint8_t Msg[] = "If ten thousand fireflies\r\n";
-	  HAL_UART_Transmit(&huart2, Msg, 27, HAL_Delay);
+	  uint8_t UART2_txBuffer[] = "Data\r\n";
+	  XTend_Transmit(UART2_txBuffer);
 
-	  HAL_Delay(30000);
+	  //HAL_UART_Receive_IT(&huart2, UART2_rxBuffer, 8);
+
+	  HAL_Delay(10000);
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -221,8 +228,8 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX;
-  huart2.Init.HwFlowCtl = !UART_HWCONTROL_CTS; // CTS bit is inverted
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = !UART_HWCONTROL_CTS;
   huart2.Init.OverSampling = UART_OVERSAMPLING_8;
   if (HAL_UART_Init(&huart2) != HAL_OK)
   {
