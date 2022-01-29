@@ -29,6 +29,7 @@
 #include <IridiumSBD_Static_API.h>
 #include <MRT_Helpers.h>
 #include "lsm6dsr_reg.h"
+#include "lps22hh_reg.h"
 #include <gps.h>
 
 #include <usbd_cdc_if.h>
@@ -284,11 +285,13 @@ int main(void)
   HAL_GPIO_WritePin(OUT_PyroValve_Gate_1_GPIO_Port, OUT_PyroValve_Gate_1_Pin, RESET); //PF15 PROP GATE 1
   HAL_GPIO_WritePin(OUT_PyroValve_Gate_2_GPIO_Port,OUT_PyroValve_Gate_2_Pin, RESET); //PF14 PROP GATE 2
 
-  /* TODO Couldn't find the pins
   // reset 12 V buck converter enable pin (disable converter)
-  HAL_GPIO_WritePin(PM_12V_EN_GPIO_Port, PM_12V_EN_Pin, RESET);
-  HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET);
-  */
+  HAL_GPIO_WritePin(EN_12V_Buck_GPIO_Port, EN_12V_Buck_Pin, RESET); //PE2 Buck converter enable
+
+  // TODO Couldn't find the pin of the vent gate enable
+  //HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET); //This was in the previous code
+  //HAL_GPIO_WritePin(OUT_Prop_ActuatedVent_Gate_GPIO_Port, OUT_Prop_ActuatedVent_Gate_Pin, RESET); //PE7 (MAY NOT BE THE RIGHT ONE)
+
 
   // reset payload EN signal
   HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET); //PE9 Payload I2C enable
@@ -323,7 +326,7 @@ while(1){
    * hi2c3:
    * -Barometer: 0x5C
    * -6 DOF IMU (LSM6DSR): 0x6A
-   * -
+   * -LPS22HH: 0x5C
    */
 
 
@@ -346,6 +349,13 @@ while(1){
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
    MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
+
+
+   /*
+    * For LPS22HH
+    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
+    */
+    MRT_LPS22HH_Setup(&hi2c3,&DEBUG_USART);
 
 
    /*
@@ -1410,13 +1420,9 @@ void StartSensors3(void *argument)
   	   * TODO HOW DO WE RESET THE TIME
   	   */
 	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
-	  HAL_UART_Transmit(&DEBUG_USART,"\r\n\r\nGPS Poll\r\n",16,HAL_MAX_DELAY);
 	  GPS_Poll(&latitude, &longitude, &time);
 	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",latitude, longitude, time);
 	  HAL_UART_Transmit(&DEBUG_USART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
-	  HAL_Delay(1000);
-  	  HAL_UART_Transmit(&DEBUG_USART,"\r\nDone\r\n\r\n",10,HAL_MAX_DELAY);
-
 
   	  //LSM6DSR
   	  memset(buffer, 0, TX_BUF_DIM);
@@ -1425,7 +1431,7 @@ void StartSensors3(void *argument)
   	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
   	  /*
-  	   * TODO NEEDS FILTERING (maybe acceleration needs filtering too)
+  	   * TODO NEEDS FILTERING BUT WORKS (maybe acceleration needs filtering too)
   	   */
   	  memset(buffer, 0, TX_BUF_DIM);
   	  MRT_LSM6DSR_getAngularRate(data_raw_angular_rate,angular_rate_mdps);
@@ -1438,7 +1444,16 @@ void StartSensors3(void *argument)
 	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
-	  //LPS (pressure)
+	  //LPS22HH
+  	  memset(buffer, 0, TX_BUF_DIM);
+  	  MRT_LPS22HH_getPressure(&data_raw_pressure,&pressure);
+  	  sprintf((char *)buffer,"Pressure []:%4.2f\r\n",pressure);
+  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	  memset(buffer, 0, TX_BUF_DIM);
+	  MRT_LPS22HH_getTemperature(&lps_data_raw_temperature,&lps_temperature_degC);
+	  sprintf((char *)buffer, "Temperature [degC]:%6.2f\r\n", lps_temperature_degC);
+	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  //Pressure tank (just use an analog sensor if you don't have it)

@@ -115,8 +115,8 @@ typedef int32_t (*stmdev_read_ptr)(void *, uint8_t, uint8_t *, uint16_t);
 typedef struct
 {
   /** Component mandatory fields **/
-  stmdev_write_ptr  write_reg;
-  stmdev_read_ptr   read_reg;
+  stmdev_write_ptr  lsm_write_reg;
+  stmdev_read_ptr   lsm_read_reg;
   /** Customizable optional pointer **/
   void *handle;
 } stmdev_ctx_t;
@@ -4133,10 +4133,9 @@ int32_t lsm6dsr_s4s_dt_get(stmdev_ctx_t *ctx, uint8_t *val);
 #define TX_BUF_DIM          50
 
 
-
 //FOR THE ISM
 static uint32_t whoamI, rst;
-stmdev_ctx_t dev_ctx;
+stmdev_ctx_t lsm_ctx;
 
 //For acceleration
 static int16_t data_raw_acceleration[3];
@@ -4156,8 +4155,8 @@ UART_HandleTypeDef* Guart;
 
 
 //Helper functions
-static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp,uint16_t len);
-static int32_t read(void *handle, uint8_t reg, uint8_t *bufp,uint16_t len);
+static int32_t lsm_write(void *handle, uint8_t reg, const uint8_t *bufp,uint16_t len);
+static int32_t lsm_read(void *handle, uint8_t reg, uint8_t *bufp,uint16_t len);
 
 //User functions
 void MRT_LSM6DSR_Setup(I2C_HandleTypeDef* SENSOR_BUS, UART_HandleTypeDef* uart);

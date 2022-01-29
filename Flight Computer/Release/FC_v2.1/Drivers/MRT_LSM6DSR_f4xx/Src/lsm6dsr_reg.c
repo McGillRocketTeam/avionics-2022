@@ -52,7 +52,7 @@ int32_t lsm6dsr_read_reg(stmdev_ctx_t *ctx, uint8_t reg,
 {
   int32_t ret;
 
-  ret = ctx->read_reg(ctx->handle, reg, data, len);
+  ret = ctx->lsm_read_reg(ctx->handle, reg, data, len);
 
   return ret;
 }
@@ -73,7 +73,7 @@ int32_t lsm6dsr_write_reg(stmdev_ctx_t *ctx, uint8_t reg,
 {
   int32_t ret;
 
-  ret = ctx->write_reg(ctx->handle, reg, data, len);
+  ret = ctx->lsm_write_reg(ctx->handle, reg, data, len);
 
   return ret;
 }
@@ -11588,7 +11588,7 @@ int32_t lsm6dsr_s4s_dt_get(stmdev_ctx_t *ctx, uint8_t *val)
  * @param  len       number of consecutive register to write
  *
  */
-static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len)
+static int32_t lsm_write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len)
 {
   HAL_I2C_Mem_Write(handle, LSM6DSR_I2C_ADD_L, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
   return 0;
@@ -11604,7 +11604,7 @@ static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t le
  * @param  len       number of consecutive register to read
  *
  */
-static int32_t read(void *handle, uint8_t reg, uint8_t *bufp,
+static int32_t lsm_read(void *handle, uint8_t reg, uint8_t *bufp,
                              uint16_t len)
 {
   HAL_I2C_Mem_Read(handle, LSM6DSR_I2C_ADD_L, reg,
@@ -11622,13 +11622,13 @@ void MRT_LSM6DSR_Setup(I2C_HandleTypeDef* SENSOR_BUS, UART_HandleTypeDef* uart)
 
 	  HAL_UART_Transmit(Guart,"LSM6DSR Setup Starts\n\r", 22, HAL_MAX_DELAY);
 	  /* Initialize mems driver interface */
-	  dev_ctx.write_reg = write;
-	  dev_ctx.read_reg = read;
-	  dev_ctx.handle = SENSOR_BUS;
+	  lsm_ctx.lsm_write_reg = lsm_write;
+	  lsm_ctx.lsm_read_reg = lsm_read;
+	  lsm_ctx.handle = SENSOR_BUS;
 	  /* Wait sensor boot time */
 	  HAL_Delay(BOOT_TIME);
 	  /* Check device ID */
-	  lsm6dsr_device_id_get(&dev_ctx, &whoamI);
+	  lsm6dsr_device_id_get(&lsm_ctx, &whoamI);
 
 	  	  HAL_UART_Transmit(Guart,"Checking Sensor ID...", 21, HAL_MAX_DELAY);
 
@@ -11636,7 +11636,7 @@ void MRT_LSM6DSR_Setup(I2C_HandleTypeDef* SENSOR_BUS, UART_HandleTypeDef* uart)
 	  if (whoamI != LSM6DSR_ID){
 		  HAL_UART_Transmit(Guart,"NOT OK\n\r", 10, HAL_MAX_DELAY);
 		  HAL_UART_Transmit(Guart,"This Device is: " , 16, HAL_MAX_DELAY);
-		  HAL_UART_Transmit(Guart,&whoamI, 2, HAL_MAX_DELAY);
+		  HAL_UART_Transmit(Guart,&whoamI, 4, HAL_MAX_DELAY);
 		  HAL_UART_Transmit(Guart,"\n\rProgram Terminated\n\r", 26, HAL_MAX_DELAY);
 		  while(1);
 	  }
@@ -11645,13 +11645,13 @@ void MRT_LSM6DSR_Setup(I2C_HandleTypeDef* SENSOR_BUS, UART_HandleTypeDef* uart)
 	  	  HAL_UART_Transmit(Guart,"OK\n\r", 6, HAL_MAX_DELAY);
 
 	  /* Restore default configuration */
-	  lsm6dsr_reset_set(&dev_ctx, PROPERTY_ENABLE);
+	  lsm6dsr_reset_set(&lsm_ctx, PROPERTY_ENABLE);
 
 
 	  HAL_Delay(1000);
 
 	  do {
-	    lsm6dsr_reset_get(&dev_ctx, &rst);
+	    lsm6dsr_reset_get(&lsm_ctx, &rst);
 	  } while (rst);
 
 
@@ -11683,20 +11683,20 @@ void MRT_LSM6DSR_Setup(I2C_HandleTypeDef* SENSOR_BUS, UART_HandleTypeDef* uart)
 
 
 	      /* Disable I3C interface */
-	      lsm6dsr_i3c_disable_set(&dev_ctx, LSM6DSR_I3C_DISABLE);
+	      lsm6dsr_i3c_disable_set(&lsm_ctx, LSM6DSR_I3C_DISABLE);
 	      /* Enable Block Data Update */
-	      lsm6dsr_block_data_update_set(&dev_ctx, PROPERTY_ENABLE);
+	      lsm6dsr_block_data_update_set(&lsm_ctx, PROPERTY_ENABLE);
 	      /* Set Output Data Rate */
-	      lsm6dsr_xl_data_rate_set(&dev_ctx, LSM6DSR_XL_ODR_12Hz5);
-	      lsm6dsr_gy_data_rate_set(&dev_ctx, LSM6DSR_GY_ODR_12Hz5);
+	      lsm6dsr_xl_data_rate_set(&lsm_ctx, LSM6DSR_XL_ODR_12Hz5);
+	      lsm6dsr_gy_data_rate_set(&lsm_ctx, LSM6DSR_GY_ODR_12Hz5);
 	      /* Set full scale */
-	      lsm6dsr_xl_full_scale_set(&dev_ctx, LSM6DSR_2g);
-	      lsm6dsr_gy_full_scale_set(&dev_ctx, LSM6DSR_2000dps);
+	      lsm6dsr_xl_full_scale_set(&lsm_ctx, LSM6DSR_2g);
+	      lsm6dsr_gy_full_scale_set(&lsm_ctx, LSM6DSR_2000dps);
 	      /* Configure filtering chain(No aux interface)
 	       * Accelerometer - LPF1 + LPF2 path
 	       */
-	      lsm6dsr_xl_hp_path_on_out_set(&dev_ctx, LSM6DSR_LP_ODR_DIV_100);
-	      lsm6dsr_xl_filter_lp2_set(&dev_ctx, PROPERTY_ENABLE);
+	      lsm6dsr_xl_hp_path_on_out_set(&lsm_ctx, LSM6DSR_LP_ODR_DIV_100);
+	      lsm6dsr_xl_filter_lp2_set(&lsm_ctx, PROPERTY_ENABLE);
 		  HAL_UART_Transmit(Guart,"LLSM6DSR Setup Ends\n\r", 25, HAL_MAX_DELAY);
 	}
 
@@ -11711,13 +11711,13 @@ void MRT_LSM6DSR_getAcceleration(int16_t data_raw_acceleration[3],float accelera
 		//lsm6dsr_status_reg_get(&dev_ctx, &reg.status_reg);
 
     	uint8_t reg;
-	    lsm6dsr_xl_flag_data_ready_get(&dev_ctx, &reg);
+	    lsm6dsr_xl_flag_data_ready_get(&lsm_ctx, &reg);
 
 		//if (reg.status_reg.gda) {
 	    if(reg){
 		/* Read magnetic field data */
 		memset(data_raw_acceleration, 0x00, 3 * sizeof(int16_t));
-        lsm6dsr_acceleration_raw_get(&dev_ctx, data_raw_acceleration);
+        lsm6dsr_acceleration_raw_get(&lsm_ctx, data_raw_acceleration);
         acceleration_mg[0] = lsm6dsr_from_fs2g_to_mg(
                                data_raw_acceleration[0]);
         acceleration_mg[1] = lsm6dsr_from_fs2g_to_mg(
@@ -11737,13 +11737,13 @@ void MRT_LSM6DSR_getTemperature(int16_t data_raw_temperature[1],float temperatur
 	//lsm6dsr_status_reg_get(&dev_ctx, &reg.status_reg);
 
     uint8_t reg;
-    lsm6dsr_temp_flag_data_ready_get(&dev_ctx, &reg);
+    lsm6dsr_temp_flag_data_ready_get(&lsm_ctx, &reg);
 
 	//if (reg.status_reg.tda) {
     if(reg){
 		//Read temperature data
 		memset(data_raw_temperature, 0x00, sizeof(int16_t));
-		lsm6dsr_temperature_raw_get(&dev_ctx, data_raw_temperature);
+		lsm6dsr_temperature_raw_get(&lsm_ctx, data_raw_temperature);
 		temperature_degC[0] = lsm6dsr_from_lsb_to_celsius(data_raw_temperature[0]);
 
 	}
@@ -11758,13 +11758,13 @@ void MRT_LSM6DSR_getAngularRate(int16_t data_raw_angular_rate[3],float angular_r
 		//lsm6dsr_status_reg_get(&dev_ctx, &reg.status_reg);
 
     	uint8_t reg;
-	    lsm6dsr_gy_flag_data_ready_get(&dev_ctx, &reg);
+	    lsm6dsr_gy_flag_data_ready_get(&lsm_ctx, &reg);
 
 		//if (reg.status_reg.xlda) {
 	    if(reg){
 		/* Read magnetic field data */
 		memset(data_raw_angular_rate, 0x00, 3 * sizeof(int16_t));
-		lsm6dsr_angular_rate_raw_get(&dev_ctx, data_raw_angular_rate);
+		lsm6dsr_angular_rate_raw_get(&lsm_ctx, data_raw_angular_rate);
 		angular_rate_mdps[0] =
 				lsm6dsr_from_fs2000dps_to_mdps(data_raw_angular_rate[0]);
 		angular_rate_mdps[1] =

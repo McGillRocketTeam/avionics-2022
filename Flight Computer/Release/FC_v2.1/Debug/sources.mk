@@ -35,6 +35,7 @@ Core/Startup \
 Drivers/MRT_GPS_f4xx/Src \
 Drivers/MRT_Helpers_f4xx/Src \
 Drivers/MRT_Iridium_f4xx/Src \
+Drivers/MRT_LPS22HH_f4xx/Src \
 Drivers/MRT_LSM6DSR_f4xx/Src \
 Drivers/MRT_RTOS_f4xx/Src \
 Drivers/STM32F4xx_HAL_Driver/Src \
