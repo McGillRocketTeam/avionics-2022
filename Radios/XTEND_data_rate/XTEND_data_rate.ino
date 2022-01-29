@@ -3,23 +3,27 @@
 #define xtendSerial Serial2
 
 String str = "s;aa.aaa;aa.aaa;aa.aaa;gg,ggg;gg,ggg;gg,ggg;------;ppppppp;llllllllll;lllllllllll;altalt;tt:tt:ttt;ssssss;e";
+String loopstr = "123456789-123456789-123456789-123456789-123456789-123456789-123456789";
 int duration = 1000;
-long 1sec;
+unsigned long one_sec;
+uint8_t count = 0;
 
 void setup() {
   Serial.begin(115200);
   Wire.begin();
-  Serial.println(F("All sensor test"));
   xtendSerial.begin(9600);
 
-  1sec = millis()+1000;
+  one_sec = millis()+1000;
 }
 
 void loop() {
-  while(millis() <= 1sec){
-    xtendSerial.print(str);
-    Serial.println(str);
+  if(millis() <= one_sec){
+    
+    xtendSerial.print(loopstr);
+//    Serial.println(str);
   }
   
-//  delay(duration);
+//  xtendSerial.print(loopstr);
+//  Serial.println(loopstr);
+//  delay(934);
 }
