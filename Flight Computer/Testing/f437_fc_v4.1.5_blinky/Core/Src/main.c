@@ -33,8 +33,11 @@
 #include "i2c_sensor_functions.h"
 #include "gps.h"
 #include "MAX31855.h"
+#include "bme280.h"
+#include "bme280_defs.h"
 
 #include "sd_card.h"
+#include "w25qxx.h" // external flash
 
 /* USER CODE END Includes */
 
@@ -46,18 +49,21 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-//#define TEST_BLINKY 						// pass
+#define TEST_BLINKY 						// pass
 //#define TEST_EJECTION 					// pass
 //#define TEST_VR 							// pass
 //#define TEST_SD_CARD_ALONE 				// pass
 //#define TEST_SD_CARD_DYNAMIC_FILE_NAMES	// pass
 //#define TEST_GPS_ALONE					// pass but GPS fix inconsistent sometimes
+//#define TEST_FLASH_W25QXX_ALONE			// status?
 //#define TEST_I2C_SENSORS_ALONE			// pass
-#define TEST_ALL_SENSORS_WITH_SD_CARD		// pass
+//#define TEST_ALL_SENSORS_WITH_SD_CARD		// pass
 //#define RECORD_VIDEO_WITH_TEST			// activates video recorder in TEST_ALL_SENSORS_WITH_SD_CARD
 //#define OUTPUT_USB_WITH_TEST				// sends string to USB with TEST_ALL_SENSORS_WITH_SD_CARD
 
 //#define TEST_USB_VCP_ALONE				// pass
+
+//#define TEST_I2C_PAYLOAD
 
 //#define TEST_VENT_VALVE
 //#define TEST_PRESSURE_TRANSDUCER_ADC
@@ -75,6 +81,7 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
+I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
 
 SPI_HandleTypeDef hspi4;
@@ -96,6 +103,8 @@ float angular_rate_mdps[]= {0, 0, 0};
 float pressure_hPa = 0;
 float temperature_degC = 0;
 
+struct bme280_dev dev_bme280;
+
 // gps data
 float latitude;
 float longitude;
@@ -109,6 +118,11 @@ FIL fil; 		//File handle
 FRESULT fres; //Result after operations
 static uint8_t msg_buffer[1000];
 
+// external flash
+extern w25qxx_t w25qxx;
+uint8_t flash_write_buffer[256]; // page size is 256 bytes for w25qxx
+uint8_t flash_read_buffer[256];
+static volatile uint32_t flash_write_address = 0;
 
 /* USER CODE END PV */
 
@@ -121,10 +135,19 @@ static void MX_TIM2_Init(void);
 static void MX_SPI5_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_USART6_UART_Init(void);
+static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 
 // helpers
 void tone(uint32_t duration, uint32_t repeats);
+
+// bme280
+void user_delay_ms(uint32_t period, void *intf_ptr);
+int8_t user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr);
+int8_t user_i2c_write(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr);
+
+// flash and sd
+void save_flash_to_sd(void);
 
 /* USER CODE END PFP */
 
@@ -168,6 +191,7 @@ int main(void)
   MX_FATFS_Init();
   MX_I2C3_Init();
   MX_USART6_UART_Init();
+  MX_I2C2_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
@@ -199,6 +223,12 @@ int main(void)
   // set power off for VR
   HAL_GPIO_WritePin(VR_CTRL_PWR_GPIO_Port, VR_CTRL_PWR_Pin, RESET);
   HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
+
+  // FLASH set CS, WP and IO3 pins high
+  HAL_GPIO_WritePin(CS_FLASH_GPIO_Port, CS_FLASH_Pin, SET);
+  HAL_GPIO_WritePin(FLASH_WP_GPIO_Port, FLASH_WP_Pin, SET);
+  HAL_GPIO_WritePin(FLASH_IO3_GPIO_Port, FLASH_IO3_Pin, SET);
+
 
   dev_ctx_lsm = lsm6dsl_init();
   dev_ctx_lps = lps22hh_init();
@@ -246,6 +276,62 @@ int main(void)
 	}
 #endif
 
+#ifdef TEST_I2C_PAYLOAD
+	char msg_buffer[100]; // for usb vcp
+
+	// testing i2c for payload over long wires
+	int8_t rslt = BME280_OK;
+	uint8_t dev_addr = BME280_I2C_ADDR_SEC;
+
+	dev_bme280.intf_ptr = &dev_addr;
+	dev_bme280.intf = BME280_I2C_INTF;
+	dev_bme280.read = user_i2c_read;
+	dev_bme280.write = user_i2c_write;
+	dev_bme280.delay_us = user_delay_ms;
+
+	rslt = bme280_init(&dev_bme280);
+	HAL_Delay(100);
+
+	if (rslt != 0) {
+		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET); // turn LED on to indicate fault
+		while (1);
+	}
+	struct bme280_data comp_data;
+
+	uint8_t settings_sel;
+
+	/* Recommended mode of operation: Indoor navigation */
+	dev_bme280.settings.osr_h = BME280_OVERSAMPLING_1X;
+	dev_bme280.settings.osr_p = BME280_OVERSAMPLING_16X;
+	dev_bme280.settings.osr_t = BME280_OVERSAMPLING_2X;
+	dev_bme280.settings.filter = BME280_FILTER_COEFF_16;
+	dev_bme280.settings.standby_time = BME280_STANDBY_TIME_62_5_MS;
+
+	settings_sel = BME280_OSR_PRESS_SEL;
+	settings_sel |= BME280_OSR_TEMP_SEL;
+	settings_sel |= BME280_OSR_HUM_SEL;
+	settings_sel |= BME280_STANDBY_SEL;
+	settings_sel |= BME280_FILTER_SEL;
+	rslt = bme280_set_sensor_settings(settings_sel, &dev_bme280);
+	rslt = bme280_set_sensor_mode(BME280_NORMAL_MODE, &dev_bme280);
+
+	while (1)
+	{
+		int8_t status = bme280_get_sensor_data(BME280_ALL, &comp_data, &dev_bme280);
+		if (status != 0)
+		{
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+			while (1);
+		}
+
+		sprintf((char*)msg_buffer, "Pressure = %d, Temperature = %d, Humidity = %d\r\n", comp_data.pressure, comp_data.temperature, comp_data.humidity);
+		CDC_Transmit_FS((uint8_t *)msg_buffer, strlen(msg_buffer));
+
+		HAL_Delay(100);
+	}
+
+#endif
+
 #ifdef TEST_I2C_SENSORS_ALONE
 
 	while (1)
@@ -279,11 +365,96 @@ int main(void)
 	}
 #endif
 
+#ifdef TEST_FLASH_W25QXX_ALONE
+
+	// easy test
+	/*
+	uint8_t buffer1[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+	uint8_t buffer2[8];
+
+	// init FLASH
+	if (W25qxx_Init()) {
+		tone(250, 2); // init properly
+	} else {
+		tone(750, 2);
+		Error_Handler(); // hangs and blinks LEDF
+	}
+
+	  W25qxx_EraseSector(1);
+	  W25qxx_WriteSector(buffer1, 1, 0, 8);
+	  W25qxx_ReadSector(buffer2, 1, 0, 8);
+
+	  while (1);
+	  */
+
+	// harder test
+	// init sd
+	char filename[13]; // filename will be of form fc000000.txt which is 13 chars in the array (with null termination)
+	fres = sd_init_dynamic_filename("FC", "S,PRESSURE_HPA,TEMP_DEG_C,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,LAT,LONG,E\r\n", filename);
+	if (fres != FR_OK) {
+		Error_Handler();
+	}
+
+	// init flash
+	if (W25qxx_Init()) {
+		tone(250, 2);
+	} else {
+		tone(750, 2);
+		Error_Handler(); // hang and blinky
+	}
+
+	save_flash_to_sd(); // check if flash empty and write to sd card
+
+	// open sd card file for simultaneous logging
+	fres = f_open(&fil, filename, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+
+	if (fres == FR_OK) {
+		myprintf("I was able to open filename.txt for writing\r\n");
+	} else {
+		myprintf("f_open error (%i)\r\n", fres);
+		return fres;
+	}
+	// set pointer to end of file to append
+	f_lseek(&fil, f_size(&fil));
+
+	// now make fake data
+	while (1)
+	{
+		// flash should be cleared by now
+		// create dummy data to be written to the flash chip
+		for (uint32_t i = 0; i < 50; i++) // 300 for laughs
+		{
+//			sprintf((char *)flash_write_buffer, "S,%ld,0.12,253.70,280.00,-840.00,-560.00,0.0,1004.84,45.5052567,-73.5796127,20,10,34,17,%ld,%ldE,\r\n", i, 50-i,i);
+			sprintf((char *)flash_write_buffer, "S,%ld,0.12,25.0,20.0,40.20,-5+0.0,0.0,1343204.z4,45.507,-73.5796127,20,10,34,17,%ld+%ld,%ldE,\r\n", i,i, 50-i,i);
+			sd_write(&fil, flash_write_buffer);
+
+			// calculate page address and offset based on number of bytes already written
+			uint32_t page_address = (int) (flash_write_address / w25qxx.BlockSize);
+			uint32_t page_offset = (int) (flash_write_address % w25qxx.BlockSize);
+
+			W25qxx_WriteBlock(flash_write_buffer, page_address, page_offset, strlen((const char *)flash_write_buffer));
+//			W25qxx_ReadBlock(flash_read_buffer, page_address, page_offset, strlen((const char *)flash_write_buffer));
+
+			flash_write_address += strlen((const char *)flash_write_buffer);
+		}
+
+		f_close(&fil); // close logging file
+
+		while (1)
+		{
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+			HAL_Delay(100);
+		}
+	}
+#endif
+
 #ifdef TEST_ALL_SENSORS_WITH_SD_CARD
 
 //	sd_init("fcdata.txt", "S,PRESSURE_HPA,TEMP_DEG_C,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,LAT,LONG,E\r\n");
 	char filename[13]; // filename will be of form fc000000.txt which is 13 chars in the array (with null termination)
-	sd_init_dynamic_filename("FC", "S,PRESSURE_HPA,TEMP_DEG_C,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,LAT,LONG,E\r\n", filename);
+	fres = sd_init_dynamic_filename("FC", "S,PRESSURE_HPA,TEMP_DEG_C,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,LAT,LONG,E\r\n", filename);
+	if (fres != FR_OK)
+		Error_Handler();
 
 #ifdef RECORD_VIDEO_WITH_TEST
 	// successful init, can start video recorder
@@ -300,7 +471,6 @@ int main(void)
 	HAL_Delay(400);
 	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
 #endif
-
 
 	while (1)
 	{
@@ -448,7 +618,8 @@ int main(void)
 	  char buff[256];
 	  strcpy(buff, "/");
 
-	  sd_init_dynamic_filename("fc", "blahblah");
+	  char filename[13]; // filename will be of form fc000000.txt which is 13 chars in the array (with null termination)
+	  sd_init_dynamic_filename("FC", "S,PRESSURE_HPA,TEMP_DEG_C,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,LAT,LONG,E\r\n", filename);
 
 	  while (1);
 
@@ -676,6 +847,52 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * @brief I2C2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C2_Init(void)
+{
+
+  /* USER CODE BEGIN I2C2_Init 0 */
+
+  /* USER CODE END I2C2_Init 0 */
+
+  /* USER CODE BEGIN I2C2_Init 1 */
+
+  /* USER CODE END I2C2_Init 1 */
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.ClockSpeed = 100000;
+  hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C2_Init 2 */
+
+  /* USER CODE END I2C2_Init 2 */
 
 }
 
@@ -910,6 +1127,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, PM_12V_EN_Pin|Vent_Valve_EN_Pin|Payload_EN_Pin|TH_CS_1_Pin
@@ -919,13 +1137,14 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOF, SD_CS_Pin|Prop_Gate_2_Pin|Prop_Gate_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, LED1_Pin|LED2_Pin|LED3_Pin|VR_CTRL_PWR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, LED1_Pin|LED2_Pin|LED3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, Prop_Pyro_Arming_Pin|Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin|Rcov_Arm_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, Prop_Pyro_Arming_Pin|VR_CTRL_PWR_Pin|Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin
+                          |Rcov_Arm_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, FLASH_IO3_Pin|FLASH_WP_Pin|CS_FLASH_Pin|VR_CTRL_REC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PM_12V_EN_Pin Vent_Valve_EN_Pin Payload_EN_Pin TH_CS_1_Pin
                            TH_CS_2_Pin */
@@ -949,8 +1168,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Button_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED1_Pin LED2_Pin LED3_Pin VR_CTRL_PWR_Pin */
-  GPIO_InitStruct.Pin = LED1_Pin|LED2_Pin|LED3_Pin|VR_CTRL_PWR_Pin;
+  /*Configure GPIO pins : LED1_Pin LED2_Pin LED3_Pin */
+  GPIO_InitStruct.Pin = LED1_Pin|LED2_Pin|LED3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -981,19 +1200,21 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Prop_Pyro_Arming_Pin Rcov_Gate_Main_Pin Rcov_Gate_Drogue_Pin Rcov_Arm_Pin */
-  GPIO_InitStruct.Pin = Prop_Pyro_Arming_Pin|Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin|Rcov_Arm_Pin;
+  /*Configure GPIO pins : Prop_Pyro_Arming_Pin VR_CTRL_PWR_Pin Rcov_Gate_Main_Pin Rcov_Gate_Drogue_Pin
+                           Rcov_Arm_Pin */
+  GPIO_InitStruct.Pin = Prop_Pyro_Arming_Pin|VR_CTRL_PWR_Pin|Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin
+                          |Rcov_Arm_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : VR_CTRL_REC_Pin */
-  GPIO_InitStruct.Pin = VR_CTRL_REC_Pin;
+  /*Configure GPIO pins : FLASH_IO3_Pin FLASH_WP_Pin CS_FLASH_Pin VR_CTRL_REC_Pin */
+  GPIO_InitStruct.Pin = FLASH_IO3_Pin|FLASH_WP_Pin|CS_FLASH_Pin|VR_CTRL_REC_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(VR_CTRL_REC_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
@@ -1023,6 +1244,94 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 #endif
 }
 
+
+/**
+ * reads data out of external FLASH and saves to SD card.
+ * erases the used flash after finished.
+ *
+ * assumes f_mount has already been run.
+ * this function does not close the file system.
+ * opens a file "datalog.txt" and closes it when finished.
+ */
+void save_flash_to_sd(void)
+{
+	// FLASH variables
+	uint32_t page_num = 0;
+	uint16_t page_bytes = w25qxx.PageSize; // 256 bytes saved per page
+	uint8_t readBuf[page_bytes];
+	uint16_t page_address;
+
+	// write to file
+	fres = f_open(&fil, "flashlog.txt",
+			FA_WRITE | FA_OPEN_ALWAYS);
+
+	if (fres == FR_OK) {
+		myprintf("I was able to open 'datalog.txt' for writing\r\n");
+	} else {
+		myprintf("f_open error (%i)\r\n", fres);
+	}
+	// set pointer to end of file
+	f_lseek(&fil, f_size(&fil));
+
+	// print string to indicate new log session
+	sprintf((char *)msg_buffer, "\n--- new logging session! ---\r\n");
+	sd_write(&fil, msg_buffer);
+
+	for (page_num = 0; page_num < w25qxx.PageCount; page_num++)
+	{
+//		page_address = page_num * w25qxx.PageSize;
+
+		if (!W25qxx_IsEmptyPage(page_num, 0, page_bytes))
+//		if ((!W25qxx_IsEmptyPage(page_num, 0, page_bytes)) || page_num < 5)
+		{
+			// page not empty, read page out of flash
+			W25qxx_ReadPage(readBuf, page_num, 0, page_bytes);
+
+			// save to SD
+			int8_t status = sd_write(&fil, readBuf);
+			if (status <= 0) {
+				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+			}
+		}
+		else break; // page empty, no need to continue
+	}
+
+	// close file
+	f_close(&fil);
+
+	if (page_num == 0) // nothing saved
+	{
+		tone(50, 5);
+		while (!start_ejection);
+		start_ejection = 0;
+		tone(50, 3);
+	}
+	else
+	{
+		// wait for button press to erase
+		tone(250, 3);
+		while (!start_ejection);
+		start_ejection = 0;
+
+	//	W25qxx_EraseChip();
+
+		// clear the blocks with data
+		uint32_t blocks_to_clear = W25qxx_PageToBlock(page_num);
+		for (uint32_t block = 0; block <= blocks_to_clear; block++)
+		{
+			W25qxx_EraseBlock(block);
+		}
+
+		// notify that erase is finished
+		tone(100, 3);
+		while (!start_ejection);
+		start_ejection = 0;
+
+		tone(50, 3);
+	}
+
+}
+
 void tone(uint32_t duration, uint32_t repeats)
 {
 	for (uint32_t i = 0; i < repeats; i++)
@@ -1032,6 +1341,69 @@ void tone(uint32_t duration, uint32_t repeats)
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
 		HAL_Delay(duration);
 	}
+}
+
+void user_delay_ms(uint32_t period, void *intf_ptr)
+{
+    /*
+     * Return control or wait,
+     * for a period amount of milliseconds
+     */
+	HAL_Delay(50);
+}
+
+int8_t user_i2c_read(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
+{
+    /* Return 0 for Success, non-zero for failure */
+
+    /*
+     * The parameter intf_ptr can be used as a variable to store the I2C address of the device
+     */
+
+    /*
+     * Data on the bus should be like
+     * |------------+---------------------|
+     * | I2C action | Data                |
+     * |------------+---------------------|
+     * | Start      | -                   |
+     * | Write      | (reg_addr)          |
+     * | Stop       | -                   |
+     * | Start      | -                   |
+     * | Read       | (reg_data[0])       |
+     * | Read       | (....)              |
+     * | Read       | (reg_data[len - 1]) |
+     * | Stop       | -                   |
+     * |------------+---------------------|
+     */
+    HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c2, (BME280_I2C_ADDR_SEC << 1), reg_addr, I2C_MEMADD_SIZE_8BIT, reg_data, len, HAL_MAX_DELAY);
+    return (status == HAL_OK ? 0 : 1);
+
+}
+
+int8_t user_i2c_write(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, void *intf_ptr)
+{
+    /* Return 0 for Success, non-zero for failure */
+
+    /*
+     * The parameter intf_ptr can be used as a variable to store the I2C address of the device
+     */
+
+    /*
+     * Data on the bus should be like
+     * |------------+---------------------|
+     * | I2C action | Data                |
+     * |------------+---------------------|
+     * | Start      | -                   |
+     * | Write      | (reg_addr)          |
+     * | Write      | (reg_data[0])       |
+     * | Write      | (....)              |
+     * | Write      | (reg_data[len - 1]) |
+     * | Stop       | -                   |
+     * |------------+---------------------|
+     */
+
+    HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c2, (BME280_I2C_ADDR_SEC << 1), reg_addr, I2C_MEMADD_SIZE_8BIT, reg_data, len, HAL_MAX_DELAY);
+	return (status == HAL_OK ? 0 : 1);
 }
 
 /* USER CODE END 4 */
@@ -1046,12 +1418,14 @@ void Error_Handler(void)
   /* User can add his own implementation to report the HAL error return state */
 //  __disable_irq();
   HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, SET); // error occurred, fatal
+
+  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+  HAL_Delay(1000);
+  HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
   while (1)
   {
-	  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-	  HAL_Delay(2000);
-	  HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
-	  HAL_Delay(2000);
+	  HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin); // error occurred, fatal
+	  HAL_Delay(500);
   }
   /* USER CODE END Error_Handler_Debug */
 }
