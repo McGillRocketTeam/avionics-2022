@@ -22,12 +22,17 @@
 #include "cmsis_os.h"
 #include "fatfs.h"
 #include "usb_device.h"
-#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "usbd_cdc_if.h"
+#include "string.h"
 #include "i2c_sensor_functions.h"
 #include "sd_card.h"
+#include "semphr.h"
+#include "gps.h"
+#include "MAX31855.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,9 +52,16 @@ float acceleration[] = {0, 0, 0};
 float angular_rate[]= {0, 0, 0};
 float pressure = 0;
 float temperature = 0;
-float latitude;
-float longitude;
+double latitude;
+double longitude;
 float time;
+
+FATFS FatFs; 	//Fatfs handle
+FIL fil; 		//File handle
+FRESULT fres; //Result after operations
+BYTE writeBuf[100];
+UINT bytesWrote;
+GPIO_PinState buttonState;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -79,6 +91,32 @@ const osThreadAttr_t pollSensors_attributes = {
   .stack_size = 1024 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for saveData */
+osThreadId_t saveDataHandle;
+const osThreadAttr_t saveData_attributes = {
+  .name = "saveData",
+  .stack_size = 1024 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for ejection */
+osThreadId_t ejectionHandle;
+const osThreadAttr_t ejection_attributes = {
+  .name = "ejection",
+  .stack_size = 1024 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
+/* Definitions for transmitData */
+osThreadId_t transmitDataHandle;
+const osThreadAttr_t transmitData_attributes = {
+  .name = "transmitData",
+  .stack_size = 1024 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for mutex */
+osSemaphoreId_t mutexHandle;
+const osSemaphoreAttr_t mutex_attributes = {
+  .name = "mutex"
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -94,7 +132,10 @@ static void MX_I2C3_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_UART8_Init(void);
 void printSensorsFunc(void *argument);
-void pollSensorsFunction(void *argument);
+void pollSensorsFunc(void *argument);
+void saveDataFunc(void *argument);
+void ejectionFunc(void *argument);
+void transmitDataFunc(void *argument);
 
 /* USER CODE BEGIN PFP */
 // LSM6DSR functions
@@ -106,7 +147,7 @@ extern stmdev_ctx_t lps22hh_init(void);
 extern void get_pressure(stmdev_ctx_t dev_ctx,  float *pressure);
 extern void get_temperature(stmdev_ctx_t dev_ctx,  float *temperature);
 
-void GPS_Poll(float*, float*, float*);
+void GPS_Poll(double*, double*, float*);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -151,6 +192,35 @@ int main(void)
   MX_USART6_UART_Init();
   MX_UART8_Init();
   /* USER CODE BEGIN 2 */
+  // reset LEDs
+  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET);
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
+  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, RESET);
+
+  // reset recovery pyro pins
+  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, RESET);
+  HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, RESET);
+  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
+
+  // reset prop pyro pins
+  HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, RESET);
+  HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, RESET);
+  HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, RESET);
+
+  // reset 12 V buck converter enable pin (disable converter)
+  HAL_GPIO_WritePin(PM_12V_EN_GPIO_Port, PM_12V_EN_Pin, RESET);
+  HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET);
+
+  // reset payload EN signal
+  HAL_GPIO_WritePin(Payload_EN_GPIO_Port, Payload_EN_Pin, RESET);
+
+  // set CS pin for thermocouple chip high
+  //	HAL_GPIO_WritePin(TH_CS_1_GPIO_Port, TH_CS_1_Pin, SET);
+
+  // set power off for VR
+  HAL_GPIO_WritePin(VR_CTRL_PWR_GPIO_Port, VR_CTRL_PWR_Pin, RESET);
+  HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
+
   dev_ctx_lsm = lsm6dsl_init();
   //dev_ctx_lps = lps22hh_init();
   /* USER CODE END 2 */
@@ -161,6 +231,10 @@ int main(void)
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* creation of mutex */
+  mutexHandle = osSemaphoreNew(1, 1, &mutex_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -179,7 +253,16 @@ int main(void)
   printSensorsHandle = osThreadNew(printSensorsFunc, NULL, &printSensors_attributes);
 
   /* creation of pollSensors */
-  pollSensorsHandle = osThreadNew(pollSensorsFunction, NULL, &pollSensors_attributes);
+  pollSensorsHandle = osThreadNew(pollSensorsFunc, NULL, &pollSensors_attributes);
+
+  /* creation of saveData */
+  saveDataHandle = osThreadNew(saveDataFunc, NULL, &saveData_attributes);
+
+  /* creation of ejection */
+  ejectionHandle = osThreadNew(ejectionFunc, NULL, &ejection_attributes);
+
+  /* creation of transmitData */
+  transmitDataHandle = osThreadNew(transmitDataFunc, NULL, &transmitData_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -190,6 +273,23 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
+
+  HAL_Delay(1000);
+
+  //mount
+    fres = f_mount(&FatFs, "", 1); //1=mount now
+  	if (fres != FR_OK) {
+  	  myprintf("f_mount error (%i)\r\n", fres);
+  	  while(1);
+  	}
+  	//open file
+    fres = f_open(&fil, "new_file.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+  	if(fres == FR_OK) {
+  		myprintf("I was able to open 'new_file.txt' for writing\r\n");
+  	} else {
+  		myprintf("f_open error (%i)\r\n", fres);
+  	}
+
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
@@ -671,33 +771,106 @@ void printSensorsFunc(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	myprintf("ACCEL: %f, %f, %f\r\n", acceleration[0], acceleration[1], acceleration[2]);
-	myprintf("IN GPS: %f, %f, %f\r\n", latitude, longitude, time);
-    osDelay(2000);
+	//myprintf("ACCEL: %f, %f, %f\r\n", acceleration[0], acceleration[1], acceleration[2]);
+	//myprintf("GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
+	xSemaphoreTake(mutexHandle,500);
+	GPS_Poll(&latitude, &longitude, &time);
+	myprintf("GPS 1: %lf, %lf, %f\r\n", latitude, longitude, time);
+	xSemaphoreGive(mutexHandle);
+    osDelay(1000);
   }
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_pollSensorsFunction */
+/* USER CODE BEGIN Header_pollSensorsFunc */
 /**
 * @brief Function implementing the pollSensors thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_pollSensorsFunction */
-void pollSensorsFunction(void *argument)
+/* USER CODE END Header_pollSensorsFunc */
+void pollSensorsFunc(void *argument)
 {
-  /* USER CODE BEGIN pollSensorsFunction */
+  /* USER CODE BEGIN pollSensorsFunc */
   /* Infinite loop */
   for(;;)
   {
 	get_acceleration(dev_ctx_lsm, acceleration);
 	get_angvelocity(dev_ctx_lsm, angular_rate);
+	xSemaphoreTake(mutexHandle,500);
 	GPS_Poll(&latitude, &longitude, &time);
-	//myprintf("IN GPS: %f, %f, %f\r\n", latitude, longitude, time);
+	myprintf("GPS 2: %lf, %lf, %f\r\n", latitude, longitude, time);
+	xSemaphoreGive(mutexHandle);
+    osDelay(500);
+  }
+  /* USER CODE END pollSensorsFunc */
+}
+
+/* USER CODE BEGIN Header_saveDataFunc */
+/**
+* @brief Function implementing the saveData thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_saveDataFunc */
+void saveDataFunc(void *argument)
+{
+  /* USER CODE BEGIN saveDataFunc */
+  /* Infinite loop */
+
+  for(;;)
+  {
+	buttonState = HAL_GPIO_ReadPin(Button_GPIO_Port, Button_Pin);
+	if(buttonState == GPIO_PIN_RESET){
+		//close file
+		f_close(&fil);
+		//demount
+		f_mount(NULL, "", 0);
+		while(1);
+	}
+	//write data
+	sprintf((char*)writeBuf, "GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
+	UINT bytesWrote;
+	fres = f_write(&fil, writeBuf, 43, &bytesWrote);
     osDelay(1000);
   }
-  /* USER CODE END pollSensorsFunction */
+  /* USER CODE END saveDataFunc */
+}
+
+/* USER CODE BEGIN Header_ejectionFunc */
+/**
+* @brief Function implementing the ejection thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_ejectionFunc */
+void ejectionFunc(void *argument)
+{
+  /* USER CODE BEGIN ejectionFunc */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1000);
+  }
+  /* USER CODE END ejectionFunc */
+}
+
+/* USER CODE BEGIN Header_transmitDataFunc */
+/**
+* @brief Function implementing the transmitData thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_transmitDataFunc */
+void transmitDataFunc(void *argument)
+{
+  /* USER CODE BEGIN transmitDataFunc */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1000);
+  }
+  /* USER CODE END transmitDataFunc */
 }
 
 /**

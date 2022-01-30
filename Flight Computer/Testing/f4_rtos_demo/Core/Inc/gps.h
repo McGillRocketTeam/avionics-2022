@@ -12,13 +12,13 @@
 typedef struct{
 
     // calculated values
-    float dec_longitude;
-    float dec_latitude;
+    double dec_longitude;
+    double dec_latitude;
     float altitude_ft;
 
     // GGA - Global Positioning System Fixed Data
-    float nmea_longitude;
-    float nmea_latitude;
+    double nmea_longitude;
+    double nmea_latitude;
     float utc_time;
     char ns, ew;
     int lock;
@@ -56,8 +56,8 @@ void GPS_print_val(char *data, int value);
 void GPS_UART_CallBack();
 int GPS_validate(char *nmeastr);
 int GPS_parse(char *GPSstrParse);
-float GPS_nmea_to_dec(float deg_coord, char nsew);
+double GPS_nmea_to_dec(double deg_coord, char nsew);
 void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_lat, uint8_t *gps_fix_long);
-void GPS_Poll(float*, float*, float*);
+void GPS_Poll(double*, double*, float*);
 
 extern void tone(uint32_t duration, uint32_t repeats);
