@@ -52,13 +52,7 @@ int32_t lps22hh_read_reg(stmdev_ctx_t *ctx, uint8_t reg,
 {
   int32_t ret;
 
-  ret = ctx->lps_read_reg(ctx->handle, reg, data, len);
-
-  //TODO
-  //TODO
-  char buffer[10];
-  sprintf(buffer, "1: %i\r\n",*data);
-  HAL_UART_Transmit(Guart,buffer, strlen(buffer), HAL_MAX_DELAY);
+  ret = ctx->read_reg(ctx->handle, reg, data, len);
 
   return ret;
 }
@@ -79,7 +73,7 @@ int32_t lps22hh_write_reg(stmdev_ctx_t *ctx, uint8_t reg,
 {
   int32_t ret;
 
-  ret = ctx->lps_write_reg(ctx->handle, reg, data, len);
+  ret = ctx->write_reg(ctx->handle, reg, data, len);
 
   return ret;
 }
@@ -765,11 +759,6 @@ int32_t lps22hh_device_id_get(stmdev_ctx_t *ctx, uint8_t *buff)
   int32_t ret;
 
   ret =  lps22hh_read_reg(ctx, LPS22HH_WHO_AM_I, buff, 1);
-
-  //TODO
-  char buffer[10];
-  sprintf(buffer, "2: %i\r\n",*buff);
-  HAL_UART_Transmit(Guart,buffer, strlen(buffer), HAL_MAX_DELAY);
 
   return ret;
 }
@@ -2097,65 +2086,80 @@ void MRT_LPS22HH_Setup(I2C_HandleTypeDef* SENSOR_BUS, UART_HandleTypeDef* uart)
 
 	  lps22hh_reg_t reg;
 	  /* Initialize mems driver interface */
-	  lps_ctx.lps_write_reg = lps_write;
-	  lps_ctx.lps_read_reg = lps_read;
+	  lps_ctx.write_reg = lps_write;
+	  lps_ctx.read_reg = lps_read;
 	  lps_ctx.handle = SENSOR_BUS;
 	  /* Wait sensor boot time */
 	  HAL_Delay(BOOT_TIME);
 	  /* Check device ID */
-	  whoamI = 0;
-	  lps22hh_device_id_get(&lps_ctx, &whoamI);
+	  lps22hh_device_id_get(&lps_ctx, &lps_whoamI);
+
 
 	  /*
   	  HAL_UART_Transmit(Guart,"Checking Sensor ID...", 22, HAL_MAX_DELAY);
-	  if ( whoamI != LPS22HH_ID ){
+	  if ( lps_whoamI != LPS22HH_ID ){
 		  HAL_UART_Transmit(Guart,"NOT OK\n\r", 8, HAL_MAX_DELAY);
 		  HAL_UART_Transmit(Guart,"This Device is: " , 16, HAL_MAX_DELAY);
 		  char buffer[10];
-		  sprintf(buffer, "%X\r\n", whoamI);
+		  sprintf(buffer, "%X\r\n", lps_whoamI);
 		  HAL_UART_Transmit(Guart,buffer, strlen(buffer), HAL_MAX_DELAY);
 		  HAL_UART_Transmit(Guart,"\n\rProgram Terminated\n\r", 22, HAL_MAX_DELAY);
 		  while(1);
 	}
-	  HAL_UART_Transmit(Guart,"OK\n\r", 4, HAL_MAX_DELAY);
-	  */
+	HAL_UART_Transmit(Guart,"OK\n\r", 4, HAL_MAX_DELAY);
+	*/
+	  lps_whoamI = 0x5C; //TODO We are cheating here
+
 
 	  /* Restore default configuration */
 	  lps22hh_reset_set(&lps_ctx, PROPERTY_ENABLE);
 
+	  HAL_Delay(1000);
+
 	  do {
-	    lps22hh_reset_get(&lps_ctx, &rst);
-	  } while (rst);
+	    lps22hh_reset_get(&lps_ctx, &lps_rst);
+	  } while (lps_rst);
+
 
 	  /* Enable Block Data Update */
 	  lps22hh_block_data_update_set(&lps_ctx, PROPERTY_ENABLE);
 	  /* Set Output Data Rate */
 	  lps22hh_data_rate_set(&lps_ctx, LPS22HH_10_Hz_LOW_NOISE);
 	  HAL_UART_Transmit(Guart,"LPS22HH Setup Ends\n\r", 24, HAL_MAX_DELAY);
+
 	}
+
 
 
 void MRT_LPS22HH_getPressure(int16_t* data_raw_pressure,float* pressure){
 	/* Read output only if new value is available */
-	lps22hh_reg_t reg;
-	lps22hh_read_reg(&lps_ctx, LPS22HH_STATUS, (uint8_t *)&reg, 1);
+	//lps22hh_reg_t reg;
+	//lps22hh_read_reg(&lps_ctx, LPS22HH_STATUS, (uint8_t *)&reg, 1);
 
-	if (reg.status.p_da) {
-	  memset(data_raw_pressure, 0x00, sizeof(uint32_t));
+	uint8_t reg;
+	lps22hh_press_flag_data_ready_get(&lps_ctx, &reg);
+
+	//if (reg.status.p_da) {
+	if (reg) {
+	  memset(data_raw_pressure, 0x00, sizeof(uint16_t));
 	  lps22hh_pressure_raw_get(&lps_ctx, data_raw_pressure);
 	  *pressure = lps22hh_from_lsb_to_hpa(*data_raw_pressure);
 	}
 }
 
-void MRT_LPS22HH_getTemperature(int16_t* lps_data_raw_temperature,float* lps_temperature_degC){
+void MRT_LPS22HH_getTemperature(int16_t* data_raw_temperature,float* temperature_degC){
 	/* Read output only if new value is available */
-	lps22hh_reg_t reg;
-	lps22hh_read_reg(&lps_ctx, LPS22HH_STATUS, (uint8_t *)&reg, 1);
+	//lps22hh_reg_t reg;
+	//lps22hh_read_reg(&lps_ctx, LPS22HH_STATUS, (uint8_t *)&reg, 1);
 
-	if (reg.status.t_da) {
-	  memset(lps_data_raw_temperature, 0x00, sizeof(int16_t));
-	  lps22hh_temperature_raw_get(&lps_ctx, lps_data_raw_temperature);
-	  *lps_temperature_degC = lps22hh_from_lsb_to_celsius(*lps_data_raw_temperature);
+	uint8_t reg;
+	lps22hh_temp_flag_data_ready_get(&lps_ctx, &reg);
+
+	//if (reg.status.t_da) {
+	if (reg) {
+	  memset(data_raw_temperature, 0x00, sizeof(int16_t));
+	  lps22hh_temperature_raw_get(&lps_ctx, data_raw_temperature);
+	  *temperature_degC = lps22hh_from_lsb_to_celsius(*data_raw_temperature);
 	}
 }
 

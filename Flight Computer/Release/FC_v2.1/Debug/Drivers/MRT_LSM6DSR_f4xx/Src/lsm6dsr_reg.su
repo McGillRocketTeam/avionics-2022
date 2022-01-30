@@ -337,7 +337,7 @@ lsm6dsr_reg.c:11521:9:lsm6dsr_s4s_dt_set	24	static
 lsm6dsr_reg.c:11547:9:lsm6dsr_s4s_dt_get	24	static
 lsm6dsr_reg.c:11591:16:lsm_write	40	static
 lsm6dsr_reg.c:11607:16:lsm_read	40	static
-lsm6dsr_reg.c:11619:6:MRT_LSM6DSR_Setup	16	static
-lsm6dsr_reg.c:11709:6:MRT_LSM6DSR_getAcceleration	32	static
-lsm6dsr_reg.c:11735:6:MRT_LSM6DSR_getTemperature	24	static
-lsm6dsr_reg.c:11756:6:MRT_LSM6DSR_getAngularRate	32	static
+lsm6dsr_reg.c:11619:6:MRT_LSM6DSR_Setup	40	static
+lsm6dsr_reg.c:11682:6:MRT_LSM6DSR_getAcceleration	32	static
+lsm6dsr_reg.c:11708:6:MRT_LSM6DSR_getTemperature	24	static
+lsm6dsr_reg.c:11729:6:MRT_LSM6DSR_getAngularRate	32	static

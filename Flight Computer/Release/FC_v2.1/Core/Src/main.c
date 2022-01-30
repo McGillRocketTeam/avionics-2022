@@ -28,8 +28,8 @@
 #include <MRT_RTOS.h>
 #include <IridiumSBD_Static_API.h>
 #include <MRT_Helpers.h>
-#include "lsm6dsr_reg.h"
 #include "lps22hh_reg.h"
+#include "lsm6dsr_reg.h"
 #include <gps.h>
 
 #include <usbd_cdc_if.h>
@@ -166,9 +166,6 @@ MUTEXES[4] = EJECT_SENSORS;
 //Jasper's variables
 volatile uint8_t start_ejection = 0;
 volatile uint8_t timer_actuated_vent_valve = 0;
-
-// i2c sensors
-float pressure_hPa = 0;
 
 
 //Eject data
@@ -1439,15 +1436,15 @@ void StartSensors3(void *argument)
   	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  memset(buffer, 0, TX_BUF_DIM);
-	  MRT_LSM6DSR_getTemperature(data_raw_temperature,temperature_degC);
-	  sprintf((char *)buffer, "Temperature [degC]:%6.2f\r\n", temperature_degC[0] );
+	  MRT_LSM6DSR_getTemperature(&lsm_data_raw_temperature,&lsm_temperature_degC);
+	  sprintf((char *)buffer, "Temperature [degC]:%6.2f\r\n", lsm_temperature_degC);
 	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  //LPS22HH
   	  memset(buffer, 0, TX_BUF_DIM);
-  	  MRT_LPS22HH_getPressure(&data_raw_pressure,&pressure);
-  	  sprintf((char *)buffer,"Pressure []:%4.2f\r\n",pressure);
+  	  MRT_LPS22HH_getPressure(&data_raw_pressure,&pressure_hPa);
+  	  sprintf((char *)buffer,"Pressure [hPa]:%6.2f\r\n",pressure_hPa);
   	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  memset(buffer, 0, TX_BUF_DIM);

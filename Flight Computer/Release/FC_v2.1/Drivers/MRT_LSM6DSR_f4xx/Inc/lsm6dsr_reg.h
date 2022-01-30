@@ -115,8 +115,8 @@ typedef int32_t (*stmdev_read_ptr)(void *, uint8_t, uint8_t *, uint16_t);
 typedef struct
 {
   /** Component mandatory fields **/
-  stmdev_write_ptr  lsm_write_reg;
-  stmdev_read_ptr   lsm_read_reg;
+  stmdev_write_ptr  write_reg;
+  stmdev_read_ptr   read_reg;
   /** Customizable optional pointer **/
   void *handle;
 } stmdev_ctx_t;
@@ -4134,7 +4134,7 @@ int32_t lsm6dsr_s4s_dt_get(stmdev_ctx_t *ctx, uint8_t *val);
 
 
 //FOR THE ISM
-static uint32_t whoamI, rst;
+static uint8_t lsm_whoamI, lsm_rst;
 stmdev_ctx_t lsm_ctx;
 
 //For acceleration
@@ -4146,12 +4146,11 @@ static int16_t data_raw_angular_rate[3];
 static float angular_rate_mdps[3];
 
 //For temperature
-static int16_t data_raw_temperature[1];
-static float temperature_degC[1];
+static int16_t lsm_data_raw_temperature;
+static float lsm_temperature_degC;
 
 //For communication
 UART_HandleTypeDef* Guart;
-
 
 
 //Helper functions

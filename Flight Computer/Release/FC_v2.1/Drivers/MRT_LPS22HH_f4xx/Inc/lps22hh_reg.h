@@ -115,8 +115,8 @@ typedef int32_t (*stmdev_read_ptr)(void *, uint8_t, uint8_t *, uint16_t);
 typedef struct
 {
   /** Component mandatory fields **/
-  stmdev_write_ptr  lps_write_reg;
-  stmdev_read_ptr   lps_read_reg;
+  stmdev_write_ptr  write_reg;
+  stmdev_read_ptr   read_reg;
   /** Customizable optional pointer **/
   void *handle;
 } stmdev_ctx_t;
@@ -686,18 +686,18 @@ int32_t lps22hh_fifo_full_on_int_get(stmdev_ctx_t *ctx, uint8_t *val);
 
 //Variables and defines (functions defined at the end)
 
-#define BOOT_TIME        	10 //ms
+#define BOOT_TIME        	200 //ms
 #define TX_BUF_DIM          50
 
 
 
 //FOR THE ISM
-static uint32_t whoamI, rst;
+static uint8_t lps_whoamI, lps_rst;
 stmdev_ctx_t lps_ctx;
 
 //For pressure
-static int16_t data_raw_pressure;
-static float pressure;
+static int32_t data_raw_pressure;
+static float pressure_hPa;
 
 //For temperature
 static int16_t lps_data_raw_temperature;
