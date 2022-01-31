@@ -7,15 +7,14 @@ extern "C" {
 
 static IridiumSBD *E_T = NULL;
 
+
 void MRT_Static_Iridium_Constructor(){
 	if (E_T==NULL){
 		E_T = new IridiumSBD();
 	}
-	E_T->IMEI = (char*) malloc(16*sizeof(char));
 }
 
 void MRT_Static_Iridium_Destructor(){
-	free(E_T->IMEI);
 	if (E_T!=NULL){
 		E_T = NULL;
 	}
@@ -42,14 +41,27 @@ bool MRT_Static_Iridium_getIMEI(void){
 }
 
 
-int MRT_Static_Iridium_checkCSQ(bool b){
-	return E_T->MRT_Iridium_checkCSQ(b);
+int MRT_Static_Iridium_CSQ(){
+	return E_T->MRT_Iridium_CSQ();
+}
+
+bool MRT_Static_Iridium_NetworkAvailability(){
+	return E_T->MRT_Iridium_NetworkAvailability();
 }
 
 
 bool MRT_Static_Iridium_getTime(void){
 	return E_T->MRT_Iridium_getTime();
 }
+
+bool MRT_Static_Iridium_sendMessage(char* msg){
+	return E_T->MRT_Iridium_sendMessage(msg);
+}
+
+bool MRT_Static_Iridium_sendReceive(){
+	return E_T->MRT_Iridium_sendReceive();
+}
+
 
 #ifdef __cplusplus
 }

@@ -104,11 +104,18 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   MRT_Static_Iridium_Setup(huart3);
-  MRT_Static_Iridium_checkCSQ(0);
-  for (int i = 0 ; i<10 ; i++){
-	  MRT_Static_Iridium_getTime();
-	  HAL_Delay(10000);
+  MRT_Static_Iridium_getIMEI();
+  /*
+  while(!MRT_Static_Iridium_getTime()){
+	  HAL_Delay(1000);
   }
+
+  while(!MRT_Static_Iridium_NetworkAvailability()){
+	  HAL_Delay(100);
+  }
+  */
+
+  //MRT_Static_Iridium_sendMessage("Rocket goes brrrrr");
   MRT_Static_Iridium_Shutdown();
 
   /* USER CODE END 2 */

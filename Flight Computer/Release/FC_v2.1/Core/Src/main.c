@@ -21,6 +21,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "usb_device.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -28,8 +29,7 @@
 #include <MRT_RTOS.h>
 #include <IridiumSBD_Static_API.h>
 #include <MRT_Helpers.h>
-#include "lps22hh_reg.h"
-#include "lsm6dsr_reg.h"
+#include <i2c_sensors.h>
 #include <gps.h>
 
 #include <usbd_cdc_if.h>
@@ -79,36 +79,43 @@ UART_HandleTypeDef huart6;
 osThreadId_t Memory0Handle;
 const osThreadAttr_t Memory0_attributes = {
   .name = "Memory0",
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityRealtime,
-  .stack_size = 512 * 4
 };
 /* Definitions for Ejection1 */
 osThreadId_t Ejection1Handle;
 const osThreadAttr_t Ejection1_attributes = {
   .name = "Ejection1",
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityAboveNormal,
-  .stack_size = 512 * 4
 };
 /* Definitions for Telemetry2 */
 osThreadId_t Telemetry2Handle;
 const osThreadAttr_t Telemetry2_attributes = {
   .name = "Telemetry2",
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 512 * 4
 };
 /* Definitions for Sensors3 */
 osThreadId_t Sensors3Handle;
 const osThreadAttr_t Sensors3_attributes = {
   .name = "Sensors3",
+  .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
 };
 /* Definitions for Propulsion4 */
 osThreadId_t Propulsion4Handle;
 const osThreadAttr_t Propulsion4_attributes = {
   .name = "Propulsion4",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 4
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
+};
+/* Definitions for Printing */
+osThreadId_t PrintingHandle;
+const osThreadAttr_t Printing_attributes = {
+  .name = "Printing",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for MEMORY */
 osMutexId_t MEMORYHandle;
@@ -150,6 +157,7 @@ SemaphoreHandle_t PROP_SENSORS;
 SemaphoreHandle_t _SENSORS;
 SemaphoreHandle_t TELEMETRY;
 SemaphoreHandle_t EJECT_SENSORS;
+SemaphoreHandle_t PRINTING;
 
 SemaphoreHandle_t MUTEXES[5];
 
@@ -178,6 +186,10 @@ float time;
 static uint8_t gps_fix_lat = 0;
 static uint8_t gps_fix_long = 0; // beep when we get fix
 char gps_data[GPS_DATA_BUF_DIM];
+
+
+stmdev_ctx_t lsm_ctx;
+stmdev_ctx_t lps_ctx;
 
 /*
 // sd card
@@ -210,6 +222,7 @@ void StartEjection1(void *argument);
 void StartTelemetry2(void *argument);
 void StartSensors3(void *argument);
 void StartPropulsion4(void *argument);
+void StartPrinting(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -345,14 +358,14 @@ while(1){
    * For LSM6DSR
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
-   MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
+  lsm_ctx = MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
 
 
    /*
     * For LPS22HH
     *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
     */
-    MRT_LPS22HH_Setup(&hi2c3,&DEBUG_USART);
+  lps_ctx = MRT_LPS22HH_Setup(&hi2c3,&DEBUG_USART);
 
 
    /*
@@ -421,9 +434,16 @@ while(1){
   /* creation of Propulsion4 */
   Propulsion4Handle = osThreadNew(StartPropulsion4, NULL, &Propulsion4_attributes);
 
+  /* creation of Printing */
+  PrintingHandle = osThreadNew(StartPrinting, NULL, &Printing_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
@@ -448,7 +468,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
   */
@@ -480,12 +499,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
@@ -1200,7 +1213,7 @@ void StartMemory0(void *argument)
 	  /* Infinite loop */
 	  for(;;)
 	  {
-	      while( xSemaphoreTake( MEMORY, 0 ) == pdTRUE ) osDelay(10);
+	      while( xSemaphoreTake( MEMORY, 0 ) != pdTRUE ) osDelay(10);
 
 
 		  //Write data to sd and flash
@@ -1213,7 +1226,7 @@ void StartMemory0(void *argument)
 
 		  MRT_StandByMode(SLEEP_TIME);
 		}
-        xSemaphoreGive( MEMORY );
+		  while(xSemaphoreGive(MEMORY)!= pdTrue) osDelay(10);
 
 		  osDelay(1000/DATA_FREQ);
 	  }
@@ -1255,12 +1268,12 @@ void StartEjection1(void *argument)
 	  for(;;)
 	  {
 
-		  while( xSemaphoreTake( EJECT_SENSORS, 0 ) == pdTRUE ) osDelay(10);
+		  while( xSemaphoreTake( EJECT_SENSORS, 0 ) != pdTRUE ) osDelay(10);
 
 		  //Poll altitude (poll pressure)
 		  //pressure_hPa =
 
-		  xSemaphoreGive( EJECT_SENSORS);
+		  while(xSemaphoreGive(EJECT_SENSORS)!= pdTrue) osDelay(10);
 
 
 		  if (MIN_APOGEE <= pressure_hPa && MAX_APOGEE > pressure_hPa){
@@ -1279,13 +1292,13 @@ void StartEjection1(void *argument)
 
 			  for(;;){
 
-				  while( xSemaphoreTake( EJECT_SENSORS, 0 ) == pdTRUE ) osDelay(10);
+				  while( xSemaphoreTake( EJECT_SENSORS, 0 ) != pdTRUE ) osDelay(10);
 
 				  //Poll altitude (pressure and acceleration?)
 				  //pressure_hPa =
 				  //altitude_m =
 
-				  xSemaphoreGive( EJECT_SENSORS );
+				  while(xSemaphoreGive(EJECT_SENSORS)!= pdTrue) osDelay(10);
 
 				  //We reached main deployment altitude
 				  if (altitude_m>DEPLOY_ALT_MIN && altitude_m<DEPLOY_ALT_MAX){
@@ -1306,12 +1319,12 @@ void StartEjection1(void *argument)
 
 					  for(;;){
 
-						  while( xSemaphoreTake( EJECT_SENSORS, 0 ) == pdTRUE ) osDelay(10);
+						  while( xSemaphoreTake( EJECT_SENSORS, 0 ) != pdTRUE ) osDelay(10);
 
 						  //Poll altitude (pressure and acceleration)
 						  //altitude_m =
 
-						  xSemaphoreGive( EJECT_SENSORS );
+						  while(xSemaphoreGive(EJECT_SENSORS)!= pdTrue) osDelay(10);
 
 						  if (altitude_m < GROUND_LEVEL)  osThreadExit();
 
@@ -1325,8 +1338,6 @@ void StartEjection1(void *argument)
 
 	    osDelay(100);
 	  }
-
-	  //vPortFree(buffer);
 
 	  //In case it leaves the infinite loop
 	  HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread 1\r\n",36,HAL_MAX_DELAY);
@@ -1362,7 +1373,7 @@ void StartTelemetry2(void *argument)
   {
 	  //Poll sensors data in other thread
 
-	  while( xSemaphoreTake( TELEMETRY, 0 ) == pdTRUE ) osDelay(10);
+	  while( xSemaphoreTake( TELEMETRY, 0 ) != pdTRUE ) osDelay(10);
 
 	  //Send data via radios:
 
@@ -1373,7 +1384,7 @@ void StartTelemetry2(void *argument)
 	  //MRT_Static_Iridium_getTime(); TODO doesn't cost anything
 	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 
-	  xSemaphoreGive( TELEMETRY );
+	  while(xSemaphoreGive(TELEMETRY)!= pdTrue) osDelay(10);
 
     osDelay(1000/SEND_FREQ);
   }
@@ -1401,56 +1412,36 @@ void StartSensors3(void *argument)
 	//Add thread id to the list
 	threadID[3]=osThreadGetId();
 
-	//char* buffer = (char*) pvPortMalloc(TX_BUF_DIM);
-	char buffer[TX_BUF_DIM];
-
 
 	//Mutex
 	while( (_SENSORS = xSemaphoreCreateMutex()) == NULL) osDelay(10);
 
   for(;;)
   {
-	  while( xSemaphoreTake( _SENSORS, 0 ) == pdTRUE ) osDelay(10);
+	  while( xSemaphoreTake( _SENSORS, 10 ) != pdTRUE ) {
+		  HAL_UART_Transmit(&DEBUG_USART,"No sense\r\n",10,HAL_MAX_DELAY);
+		  osDelay(10);
+	  }
+
+	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, SET);
+
+
 
 	  //GPS
-  	  /*
-  	   * TODO HOW DO WE RESET THE TIME
-  	   */
-	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
 	  GPS_Poll(&latitude, &longitude, &time);
-	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",latitude, longitude, time);
-	  HAL_UART_Transmit(&DEBUG_USART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
 
   	  //LSM6DSR
-  	  memset(buffer, 0, TX_BUF_DIM);
-  	  MRT_LSM6DSR_getAcceleration(data_raw_acceleration,acceleration_mg);
-  	  sprintf((char *)buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
-  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
-
+  	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
   	  /*
   	   * TODO NEEDS FILTERING BUT WORKS (maybe acceleration needs filtering too)
   	   */
-  	  memset(buffer, 0, TX_BUF_DIM);
-  	  MRT_LSM6DSR_getAngularRate(data_raw_angular_rate,angular_rate_mdps);
-  	  sprintf((char *)buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
-  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
-
-	  memset(buffer, 0, TX_BUF_DIM);
-	  MRT_LSM6DSR_getTemperature(&lsm_data_raw_temperature,&lsm_temperature_degC);
-	  sprintf((char *)buffer, "Temperature [degC]:%6.2f\r\n", lsm_temperature_degC);
-	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+  	  MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
+	  MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
 
 
 	  //LPS22HH
-  	  memset(buffer, 0, TX_BUF_DIM);
-  	  MRT_LPS22HH_getPressure(&data_raw_pressure,&pressure_hPa);
-  	  sprintf((char *)buffer,"Pressure [hPa]:%6.2f\r\n",pressure_hPa);
-  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
-
-	  memset(buffer, 0, TX_BUF_DIM);
-	  MRT_LPS22HH_getTemperature(&lps_data_raw_temperature,&lps_temperature_degC);
-	  sprintf((char *)buffer, "Temperature [degC]:%6.2f\r\n", lps_temperature_degC);
-	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+  	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
+	  MRT_LPS22HH_getTemperature(lps_ctx,&lps_temperature_degC);
 
 
 	  //Pressure tank (just use an analog sensor if you don't have it)
@@ -1459,11 +1450,13 @@ void StartSensors3(void *argument)
 	  //Thermocouple (don't have it)
 
 
-	  xSemaphoreGive( _SENSORS );
-    osDelay(1);
-  }
+	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
 
-  //pvPortFree(buffer);
+	  while(xSemaphoreGive(_SENSORS)!= pdTrue) osDelay(10);
+
+	  osDelay(100);
+
+}
 
   //In case it leaves the infinite loop
   HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread 3\r\n",36,HAL_MAX_DELAY);
@@ -1498,11 +1491,11 @@ void StartPropulsion4(void *argument)
 
 	  for(;;)
 	  {
-		  while( xSemaphoreTake( PROP_SENSORS, 0 ) == pdTRUE ) osDelay(10);
+		  while( xSemaphoreTake( PROP_SENSORS, 0 ) != pdTRUE ) osDelay(10);
 
 		  //Poll sensor data (burnout level)
 
-		  xSemaphoreGive( PROP_SENSORS );
+		  while(xSemaphoreGive(PROP_SENSORS)!= pdTrue) osDelay(10);
 
 		  //Write to SD and SEND
 
@@ -1514,6 +1507,79 @@ void StartPropulsion4(void *argument)
 	  osThreadExit();
 
   /* USER CODE END StartPropulsion4 */
+}
+
+/* USER CODE BEGIN Header_StartPrinting */
+/**
+* @brief Function implementing the Printing thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartPrinting */
+void StartPrinting(void *argument)
+{
+  /* USER CODE BEGIN StartPrinting */
+
+	char buffer[TX_BUF_DIM];
+
+	osDelay(2000);
+
+  /* Infinite loop */
+  for(;;)
+  {
+
+	  while( xSemaphoreTake( _SENSORS, 10 ) != pdTRUE ) {
+		  HAL_UART_Transmit(&DEBUG_USART,"No print\r\n",10,HAL_MAX_DELAY);
+		  osDelay(10);
+	  }
+
+	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
+
+	  //GPS
+  	  /*
+  	   * TODO HOW DO WE RESET THE TIME
+  	   */
+	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
+	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",latitude, longitude, time);
+	  HAL_UART_Transmit(&DEBUG_USART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
+
+  	  //LSM6DSR
+  	  memset(buffer, 0, TX_BUF_DIM);
+  	  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
+  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+  	  /*
+  	   * TODO NEEDS FILTERING BUT WORKS (maybe acceleration needs filtering too)
+  	   */
+  	  memset(buffer, 0, TX_BUF_DIM);
+  	  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
+  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	  memset(buffer, 0, TX_BUF_DIM);
+	  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lsm_temperature_degC);
+	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+
+	  //LPS22HH
+  	  memset(buffer, 0, TX_BUF_DIM);
+  	  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",pressure_hPa);
+  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	  memset(buffer, 0, TX_BUF_DIM);
+	  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lps_temperature_degC);
+	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
+
+	  while(xSemaphoreGive(_SENSORS)!= pdTrue) osDelay(10);
+
+      osDelay(200);
+}
+
+  //In case it leaves the infinite loop
+  HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread p\r\n",36,HAL_MAX_DELAY);
+  osThreadExit();
+  /* USER CODE END StartPrinting */
 }
 
 /**

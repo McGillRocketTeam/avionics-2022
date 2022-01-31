@@ -74,7 +74,7 @@ IridiumSBD.cpp:1660:6:void IridiumSBD::i2cSerPoke(char)	24	static
 IridiumSBD.cpp:1674:5:int IridiumSBD::internalClearBuffers(int)	24	static
 IridiumSBD.cpp:1699:5:int IridiumSBD::internalGetIMEI(char*, size_t)	32	static
 IridiumSBD.cpp:1720:13:void diagnostic()	4	static
-IridiumSBD.cpp:1736:9:uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef)	32	static
+IridiumSBD.cpp:1736:9:uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef)	24	static
 IridiumSBD.cpp:1800:9:boolean IridiumSBD::MRT_Iridium_shutdown()	56	static
 IridiumSBD.cpp:1831:6:void IridiumSBD::MRT_Iridium_ErrorMessage(uint8_t)	16	static
 IridiumSBD.cpp:1876:6:void st_pinMode(GPIO_TypeDef*, uint8_t, int)	48	static

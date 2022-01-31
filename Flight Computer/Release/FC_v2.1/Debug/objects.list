@@ -1,4 +1,5 @@
 "./Core/Src/freertos.o"
+"./Core/Src/i2c_sensors.o"
 "./Core/Src/main.o"
 "./Core/Src/stm32f4xx_hal_msp.o"
 "./Core/Src/stm32f4xx_hal_timebase_tim.o"
@@ -45,6 +46,7 @@
 "./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o"
 "./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o"
 "./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o"
+"./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.o"
 "./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.o"
 "./Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.o"
 "./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o"

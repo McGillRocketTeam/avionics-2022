@@ -12,13 +12,6 @@
 extern "C" {
 #endif
 
-/*
-// all of your legacy C code here
-struct StaticIridiumSBD{
-	IridiumSBD iridium;
-} ;
-typedef struct StaticIridiumSBD StaticIridiumSBD;
-*/
 
 void MRT_Static_Iridium_Constructor();
 void MRT_Static_Iridium_Destructor();
@@ -27,8 +20,11 @@ uint8_t MRT_Static_Iridium_Setup(UART_HandleTypeDef huart);
 bool MRT_Static_Iridium_Shutdown(void);
 void MRT_Static_Iridium_ErrorMessage(uint8_t error);
 bool MRT_Static_Iridium_getIMEI(void);
-int MRT_Static_Iridium_checkCSQ(bool b);
+int MRT_Static_Iridium_CSQ();
+bool MRT_Static_Iridium_NetworkAvailability();
 bool MRT_Static_Iridium_getTime(void);
+bool MRT_Static_Iridium_sendMessage(char* msg);
+bool MRT_Static_Iridium_sendReceive();
 
 
 #ifdef __cplusplus

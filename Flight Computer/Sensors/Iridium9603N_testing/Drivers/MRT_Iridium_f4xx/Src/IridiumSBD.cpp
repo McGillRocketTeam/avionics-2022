@@ -30,6 +30,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //General define needed to convert arduino to stm32 TODO
 #define millis() HAL_GetTick()
 
+#define DIAGNOSTICS false //TODO change if needed
+
 
 bool ISBDCallback() __attribute__((weak));
 void ISBDConsoleCallback(IridiumSBD *device, char c) __attribute__((weak));
@@ -891,6 +893,7 @@ bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char 
 {
    diagprint(F("Waiting for response "));
    diagprint(terminator);
+   HAL_UART_Transmit(&(this->uart),(uint8_t*) terminator, strlen(terminator), HAL_MAX_DELAY); //TODO doesn't print otherwise
    diagprint(F("\r\n"));
 
    if (response)
@@ -900,7 +903,7 @@ bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char 
    int matchTerminatorPos = 0; // Matches chars in terminator
    enum {LOOKING_FOR_PROMPT, GATHERING_RESPONSE, LOOKING_FOR_TERMINATOR};
    int promptState = prompt ? LOOKING_FOR_PROMPT : LOOKING_FOR_TERMINATOR;
-   consoleprint(F("<< "));
+   //consoleprint(F("<< ")); //TODO If we comment out this it looks cleaner in the serial
    for (unsigned long start=millis(); millis() - start < 1000UL * atTimeout;)
    {
       if (cancelled())
@@ -1240,6 +1243,7 @@ void IridiumSBD::sendlong(const char *str)
 // Send a long string that might need to be broken up for the I2C port
 {
    consoleprint(F(">> "));
+   HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY); //TODO doesn't print otherwise
    consoleprint(str);
    consoleprint(F("\r\n"));
 
@@ -1756,20 +1760,6 @@ uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart){
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Waiting for the supercapacitors to charge...", 44, HAL_MAX_DELAY);
 	while (!this->checkSuperCapCharger()){
 		HAL_Delay(333);
-		/*
-		if(millis()>start+60000){ //If it takes too long to charge
-			HAL_UART_Transmit(&(this->uart),(uint8_t*) "NOT OK\r\n", 10, HAL_MAX_DELAY);
-			HAL_UART_Transmit(&(this->uart),(uint8_t*) "Charging took too long: restarting the superchargers\r\n", 54, HAL_MAX_DELAY);
-			HAL_UART_Transmit(&(this->uart),(uint8_t*) "Disabling the supercapacitor charger...", 39, HAL_MAX_DELAY);
-			this->enableSuperCapCharger(false);
-			HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\nWaiting 10 seconds\r\n", 24, HAL_MAX_DELAY);
-			HAL_Delay(10000);
-			HAL_UART_Transmit(&(this->uart),(uint8_t*) "Activating the superchargers...", 31, HAL_MAX_DELAY);
-			this->enableSuperCapCharger(true);
-			HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 6, HAL_MAX_DELAY);
-			start=millis();
-		}
-		*/
 	}
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 6, HAL_MAX_DELAY);
 
@@ -1797,6 +1787,10 @@ uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart){
 	    return HAL_ERROR;
 	  }
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "...OK\r\n", 7, HAL_MAX_DELAY);
+
+	//Setup default IMEI to 000000000000000 (no IMEI)
+	IMEI="000000000000000";
+
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "End of setup\r\n", 14, HAL_MAX_DELAY);
 
 	return HAL_OK;
@@ -1904,21 +1898,29 @@ void st_pinMode(GPIO_TypeDef* PIN_NAME_GPIO_Port,uint8_t PIN_NAME_Pin,int i){
  * This function requests the satellite modem's IMEI number.
  */
 boolean IridiumSBD::MRT_Iridium_getIMEI(void){
-	// Get the IMEI
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nRetrieving the IMEI\r\n", 23, HAL_MAX_DELAY);
-	//int err = this->getIMEI(IMEI, sizeof(IMEI)/sizeof(char)); TODO
-	int err = this->getIMEI(IMEI, 16);
-	if (err != ISBD_SUCCESS)
-	{
-		char str[24+sizeof(int)];
-	    sprintf(str, "getIMEI failed: error %i\r\n", err);
-	    HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
-	    return false;
-	  }
-	  char str[28];//IMEI is 15 integers long
-	  sprintf(str, "IMEI is %s\r\n", IMEI);
-	  HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
-	  return true;
+
+	//Check if we already have the IMEI
+	if (strcmp(IMEI,"000000000000000")==0){
+
+		//Reset the IMEI
+		IMEI=new char[16];
+
+		// Get the IMEI
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nRetrieving the IMEI\r\n", 23, HAL_MAX_DELAY);
+		int err = this->getIMEI(IMEI, 16);
+		if (err != ISBD_SUCCESS)
+		{
+			char str[24+sizeof(int)];
+		    sprintf(str, "getIMEI failed: error %i\r\n", err);
+		    HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+		    return false;
+		  }
+	}
+
+	char str[28];//IMEI is 15 integers long
+	sprintf(str, "IMEI is %s\r\n", IMEI);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+	return true;
 }
 
 
@@ -1928,20 +1930,13 @@ boolean IridiumSBD::MRT_Iridium_getIMEI(void){
  *
  * The boolean param is if you want to check for network availability
  */
-int IridiumSBD::MRT_Iridium_checkCSQ(boolean b){
+int IridiumSBD::MRT_Iridium_CSQ(){
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nChecking Signal Quality\r\n", 27, HAL_MAX_DELAY);
 	int signalQuality = -1;
 
-	//If IMEI not retrieved already, get it
-	if (strlen(IMEI)==4 || IMEI[0]=='\0'){
-		HAL_UART_Transmit(&(this->uart),(uint8_t*) "No IMEI\r\n", 10, HAL_MAX_DELAY);
-		this->MRT_Iridium_getIMEI();
-	}
-	else{
-		char str[28];
-		sprintf(str, "IMEI is %s\r\n", IMEI);
-		HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
-	}
+
+	this->MRT_Iridium_getIMEI();
+
 
 	// Check the signal quality.
 	// This returns a number between 0 and 5.
@@ -1960,19 +1955,28 @@ int IridiumSBD::MRT_Iridium_checkCSQ(boolean b){
 	sprintf(str, "On a scale of 0 to 5, signal quality is currently  %i\r\n", signalQuality);
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
 
-	if (b){
-		// Check Network Available.
-		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Checking if Network is Available:\t", 35, HAL_MAX_DELAY);
-		while (!this->checkNetworkAvailable())
-		{
-	  HAL_UART_Transmit(&(this->uart),(uint8_t*) "Network is not available.\r\nChecking again in 10 seconds...\r\n", 60, HAL_MAX_DELAY);
-	  //diagprint(F("(This might be because the 9603N has not yet aquired the ring channel.)\r\n"));
-	  HAL_Delay(10000);
-	  }
-	  HAL_UART_Transmit(&(this->uart),(uint8_t*) "Network is available!\r\n", 23, HAL_MAX_DELAY);
-	}
 	return signalQuality;
 }
+
+
+/*
+ * This function checks if a network is available
+ */
+boolean IridiumSBD::MRT_Iridium_NetworkAvailability(void){
+
+	// Check Network Available.
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Checking if Network is Available:\t", 35, HAL_MAX_DELAY);
+	if (!this->checkNetworkAvailable()){
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Network is not available.\r\n", 27, HAL_MAX_DELAY);
+		//diagprint(F("(This might be because the 9603N has not yet aquired the ring channel.)\r\n"));
+		return false;
+	}
+
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Network is available!\r\n", 23, HAL_MAX_DELAY);
+	return true;
+}
+
+
 
 /*
  * This function requests the time
@@ -2004,3 +2008,142 @@ boolean IridiumSBD::MRT_Iridium_getTime(void){
 	}
 }
 
+
+/*
+ * BasicSend_I2C
+ *
+ * This sketch sends a "Hello, world!" message from the satellite modem.
+ * If you have activated your account and have credits, this message
+ * should arrive at the endpoints (delivery group) you have configured
+ * (email address or HTTP POST).
+ */
+boolean IridiumSBD::MRT_Iridium_sendMessage(char* msg){
+
+	// Send the message
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Trying to send the message.  This might take several minutes.\r\n", 63, HAL_MAX_DELAY);
+	int err = this->sendSBDText((const char*) msg);
+	//int err = this->sendSBDText((const char*) "Hello, world!");
+	//int err = ISBD_SENDRECEIVE_TIMEOUT;
+
+	if (err != ISBD_SUCCESS){
+		char str[27+sizeof(int)];
+		sprintf(str, "sendSBDText failed: error -> %i\r\n", err);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+	    if (err == ISBD_SENDRECEIVE_TIMEOUT){
+	    	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Try again with a better view of the sky.\r\n", 42, HAL_MAX_DELAY);
+	    }
+	    this->MRT_Iridium_ErrorMessage((uint8_t) err);
+	    return false;
+	}
+
+	else{
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Hey, it worked!\r\n", 17, HAL_MAX_DELAY);
+	}
+
+	// Clear the Mobile Originated message buffer
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Clearing the MO buffer.\r\n", 25, HAL_MAX_DELAY);
+	err = this->clearBuffers(ISBD_CLEAR_MO); // Clear MO buffer
+	if (err != ISBD_SUCCESS){
+		char str[27+sizeof(int)];
+		sprintf(str, "clearBuffers failed: error -> %i\r\n", err);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+		this->MRT_Iridium_ErrorMessage((uint8_t) err);
+		return false;
+	}
+	return true;
+}
+
+
+
+/*
+ * SendReceive
+ *
+ * This sketch demonstrates a basic bidirectional transmission.  Before
+ * loading this sketch, send a message to your Iridium modem from your
+ * control panel or via email.  This sketch will send a binary buffer
+ * of 11 bytes, then attempt to read the next incoming messages (if any).
+ * It stops when there are no more messages to read.
+ */
+//TODO (change void to an actual message passed)
+boolean IridiumSBD::MRT_Iridium_sendReceive(void){
+	// Define the binary test message (Fibonacci sequence)
+	uint8_t buffer[200] = { 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 };
+
+
+	static bool messageSent = false;
+	int err;
+
+	// Read/Write the first time or if there are any remaining messages
+	if (!messageSent || this->getWaitingMessageCount() > 0)
+	{
+		size_t bufferSize = sizeof(buffer);
+
+	    // First time through send+receive; subsequent loops receive only (send a NULL message)
+	    if (!messageSent)
+	      err = this->sendReceiveSBDBinary(buffer, 11, buffer, bufferSize);
+	    else
+	      err = this->sendReceiveSBDText(NULL, buffer, bufferSize);
+
+	    if (err != ISBD_SUCCESS)
+	    {
+	    	char str[35+sizeof(int)];
+	    	sprintf(str, "sendReceiveSBD* failed: error -> %i\r\n", err);
+	    	HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+	    	this->MRT_Iridium_ErrorMessage((uint8_t) err);
+	    	return false;
+	    }
+	    else // success!
+	    {
+	    	messageSent = true;
+
+	    	char str[25+sizeof(int)];
+	    	sprintf(str, "Inbound buffer size is %i\r\n", bufferSize);
+	    	HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+
+	    	for (int i=0; i<bufferSize; ++i)
+	    	{
+	    		char hexstr[32];
+	    		sprintf(hexstr, "0x%08x", buffer[i]);
+	    		HAL_UART_Transmit(&(this->uart),(uint8_t*) hexstr, strlen(hexstr), HAL_MAX_DELAY);
+
+	    		if (isprint(buffer[i]))
+	    		{
+	    			char str[5+sizeof(int)];
+	    			sprintf(str, "\t(%i)\r\n", bufferSize);
+	    			HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+	    		}
+	    	}
+
+	    	char s[39+sizeof(int)];
+	    	sprintf(s, "Messages remaining to be retrieved:  %i\r\n", this->getWaitingMessageCount());
+	    	HAL_UART_Transmit(&(this->uart),(uint8_t*) s, strlen(s), HAL_MAX_DELAY);
+	    }
+
+	    // Clear the Mobile Originated message buffer to avoid re-sending the message during subsequent loops
+	    HAL_UART_Transmit(&(this->uart),(uint8_t*) "Clearing the MO buffer\r\n", 24, HAL_MAX_DELAY);
+	    err = this->clearBuffers(ISBD_CLEAR_MO); // Clear MO buffer
+	    if (err != ISBD_SUCCESS)
+	    {
+	    	char str[33+sizeof(int)];
+	    	sprintf(str, "clearBuffers failed: error  -> %i\r\n", err);
+	    	HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+	    	this->MRT_Iridium_ErrorMessage((uint8_t) err);
+	    	return false;
+	    }
+	}
+	return true;
+}
+
+
+
+#if DIAGNOSTICS
+void ISBDConsoleCallback(IridiumSBD *device, char c)
+{
+  Serial.write(c);
+}
+
+void ISBDDiagsCallback(IridiumSBD *device, char c)
+{
+  Serial.write(c);
+}
+#endif

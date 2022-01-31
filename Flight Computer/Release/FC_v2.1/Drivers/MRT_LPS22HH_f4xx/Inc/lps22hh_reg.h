@@ -170,8 +170,8 @@ typedef struct
 #define LPS22HH_I2C_ADD_L                       0xB9U
 
 /** Device Identification (Who am I) **/
-//#define LPS22HH_ID                              0xB3U //TODO Probably needs to be changed
-#define LPS22HH_ID                              0x5C
+#define LPS22HH_ID                              0xB3U //TODO Probably needs to be changed
+//#define LPS22HH_ID                              0x5C
 
 /**
   * @}
@@ -674,51 +674,6 @@ int32_t lps22hh_fifo_full_on_int_get(stmdev_ctx_t *ctx, uint8_t *val);
   * @}
   *
   */
-
-
-
-/*
- * TODO MRT code
- */
-//Includes
-#include <stm32f4xx_hal.h>
-#include <string.h> /* memset */
-
-//Variables and defines (functions defined at the end)
-
-#define BOOT_TIME        	200 //ms
-#define TX_BUF_DIM          50
-
-
-
-//FOR THE ISM
-static uint8_t lps_whoamI, lps_rst;
-stmdev_ctx_t lps_ctx;
-
-//For pressure
-static int32_t data_raw_pressure;
-static float pressure_hPa;
-
-//For temperature
-static int16_t lps_data_raw_temperature;
-static float lps_temperature_degC;
-
-//For communication
-UART_HandleTypeDef* Guart;
-
-
-
-//Helper functions
-static int32_t lps_write(void *handle, uint8_t reg, const uint8_t *bufp,uint16_t len);
-static int32_t lps_read(void *handle, uint8_t reg, uint8_t *bufp,uint16_t len);
-
-//User functions
-void MRT_LPS22HH_Setup(I2C_HandleTypeDef* SENSOR_BUS, UART_HandleTypeDef* uart);
-void MRT_LPS22HH_getPressure(int16_t* data_raw_pressure,float* pressure);
-void MRT_LPS22HH_getTemperature(int16_t* lps_data_raw_temperature,float* lps_temperature_degC);
-
-
-
 
 
 #ifdef __cplusplus

@@ -20,6 +20,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_dma_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ex.h \
@@ -52,9 +53,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h ../Drivers/MRT_RTOS_f4xx/Inc/MRT_RTOS.h \
  ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h \
- ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h \
- ../Drivers/MRT_LPS22HH_f4xx/Inc/lps22hh_reg.h \
+ ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h ../Core/Inc/i2c_sensors.h \
  ../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h \
+ ../Drivers/MRT_LPS22HH_f4xx/Inc/lps22hh_reg.h \
  ../Drivers/MRT_GPS_f4xx/Inc/gps.h ../USB_DEVICE/App/usbd_cdc_if.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
@@ -109,6 +110,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_cortex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc.h:
+
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_adc_ex.h:
 
@@ -178,9 +181,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h:
 
-../Drivers/MRT_LPS22HH_f4xx/Inc/lps22hh_reg.h:
+../Core/Inc/i2c_sensors.h:
 
 ../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h:
+
+../Drivers/MRT_LPS22HH_f4xx/Inc/lps22hh_reg.h:
 
 ../Drivers/MRT_GPS_f4xx/Inc/gps.h:
 

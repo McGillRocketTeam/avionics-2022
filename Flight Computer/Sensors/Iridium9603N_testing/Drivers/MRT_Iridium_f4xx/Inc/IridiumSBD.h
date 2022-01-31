@@ -134,8 +134,12 @@ public:
          boolean MRT_Iridium_shutdown(void);
          void MRT_Iridium_ErrorMessage(uint8_t error);
          boolean MRT_Iridium_getIMEI(void);
-         int MRT_Iridium_checkCSQ(boolean b);
+         int MRT_Iridium_CSQ();
+         boolean MRT_Iridium_NetworkAvailability(void);
          boolean MRT_Iridium_getTime(void);
+         boolean MRT_Iridium_sendMessage(char* msg);
+         boolean MRT_Iridium_sendReceive(void);
+
       //TODO uart field (passed through setup)
          UART_HandleTypeDef uart;
          char* IMEI;

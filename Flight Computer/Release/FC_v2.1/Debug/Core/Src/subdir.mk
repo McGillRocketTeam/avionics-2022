@@ -6,6 +6,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Core/Src/freertos.c \
+../Core/Src/i2c_sensors.c \
 ../Core/Src/main.c \
 ../Core/Src/stm32f4xx_hal_msp.c \
 ../Core/Src/stm32f4xx_hal_timebase_tim.c \
@@ -16,6 +17,7 @@ C_SRCS += \
 
 C_DEPS += \
 ./Core/Src/freertos.d \
+./Core/Src/i2c_sensors.d \
 ./Core/Src/main.d \
 ./Core/Src/stm32f4xx_hal_msp.d \
 ./Core/Src/stm32f4xx_hal_timebase_tim.d \
@@ -26,6 +28,7 @@ C_DEPS += \
 
 OBJS += \
 ./Core/Src/freertos.o \
+./Core/Src/i2c_sensors.o \
 ./Core/Src/main.o \
 ./Core/Src/stm32f4xx_hal_msp.o \
 ./Core/Src/stm32f4xx_hal_timebase_tim.o \

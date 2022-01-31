@@ -4117,55 +4117,6 @@ int32_t lsm6dsr_s4s_dt_get(stmdev_ctx_t *ctx, uint8_t *val);
   */
 
 
-
-/*
- * MRT code TODO
- */
-
-
-//Includes
-#include <stm32f4xx_hal.h>
-#include <string.h> /* memset */
-
-//Variables and defines (functions defined at the end)
-
-#define    BOOT_TIME            10 //ms
-#define TX_BUF_DIM          50
-
-
-//FOR THE ISM
-static uint8_t lsm_whoamI, lsm_rst;
-stmdev_ctx_t lsm_ctx;
-
-//For acceleration
-static int16_t data_raw_acceleration[3];
-static float acceleration_mg[3];
-
-//For angular rate
-static int16_t data_raw_angular_rate[3];
-static float angular_rate_mdps[3];
-
-//For temperature
-static int16_t lsm_data_raw_temperature;
-static float lsm_temperature_degC;
-
-//For communication
-UART_HandleTypeDef* Guart;
-
-
-//Helper functions
-static int32_t lsm_write(void *handle, uint8_t reg, const uint8_t *bufp,uint16_t len);
-static int32_t lsm_read(void *handle, uint8_t reg, uint8_t *bufp,uint16_t len);
-
-//User functions
-void MRT_LSM6DSR_Setup(I2C_HandleTypeDef* SENSOR_BUS, UART_HandleTypeDef* uart);
-void MRT_LSM6DSR_getAcceleration(int16_t data_raw_acceleration[3],float acceleration_mg[3]);
-void MRT_LSM6DSR_getAngularRate(int16_t data_raw_angular_rate[3],float angular_rate_mdps[3]);
-void MRT_LSM6DSR_getTemperature(int16_t data_raw_temperature[1],float temperature_degC[1]);
-
-
-
-
 #ifdef __cplusplus
 }
 #endif

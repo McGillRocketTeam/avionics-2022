@@ -74,8 +74,3 @@ lps22hh_reg.c:1980:9:lps22hh_fifo_threshold_on_int_set	24	static
 lps22hh_reg.c:2005:9:lps22hh_fifo_threshold_on_int_get	24	static
 lps22hh_reg.c:2025:9:lps22hh_fifo_full_on_int_set	24	static
 lps22hh_reg.c:2049:9:lps22hh_fifo_full_on_int_get	24	static
-lps22hh_reg.c:2080:6:MRT_LPS22HH_Setup	24	static
-lps22hh_reg.c:2134:6:MRT_LPS22HH_getPressure	24	static
-lps22hh_reg.c:2150:6:MRT_LPS22HH_getTemperature	24	static
-lps22hh_reg.c:2178:16:lps_write	40	static
-lps22hh_reg.c:2194:16:lps_read	40	static
