@@ -9,20 +9,21 @@
   * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,7 +33,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-uint8_t UART2_rxBuffer[64] = {0};
+uint8_t UART2_rxBuffer[64] = {0}; // XTend Reception buffer
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,18 +48,54 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
+/* Definitions for SDCard */
+osThreadId_t SDCardHandle;
+const osThreadAttr_t SDCard_attributes = {
+  .name = "SDCard",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for XTend */
+osThreadId_t XTendHandle;
+const osThreadAttr_t XTend_attributes = {
+  .name = "XTend",
+  .stack_size = 1048 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
 /* USER CODE BEGIN PV */
+char UART2_txBuffer[512]; // XTend Transmit
+
+float S;
+float ACCx;
+float ACCy;
+float ACCz;
+float PITCH;
+float ROLL;
+float YAW;
+float PRESSURE;
+float LAT;
+float LONG;
+float HOUR;
+float MIN;
+float SEC;
+float STATE;
+float E;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_USART2_UART_Init(void);
+void SDCardStart(void *argument);
+void XTendStart(void *argument);
+
 /* USER CODE BEGIN PFP */
+// XTend transmit function
 static void XTend_Transmit(char *Msg);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -93,35 +131,64 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_I2C1_Init();
-  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  // XTend Code
   uint8_t Start[] = "Starting XTend\r\n";
-  XTend_Transmit(Start);
-  HAL_UART_Transmit(&huart3, Start, 16, HAL_MAX_DELAY);
+  XTend_Transmit(Start); // Transmit to XTend
+  HAL_UART_Transmit(&huart3, Start, 16, HAL_MAX_DELAY); // Transmit to Serial Monitor
 
-  // Stops here until it receives 8 bits
+  // Wait for Launch
   HAL_UART_Receive(&huart2, UART2_rxBuffer, 8, HAL_MAX_DELAY);
-  HAL_UART_Transmit(&huart3, UART2_rxBuffer, 8, HAL_MAX_DELAY);
-  HAL_UART_Transmit(&huart3,"Continuing\r\n",12,HAL_MAX_DELAY);
+  // Code Continues after receiving 8 characters
 
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of SDCard */
+  SDCardHandle = osThreadNew(SDCardStart, NULL, &SDCard_attributes);
+
+  /* creation of XTend */
+  XTendHandle = osThreadNew(XTendStart, NULL, &XTend_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-	  uint8_t UART2_txBuffer[] = "Data\r\n";
-	  XTend_Transmit(UART2_txBuffer);
-
-	  //HAL_UART_Receive_IT(&huart2, UART2_rxBuffer, 8);
-
-	  HAL_Delay(10000);
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -229,8 +296,8 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
   huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = !UART_HWCONTROL_CTS;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_8;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_CTS;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
   if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
@@ -281,20 +348,11 @@ static void MX_USART3_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-
-  /*Configure GPIO pins : PC10 PC11 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF8_UART4;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 }
 
@@ -306,8 +364,64 @@ static void MX_GPIO_Init(void)
 static void XTend_Transmit(char *Msg){
 	HAL_UART_Transmit(&huart2, Msg, strlen(Msg), HAL_Delay);
 }
-
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_SDCardStart */
+/**
+* @brief Function implementing the SDCard thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_SDCardStart */
+void SDCardStart(void *argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_XTendStart */
+/**
+* @brief Function implementing the XTend thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_XTendStart */
+void XTendStart(void *argument)
+{
+  /* USER CODE BEGIN XTendStart */
+  /* Infinite loop */
+  for(;;)
+  {
+	  S = 0.22;
+	  ACCx = 0.22;
+	  ACCy = 0.22;
+	  ACCz = 0.22;
+	  PITCH = 0.22;
+	  ROLL = 0.22;
+	  YAW = 0.22;
+	  PRESSURE = 0.22;
+	  LAT = 0.22;
+	  LONG = 0.22;
+	  HOUR = 0.22;
+	  MIN = 0.22;
+	  SEC = 0.22;
+	  STATE = 0.22;
+	  E = 0.22;
+
+	  memset (UART2_txBuffer,0,512);
+	  sprintf(UART2_txBuffer,
+			  "S: %.2f\r\nACCx:%.2f \r\nACCy: %.2f\r\nACCz: %.2f\r\nPITCH: %.2f\r\nROLL: %.2f\r\nYAW: %.2f\r\nPRESSURE: %.2f\r\nLAT: %.2f\r\nLONG: %.2f\r\nHOUR: %.2f\r\nMIN: %.2f\r\nSEC: %.2f\r\nSTATE: %.2f\r\nE: %.2f\r\n",
+			  S,ACCx,ACCy,ACCz,PITCH,ROLL,YAW,PRESSURE,LAT,LONG,HOUR,MIN,SEC,STATE,E);
+	  XTend_Transmit((uint8_t*) UART2_txBuffer);
+    osDelay(1000);
+  }
+  /* USER CODE END XTendStart */
+}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
