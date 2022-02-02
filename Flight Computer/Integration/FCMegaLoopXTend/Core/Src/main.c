@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -27,7 +26,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -60,30 +58,6 @@ UART_HandleTypeDef huart6;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
-/* Definitions for radioShenanigan */
-osThreadId_t radioShenaniganHandle;
-uint32_t defaultTaskBuffer[ 128 ];
-osStaticThreadDef_t defaultTaskControlBlock;
-const osThreadAttr_t radioShenanigan_attributes = {
-  .name = "radioShenanigan",
-  .cb_mem = &defaultTaskControlBlock,
-  .cb_size = sizeof(defaultTaskControlBlock),
-  .stack_mem = &defaultTaskBuffer[0],
-  .stack_size = sizeof(defaultTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for fakeSensors */
-osThreadId_t fakeSensorsHandle;
-uint32_t fakeSensorsBuffer[ 128 ];
-osStaticThreadDef_t fakeSensorsControlBlock;
-const osThreadAttr_t fakeSensors_attributes = {
-  .name = "fakeSensors",
-  .cb_mem = &fakeSensorsControlBlock,
-  .cb_size = sizeof(fakeSensorsControlBlock),
-  .stack_mem = &fakeSensorsBuffer[0],
-  .stack_size = sizeof(fakeSensorsBuffer),
-  .priority = (osPriority_t) osPriorityLow,
-};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -103,9 +77,6 @@ static void MX_UART8_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
-void StartDefaultTask(void *argument);
-void StartFakeSensors(void *argument);
-
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -156,54 +127,24 @@ int main(void)
   MX_USART6_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
+  char rxBuffer[50];
+  HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET);
+  while (strcmp(rxBuffer, "launch") != 0)
+  {
+	  HAL_UART_Receive (&huart3, rxBuffer, sizeof(char) * 6, HAL_MAX_DELAY);
+  }
 
   /* USER CODE END 2 */
 
-  /* Init scheduler */
-  osKernelInitialize();
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
-
-  /* Create the thread(s) */
-  /* creation of radioShenanigan */
-  radioShenaniganHandle = osThreadNew(StartDefaultTask, NULL, &radioShenanigan_attributes);
-
-  /* creation of fakeSensors */
-  fakeSensorsHandle = osThreadNew(StartFakeSensors, NULL, &fakeSensors_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
-
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  char buffer[100];
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  HAL_UART_Transmit(&huart3, buffer, sizeof(char) * strlen(buffer), HAL_MAX_DELAY);
   }
   /* USER CODE END 3 */
 }
@@ -892,42 +833,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the radioShenanigan thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartFakeSensors */
-/**
-* @brief Function implementing the fakeSensors thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartFakeSensors */
-void StartFakeSensors(void *argument)
-{
-  /* USER CODE BEGIN StartFakeSensors */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartFakeSensors */
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
