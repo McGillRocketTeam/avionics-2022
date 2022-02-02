@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <string.h>
+#include <IridiumSBD_Static_API.h>
 #include "i2c_sensors.h"
 /* USER CODE END Includes */
 
@@ -129,32 +130,26 @@ int main(void)
   MX_USART6_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-  char rxBuffer[50];
-  HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET);
-  while (strcmp(rxBuffer, "launch") != 0)
-  {
-	  HAL_UART_Receive (&huart3, rxBuffer, sizeof(char) * 6, HAL_MAX_DELAY);
-  }
-  lsm_ctx = MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
+  char* msg = "Hello from the Iridium!";
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  char buffer[100];
-  float acceleration_mg[3], angular_rate_mdps[3], lsm_temperature_degC;
+  /*
+   * For Iridium:
+   * -Set the project as c++
+   */
+  bool wakingUp;
+  wakingUp = MRT_Static_Iridium_Setup(huart3);
+  MRT_Static_Iridium_getTime();
+  // MRT_Static_Iridium_sendMessage(msg);
+  MRT_Static_Iridium_Shutdown();
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
-  	  MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
-	  MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
-
-	  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n Angular Rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n Temperature [C]:%4.2f\t\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2], angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2], lsm_temperature_degC);
-
-	  HAL_UART_Transmit(&huart3, buffer, sizeof(char) * strlen(buffer), HAL_MAX_DELAY);
   }
   /* USER CODE END 3 */
 }
