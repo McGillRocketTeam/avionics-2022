@@ -68,8 +68,8 @@ all: main-build
 main-build: f437_fc_v4.1.5_blinky.elf secondary-outputs
 
 # Tool invocations
-f437_fc_v4.1.5_blinky.elf: $(OBJS) $(USER_OBJS) C:\Users\jaspe\Desktop\Rocket\ Team\ STM32\00\ STM32\ Workspace\f437_fc_v4.1.5_blinky\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "f437_fc_v4.1.5_blinky.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\jaspe\Desktop\Rocket Team STM32\00 STM32 Workspace\f437_fc_v4.1.5_blinky\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f437_fc_v4.1.5_blinky.map" -Wl,--gc-sections -static -u _printf_float -u _scanf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+f437_fc_v4.1.5_blinky.elf: $(OBJS) $(USER_OBJS) C:\Users\jaspe\Desktop\Rocket\ Team\ STM32\00\ STM32\ Workspace\avionics-2022\Flight\ Computer\Testing\f437_fc_v4.1.5_blinky\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "f437_fc_v4.1.5_blinky.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\jaspe\Desktop\Rocket Team STM32\00 STM32 Workspace\avionics-2022\Flight Computer\Testing\f437_fc_v4.1.5_blinky\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f437_fc_v4.1.5_blinky.map" -Wl,--gc-sections -static -u _printf_float -u _scanf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
