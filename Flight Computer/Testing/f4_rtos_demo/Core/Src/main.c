@@ -59,7 +59,8 @@ float time;
 FATFS FatFs; 	//Fatfs handle
 FIL fil; 		//File handle
 FRESULT fres; //Result after operations
-BYTE writeBuf[100];
+char filename[13];
+uint8_t writeBuf[1000];
 UINT bytesWrote;
 GPIO_PinState buttonState;
 /* USER CODE END PM */
@@ -222,7 +223,7 @@ int main(void)
   HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
 
   dev_ctx_lsm = lsm6dsl_init();
-  //dev_ctx_lps = lps22hh_init();
+  dev_ctx_lps = lps22hh_init();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -276,19 +277,7 @@ int main(void)
 
   HAL_Delay(1000);
 
-  //mount
-    fres = f_mount(&FatFs, "", 1); //1=mount now
-  	if (fres != FR_OK) {
-  	  myprintf("f_mount error (%i)\r\n", fres);
-  	  while(1);
-  	}
-  	//open file
-    fres = f_open(&fil, "new_file.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-  	if(fres == FR_OK) {
-  		myprintf("I was able to open 'new_file.txt' for writing\r\n");
-  	} else {
-  		myprintf("f_open error (%i)\r\n", fres);
-  	}
+  sd_init_dynamic_filename("FC", "", &filename);
 
   osKernelStart();
 
@@ -774,8 +763,11 @@ void printSensorsFunc(void *argument)
 	//myprintf("ACCEL: %f, %f, %f\r\n", acceleration[0], acceleration[1], acceleration[2]);
 	//myprintf("GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
 	xSemaphoreTake(mutexHandle,500);
-	GPS_Poll(&latitude, &longitude, &time);
-	myprintf("GPS 1: %lf, %lf, %f\r\n", latitude, longitude, time);
+	//GPS_Poll(&latitude, &longitude, &time);
+	myprintf("GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
+	myprintf("Pressure: %f, Temperature %f\r\n", pressure, temperature);
+	myprintf("Acceleration: %f,%f,%f\r\n", acceleration[0], acceleration[1], acceleration[2]);
+	myprintf("IN angular_rate: %f,%f,%f\r\n", angular_rate[0], angular_rate[1], angular_rate[2]);
 	xSemaphoreGive(mutexHandle);
     osDelay(1000);
   }
@@ -795,13 +787,14 @@ void pollSensorsFunc(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	get_pressure(dev_ctx_lps, &pressure);
+	get_temperature(dev_ctx_lps,  &temperature);
 	get_acceleration(dev_ctx_lsm, acceleration);
 	get_angvelocity(dev_ctx_lsm, angular_rate);
-	xSemaphoreTake(mutexHandle,500);
+	//xSemaphoreTake(mutexHandle,500);
 	GPS_Poll(&latitude, &longitude, &time);
-	myprintf("GPS 2: %lf, %lf, %f\r\n", latitude, longitude, time);
-	xSemaphoreGive(mutexHandle);
-    osDelay(500);
+	//xSemaphoreGive(mutexHandle);
+    osDelay(1000);
   }
   /* USER CODE END pollSensorsFunc */
 }
@@ -820,18 +813,11 @@ void saveDataFunc(void *argument)
 
   for(;;)
   {
-	buttonState = HAL_GPIO_ReadPin(Button_GPIO_Port, Button_Pin);
-	if(buttonState == GPIO_PIN_RESET){
-		//close file
-		f_close(&fil);
-		//demount
-		f_mount(NULL, "", 0);
-		while(1);
-	}
 	//write data
+	sd_open_file(&filename);
 	sprintf((char*)writeBuf, "GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
-	UINT bytesWrote;
-	fres = f_write(&fil, writeBuf, 43, &bytesWrote);
+	sd_write(&fil, writeBuf);
+	f_close(&fil);
     osDelay(1000);
   }
   /* USER CODE END saveDataFunc */
