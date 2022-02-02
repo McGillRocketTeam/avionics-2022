@@ -22,7 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include "lsm6dsr_reg.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,6 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DEBUG_USART huart8
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -59,7 +61,7 @@ UART_HandleTypeDef huart6;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-
+stmdev_ctx_t lsm_ctx;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -133,17 +135,25 @@ int main(void)
   {
 	  HAL_UART_Receive (&huart3, rxBuffer, sizeof(char) * 6, HAL_MAX_DELAY);
   }
+  lsm_ctx = MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   char buffer[100];
+  float acceleration_mg[3], angular_rate_mdps[3], lsm_temperature_degC;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+  	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
+  	  MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
+	  MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
+
+	  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n Angular Rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n Temperature [C]:%4.2f\t\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2], angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2], lsm_temperature_degC);
+
 	  HAL_UART_Transmit(&huart3, buffer, sizeof(char) * strlen(buffer), HAL_MAX_DELAY);
   }
   /* USER CODE END 3 */
