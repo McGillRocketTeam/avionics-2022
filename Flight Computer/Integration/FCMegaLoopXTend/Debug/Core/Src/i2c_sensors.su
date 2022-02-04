@@ -1,0 +1,11 @@
+i2c_sensors.c:52:16:lsm_write	40	static
+i2c_sensors.c:58:16:lsm_read	40	static
+i2c_sensors.c:70:15:MRT_LSM6DSR_Setup	56	static,ignoring_inline_asm
+i2c_sensors.c:142:6:MRT_LSM6DSR_getAcceleration	40	static
+i2c_sensors.c:168:6:MRT_LSM6DSR_getTemperature	40	static
+i2c_sensors.c:189:6:MRT_LSM6DSR_getAngularRate	40	static
+i2c_sensors.c:227:15:MRT_LPS22HH_Setup	64	static
+i2c_sensors.c:282:6:MRT_LPS22HH_getPressure	40	static
+i2c_sensors.c:298:6:MRT_LPS22HH_getTemperature	40	static
+i2c_sensors.c:317:16:lps_write	40	static
+i2c_sensors.c:323:16:lps_read	40	static
