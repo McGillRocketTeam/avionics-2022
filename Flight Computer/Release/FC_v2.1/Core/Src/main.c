@@ -151,6 +151,29 @@ uint8_t SLEEP_TIME = 10;
 uint8_t DATA_FREQ = 1; //Times per second that you want to save data
 uint8_t SEND_FREQ = 0.2; //Times per second that you want to transmit data
 
+//XTend
+#define XTEND_USART huart3
+uint8_t xtend_rx_buffer[64] = {0}; // XTend Reception buffer
+char xtend_tx_buffer[512]; // XTend Transmit
+//These variables are for testing
+float S;
+float ACCx;
+float ACCy;
+float ACCz;
+float PITCH;
+float ROLL;
+float YAW;
+float PRESSURE;
+float LAT;
+float LONG;
+float HOUR;
+float MIN;
+float SEC;
+float STATE;
+float E;
+
+
+
 //Mutexes are created in their respective threads
 SemaphoreHandle_t MEMORY;
 SemaphoreHandle_t PROP_SENSORS;
@@ -225,6 +248,10 @@ void StartPropulsion4(void *argument);
 void StartPrinting(void *argument);
 
 /* USER CODE BEGIN PFP */
+
+//TODO
+// XTend transmit function
+static void XTend_Transmit(char *Msg);
 
 /* USER CODE END PFP */
 
@@ -1187,6 +1214,16 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+//TODO Maybe put this in a driver
+
+/**
+ * @brief   Function to transmit message to XTend
+ * @param  Msg : char array (range 1-800)
+ */
+static void XTend_Transmit(char* Msg){
+	HAL_UART_Transmit(&XTEND_USART, Msg, strlen(Msg), HAL_Delay);
+}
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartMemory0 */
@@ -1213,7 +1250,7 @@ void StartMemory0(void *argument)
 	  /* Infinite loop */
 	  for(;;)
 	  {
-	      while( xSemaphoreTake( MEMORY, 0 ) != pdTRUE ) osDelay(10);
+	      while( xSemaphoreTake( MEMORY, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 
 		  //Write data to sd and flash
@@ -1226,7 +1263,7 @@ void StartMemory0(void *argument)
 
 		  MRT_StandByMode(SLEEP_TIME);
 		}
-		  while(xSemaphoreGive(MEMORY)!= pdTrue) osDelay(10);
+		  while(xSemaphoreGive(MEMORY)!= pdTRUE) osDelay(10);
 
 		  osDelay(1000/DATA_FREQ);
 	  }
@@ -1251,29 +1288,35 @@ void StartEjection1(void *argument)
 
 	osThreadExit();
 
-	  if (altitude_m < GROUND_LEVEL)  osThreadExit(); //WHEN WAKING UP
+	if (altitude_m < GROUND_LEVEL)  osThreadExit(); //WHEN WAKING UP
+	if (wakingUp) osThreadExit();
+
 
 	//Add thread id to the list
 	threadID[1]=osThreadGetId();
 
-	if (wakingUp) osThreadExit();
-
-	//char* buffer = (char*) pvPortMalloc(TX_BUF_DIM);
 	char buffer[TX_BUF_DIM];
 
 	//Mutex
 	while( (EJECT_SENSORS = xSemaphoreCreateMutex()) == NULL) osDelay(10);
 
+	char Start[] = "Starting XTend\r\n";
+	XTend_Transmit(Start); // Transmit to XTend
+	HAL_UART_Transmit(&DEBUG_USART,Start, 16, HAL_MAX_DELAY); // Transmit to Serial Monitor
+	// Wait for Launch
+	HAL_UART_Receive(&XTEND_USART, xtend_rx_buffer, 8, HAL_MAX_DELAY);
+	// Code Continues after receiving 8 characters (launch command)
+
 	  /* Infinite loop */
 	  for(;;)
 	  {
 
-		  while( xSemaphoreTake( EJECT_SENSORS, 0 ) != pdTRUE ) osDelay(10);
+		  while( xSemaphoreTake( EJECT_SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 		  //Poll altitude (poll pressure)
 		  //pressure_hPa =
 
-		  while(xSemaphoreGive(EJECT_SENSORS)!= pdTrue) osDelay(10);
+		  while(xSemaphoreGive(EJECT_SENSORS)!= pdTRUE) osDelay(10);
 
 
 		  if (MIN_APOGEE <= pressure_hPa && MAX_APOGEE > pressure_hPa){
@@ -1292,13 +1335,13 @@ void StartEjection1(void *argument)
 
 			  for(;;){
 
-				  while( xSemaphoreTake( EJECT_SENSORS, 0 ) != pdTRUE ) osDelay(10);
+				  while( xSemaphoreTake( EJECT_SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 				  //Poll altitude (pressure and acceleration?)
 				  //pressure_hPa =
 				  //altitude_m =
 
-				  while(xSemaphoreGive(EJECT_SENSORS)!= pdTrue) osDelay(10);
+				  while(xSemaphoreGive(EJECT_SENSORS)!= pdTRUE) osDelay(10);
 
 				  //We reached main deployment altitude
 				  if (altitude_m>DEPLOY_ALT_MIN && altitude_m<DEPLOY_ALT_MAX){
@@ -1319,12 +1362,12 @@ void StartEjection1(void *argument)
 
 					  for(;;){
 
-						  while( xSemaphoreTake( EJECT_SENSORS, 0 ) != pdTRUE ) osDelay(10);
+						  while( xSemaphoreTake( EJECT_SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 						  //Poll altitude (pressure and acceleration)
 						  //altitude_m =
 
-						  while(xSemaphoreGive(EJECT_SENSORS)!= pdTrue) osDelay(10);
+						  while(xSemaphoreGive(EJECT_SENSORS)!= pdTRUE) osDelay(10);
 
 						  if (altitude_m < GROUND_LEVEL)  osThreadExit();
 
@@ -1373,18 +1416,58 @@ void StartTelemetry2(void *argument)
   {
 	  //Poll sensors data in other thread
 
-	  while( xSemaphoreTake( TELEMETRY, 0 ) != pdTRUE ) osDelay(10);
+	  while( xSemaphoreTake( TELEMETRY, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 	  //Send data via radios:
 
 
 	  //Radio send
 
+	  //Xtend send
+	  S = 0.22;
+
+	  //Need to verify these six to make sure they are in the right order
+	  ACCx = acceleration_mg[0];
+	  ACCy = acceleration_mg[1];
+	  ACCz = acceleration_mg[2];
+	  PITCH = angular_rate_mdps[0];
+	  ROLL = angular_rate_mdps[1];
+	  YAW = angular_rate_mdps[2];
+
+	  PRESSURE = pressure_hPa;
+	  LAT = latitude;
+	  LONG = longitude;
+
+	  //TODO Need to make this 't' variable from the Iridium or convert the seconds from the GPS
+	  /*
+	  HOUR = t.tm_hour;
+	  MIN = t.tm_min;
+	  SEC = t.tm_sec;
+	  */
+	  //From the GPS time value
+	  HOUR = time / 3600.0;
+	  sprintf(&HOUR,"%.0f",HOUR);
+	  MIN = ((uint8_t) time % 3600) / 60.0;
+	  sprintf(&MIN, "%.0f",MIN);
+	  SEC = (uint8_t) time % 60;
+
+	  STATE = 0.22;
+	  E = 0.22;
+
+	  //TODO maybe add variable for GPS time and both temperature values?
+
+	  memset (xtend_tx_buffer,0,512);
+	  sprintf(xtend_tx_buffer,
+			  "S: %.2f\r\nACCx:%.2f \r\nACCy: %.2f\r\nACCz: %.2f\r\nPITCH: %.2f\r\nROLL: %.2f\r\nYAW: %.2f\r\nPRESSURE: %.2f\r\nLAT: %.2f\r\nLONG: %.2f\r\nHOUR: %.2f\r\nMIN: %.2f\r\nSEC: %.2f\r\nSTATE: %.2f\r\nE: %.2f\r\n",
+			  S,ACCx,ACCy,ACCz,PITCH,ROLL,YAW,PRESSURE,LAT,LONG,HOUR,MIN,SEC,STATE,E);
+	  XTend_Transmit(xtend_tx_buffer);
+
+
 	  //Iridium send
 	  //MRT_Static_Iridium_getTime(); TODO doesn't cost anything
 	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 
-	  while(xSemaphoreGive(TELEMETRY)!= pdTrue) osDelay(10);
+	  while(xSemaphoreGive(TELEMETRY)!= pdTRUE) osDelay(10);
 
     osDelay(1000/SEND_FREQ);
   }
@@ -1418,7 +1501,7 @@ void StartSensors3(void *argument)
 
   for(;;)
   {
-	  while( xSemaphoreTake( _SENSORS, 10 ) != pdTRUE ) {
+	  while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) {
 		  HAL_UART_Transmit(&DEBUG_USART,"No sense\r\n",10,HAL_MAX_DELAY);
 		  osDelay(10);
 	  }
@@ -1452,7 +1535,7 @@ void StartSensors3(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
 
-	  while(xSemaphoreGive(_SENSORS)!= pdTrue) osDelay(10);
+	  while(xSemaphoreGive(_SENSORS)!= pdTRUE) osDelay(10);
 
 	  osDelay(100);
 
@@ -1491,11 +1574,11 @@ void StartPropulsion4(void *argument)
 
 	  for(;;)
 	  {
-		  while( xSemaphoreTake( PROP_SENSORS, 0 ) != pdTRUE ) osDelay(10);
+		  while( xSemaphoreTake( PROP_SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 		  //Poll sensor data (burnout level)
 
-		  while(xSemaphoreGive(PROP_SENSORS)!= pdTrue) osDelay(10);
+		  while(xSemaphoreGive(PROP_SENSORS)!= pdTRUE) osDelay(10);
 
 		  //Write to SD and SEND
 
@@ -1528,7 +1611,7 @@ void StartPrinting(void *argument)
   for(;;)
   {
 
-	  while( xSemaphoreTake( _SENSORS, 10 ) != pdTRUE ) {
+	  while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) {
 		  HAL_UART_Transmit(&DEBUG_USART,"No print\r\n",10,HAL_MAX_DELAY);
 		  osDelay(10);
 	  }
@@ -1571,7 +1654,7 @@ void StartPrinting(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
-	  while(xSemaphoreGive(_SENSORS)!= pdTrue) osDelay(10);
+	  while(xSemaphoreGive(_SENSORS)!= pdTRUE) osDelay(10);
 
       osDelay(200);
 }
