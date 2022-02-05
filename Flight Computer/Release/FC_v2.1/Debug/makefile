@@ -17,6 +17,7 @@ RM := rm -rf
 -include Middlewares/Third_Party/FreeRTOS/Source/subdir.mk
 -include Middlewares/ST/STM32_USB_Device_Library/Core/Src/subdir.mk
 -include Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/subdir.mk
+-include Drivers/SX1262_c/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Drivers/MRT_RTOS_f4xx/Src/subdir.mk
 -include Drivers/MRT_LSM6DSR_f4xx/Src/subdir.mk

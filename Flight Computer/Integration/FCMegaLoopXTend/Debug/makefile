@@ -63,8 +63,8 @@ all: main-build
 main-build: FCV4.3\ Pinout\ F437ZI.elf secondary-outputs
 
 # Tool invocations
-FCV4.3\ Pinout\ F437ZI.elf: $(OBJS) $(USER_OBJS) C:\Users\SlinderKid\Desktop\McGill\00\ -\ MRT\avionics-2022\Flight\ Computer\Integration\FCMegaLoopXTend\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "FCV4.3 Pinout F437ZI.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\SlinderKid\Desktop\McGill\00 - MRT\avionics-2022\Flight Computer\Integration\FCMegaLoopXTend\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FCV4.3 Pinout F437ZI.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+FCV4.3\ Pinout\ F437ZI.elf: $(OBJS) $(USER_OBJS) C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight\ Computer\avionics-2022\Flight\ Computer\Integration\FCMegaLoopXTend\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "FCV4.3 Pinout F437ZI.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight Computer\avionics-2022\Flight Computer\Integration\FCMegaLoopXTend\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FCV4.3 Pinout F437ZI.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

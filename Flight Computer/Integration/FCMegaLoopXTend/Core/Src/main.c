@@ -96,6 +96,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -129,32 +130,87 @@ int main(void)
   MX_USART6_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-  char rxBuffer[50];
+
+	char xtend_tx_buffer[128];
+	float ACCx;
+	float ACCy;
+	float ACCz;
+	float GYROx;
+	float GYROy;
+	float GYROz;
+	float PRESSURE;
+	float LAT;
+	float LONG;
+	float MIN;
+	int SEC = 0;
+	int SUBSEC = 0;
+	float STATE;
+	float CONT;
+	stmdev_ctx_t lsm_ctx;
+	stmdev_ctx_t lps_ctx;
+
+	lsm_ctx = MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
+	lps_ctx = MRT_LPS22HH_Setup(&hi2c3,&DEBUG_USART);
+
   HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET);
+  /*
   while (strcmp(rxBuffer, "launch") != 0)
   {
 	  HAL_UART_Receive (&huart3, rxBuffer, sizeof(char) * 6, HAL_MAX_DELAY);
   }
   lsm_ctx = MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
+  */
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  char buffer[100];
-  float acceleration_mg[3], angular_rate_mdps[3], lsm_temperature_degC;
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
+	  HAL_Delay(1000);
+
   	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
   	  MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
-	  MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
+	  //MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
 
-	  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n Angular Rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n Temperature [C]:%4.2f\t\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2], angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2], lsm_temperature_degC);
+	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
+	  //MRT_LPS22HH_getTemperature(lps_ctx,&lps_temperature_degC);
 
-	  HAL_UART_Transmit(&huart3, buffer, sizeof(char) * strlen(buffer), HAL_MAX_DELAY);
+  	  ACCx = acceleration_mg[0];
+  	  ACCy = acceleration_mg[1];
+  	  ACCz = acceleration_mg[2];
+  	  GYROx = angular_rate_mdps[0];
+  	  GYROy = angular_rate_mdps[1];
+  	  GYROz = angular_rate_mdps[2];
+  	  PRESSURE = pressure_hPa;
+  	  LAT = 0.0;
+  	  LONG = 0.0;
+  	  MIN = 0.0;
+
+	  SUBSEC = SUBSEC + 1;
+	  if (SUBSEC==100){
+		 SUBSEC=0;
+		 SEC = SEC + 1;
+	  }
+
+  	  STATE = 0.0;
+  	  CONT = 0.0;
+
+  	  memset (xtend_tx_buffer,0,128);
+  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,E\n", ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
+  	  //sprintf(xtend_tx_buffer,"S,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,E", ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
+
+	  HAL_UART_Transmit(&huart3, xtend_tx_buffer, sizeof(char) * strlen(xtend_tx_buffer), HAL_MAX_DELAY);
+
+
+	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
+	  HAL_Delay(1000);
+
   }
   /* USER CODE END 3 */
 }
@@ -604,7 +660,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 9600;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;

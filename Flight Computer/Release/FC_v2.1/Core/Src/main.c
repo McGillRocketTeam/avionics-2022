@@ -31,6 +31,7 @@
 #include <MRT_Helpers.h>
 #include <i2c_sensors.h>
 #include <gps.h>
+#include <sx126x.h>
 
 #include <usbd_cdc_if.h>
 
@@ -156,21 +157,20 @@ uint8_t SEND_FREQ = 0.2; //Times per second that you want to transmit data
 uint8_t xtend_rx_buffer[64] = {0}; // XTend Reception buffer
 char xtend_tx_buffer[512]; // XTend Transmit
 //These variables are for testing
-float S;
 float ACCx;
 float ACCy;
 float ACCz;
-float PITCH;
-float ROLL;
-float YAW;
+float GYROx;
+float GYROy;
+float GYROz;
 float PRESSURE;
 float LAT;
 float LONG;
-float HOUR;
 float MIN;
 float SEC;
+float SUBSEC;
 float STATE;
-float E;
+float CONT;
 
 
 
@@ -210,6 +210,9 @@ static uint8_t gps_fix_lat = 0;
 static uint8_t gps_fix_long = 0; // beep when we get fix
 char gps_data[GPS_DATA_BUF_DIM];
 
+
+//SRadio
+#define SRADIO_SPI hspi2
 
 stmdev_ctx_t lsm_ctx;
 stmdev_ctx_t lps_ctx;
@@ -402,6 +405,21 @@ while(1){
     *
     */
    GPS_init(&huart6, &huart8);
+
+
+   /*
+    * For the SRadio
+    * -SPI2 on v4.3
+    */
+	HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET);
+	set_hspi(SRADIO_SPI);
+	// SPI2_SX_CS_GPIO_Port
+	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
+	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+	Tx_setup();
+
 
   /*
    * For RTOS
@@ -1400,43 +1418,65 @@ void StartTelemetry2(void *argument)
 {
   /* USER CODE BEGIN StartTelemetry2 */
 
-	osThreadExit();
+	//osThreadExit();
 
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
 	//Mutex
-	while( (TELEMETRY = xSemaphoreCreateMutex()) == NULL) osDelay(10);
+	//while( (TELEMETRY = xSemaphoreCreateMutex()) == NULL) osDelay(10);
 
 	//Make the thread joinable?
 
+	osDelay(1000);
 
   /* Infinite loop */
   for(;;)
   {
 	  //Poll sensors data in other thread
 
-	  while( xSemaphoreTake( TELEMETRY, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
+	  //while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
+
+	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 	  //Send data via radios:
 
 
-	  //Radio send
-
-	  //Xtend send
-	  S = 0.22;
+	  //Updating data variables
 
 	  //Need to verify these six to make sure they are in the right order
-	  ACCx = acceleration_mg[0];
-	  ACCy = acceleration_mg[1];
-	  ACCz = acceleration_mg[2];
-	  PITCH = angular_rate_mdps[0];
-	  ROLL = angular_rate_mdps[1];
-	  YAW = angular_rate_mdps[2];
 
-	  PRESSURE = pressure_hPa;
-	  LAT = latitude;
-	  LONG = longitude;
+  	  ACCx = acceleration_mg[0];
+  	  ACCy = acceleration_mg[1];
+  	  ACCz = acceleration_mg[2];
+  	  GYROx = angular_rate_mdps[0];
+  	  GYROy = angular_rate_mdps[1];
+  	  GYROz = angular_rate_mdps[2];
+  	  PRESSURE = pressure_hPa;
+  	  LAT = 0.0;
+  	  LONG = 0.0;
+  	  MIN = 0.0;
+  	  SEC = 0.0;
+  	  SUBSEC = 0.0;
+  	  STATE = 0.0;
+  	  CONT = 0.0;
+  	  /*
+  	  ACCx = 0;
+  	  ACCy = 0;
+  	  ACCz = 0;
+  	  GYROx = 0;
+  	  GYROy = 0;
+  	  GYROz = 0;
+  	  PRESSURE = 0;
+  	  LAT = 0;
+  	  LONG = 0;
+  	  MIN = 0;
+  	  SEC = 0;
+  	  SUBSEC = 0;
+  	  STATE = 0;
+  	  CONT = 0;
+  	  */
+
 
 	  //TODO Need to make this 't' variable from the Iridium or convert the seconds from the GPS
 	  /*
@@ -1445,31 +1485,40 @@ void StartTelemetry2(void *argument)
 	  SEC = t.tm_sec;
 	  */
 	  //From the GPS time value
-	  HOUR = time / 3600.0;
-	  sprintf(&HOUR,"%.0f",HOUR);
+  	  /*
 	  MIN = ((uint8_t) time % 3600) / 60.0;
 	  sprintf(&MIN, "%.0f",MIN);
 	  SEC = (uint8_t) time % 60;
+	  sprintf(&SEC,"%.0f",SEC);
+	  SUBSEC = time / 3600.0;
+	  sprintf(&SUBSEC,"%.0f",SUBSEC);
+	  */
 
-	  STATE = 0.22;
-	  E = 0.22;
 
 	  //TODO maybe add variable for GPS time and both temperature values?
 
-	  memset (xtend_tx_buffer,0,512);
-	  sprintf(xtend_tx_buffer,
-			  "S: %.2f\r\nACCx:%.2f \r\nACCy: %.2f\r\nACCz: %.2f\r\nPITCH: %.2f\r\nROLL: %.2f\r\nYAW: %.2f\r\nPRESSURE: %.2f\r\nLAT: %.2f\r\nLONG: %.2f\r\nHOUR: %.2f\r\nMIN: %.2f\r\nSEC: %.2f\r\nSTATE: %.2f\r\nE: %.2f\r\n",
-			  S,ACCx,ACCy,ACCz,PITCH,ROLL,YAW,PRESSURE,LAT,LONG,HOUR,MIN,SEC,STATE,E);
+  	  memset (xtend_tx_buffer,0,512);
+  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,E", ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
+
+	  //Xtend send
 	  XTend_Transmit(xtend_tx_buffer);
+
+	  //SRadio send
+	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer));
+
 
 
 	  //Iridium send
 	  //MRT_Static_Iridium_getTime(); TODO doesn't cost anything
 	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 
-	  while(xSemaphoreGive(TELEMETRY)!= pdTRUE) osDelay(10);
+	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
+
+
+	  //while(xSemaphoreGive(_SENSORS)!= pdTRUE) osDelay(10);
 
     osDelay(1000/SEND_FREQ);
+    osDelay(1000);
   }
 
   //In case it leaves the infinite loop
@@ -1501,10 +1550,12 @@ void StartSensors3(void *argument)
 
   for(;;)
   {
+
 	  while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) {
 		  HAL_UART_Transmit(&DEBUG_USART,"No sense\r\n",10,HAL_MAX_DELAY);
 		  osDelay(10);
 	  }
+
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, SET);
 
@@ -1537,7 +1588,7 @@ void StartSensors3(void *argument)
 
 	  while(xSemaphoreGive(_SENSORS)!= pdTRUE) osDelay(10);
 
-	  osDelay(100);
+	  osDelay(1000);
 
 }
 
@@ -1602,6 +1653,8 @@ void StartPropulsion4(void *argument)
 void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
+
+	osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 

@@ -39,6 +39,7 @@ Drivers/MRT_LPS22HH_f4xx/Src \
 Drivers/MRT_LSM6DSR_f4xx/Src \
 Drivers/MRT_RTOS_f4xx/Src \
 Drivers/STM32F4xx_HAL_Driver/Src \
+Drivers/SX1262_c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src \
 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
