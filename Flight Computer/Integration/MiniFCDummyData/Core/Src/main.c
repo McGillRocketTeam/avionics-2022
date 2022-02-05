@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <string.h>
+#include <sx126x.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -928,10 +929,20 @@ void StartFakeSensors(void *argument)
   /* Infinite loop */
 	char buffer[100];
 	HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET);
+	set_hspi(hspi2);
+	// SPI2_SX_CS_GPIO_Port
+	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
+	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+	Tx_setup();
   for(;;)
   {
-	  sprintf(buffer, "I have %d friends", nbOfFriends);
-	  HAL_UART_Transmit(&huart3, buffer, sizeof(uint16_t) * strlen(buffer), HAL_MAX_DELAY);
+	  // S,ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E
+	  sprintf(buffer, "S,%f,%f,%f,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,E", nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends);
+	  // HAL_UART_Transmit(&huart3, buffer, sizeof(char) * strlen(buffer), HAL_MAX_DELAY);
+	  TxProtocol(buffer, strlen(buffer));
+
     osDelay(100);
   }
   /* USER CODE END StartFakeSensors */
