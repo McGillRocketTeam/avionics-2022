@@ -39,6 +39,17 @@ Core/Src/gps.o: ../Core/Src/gps.c ../Core/Inc/gps.h ../Core/Inc/main.h \
  ../Core/Inc/main.h ../Core/Inc/sd_card.h ../FATFS/App/fatfs.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
+ ../Core/Inc/FreeRTOSConfig.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
@@ -135,6 +146,28 @@ Core/Src/gps.o: ../Core/Src/gps.c ../Core/Inc/gps.h ../Core/Inc/main.h \
 ../Middlewares/Third_Party/FatFs/src/integer.h:
 
 ../FATFS/Target/ffconf.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
+
+../Core/Inc/FreeRTOSConfig.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
+
+../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
 ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
 
