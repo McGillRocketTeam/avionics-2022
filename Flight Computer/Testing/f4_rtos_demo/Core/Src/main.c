@@ -941,7 +941,8 @@ void transmitDataFunc(void *argument)
 		minute++;
 	}
 	sprintf((char*)tx_buffer, "S,%f,%f,%f,%f,%f,%f,%f,%lf,%lf,%d,%d,%d,%d,%d,E",acceleration[0],acceleration[1],acceleration[2],angular_rate[0],angular_rate[1],angular_rate[2],pressure,latitude,longitude,minute,second,0,0,0);
-	TxProtocol(tx_buffer,150);
+	//TxProtocol(tx_buffer,150);
+	HAL_UART_Transmit(&huart3, tx_buffer, sizeof(char)*strlen(tx_buffer), HAL_MAX_DELAY);
     osDelay(1);
   }
   /* USER CODE END transmitDataFunc */
