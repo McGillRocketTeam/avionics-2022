@@ -16,6 +16,7 @@ C_SRCS += \
 ../Core/Src/stm32f4xx_hal_msp.c \
 ../Core/Src/stm32f4xx_hal_timebase_tim.c \
 ../Core/Src/stm32f4xx_it.c \
+../Core/Src/sx126x.c \
 ../Core/Src/syscalls.c \
 ../Core/Src/sysmem.c \
 ../Core/Src/system_stm32f4xx.c 
@@ -32,6 +33,7 @@ OBJS += \
 ./Core/Src/stm32f4xx_hal_msp.o \
 ./Core/Src/stm32f4xx_hal_timebase_tim.o \
 ./Core/Src/stm32f4xx_it.o \
+./Core/Src/sx126x.o \
 ./Core/Src/syscalls.o \
 ./Core/Src/sysmem.o \
 ./Core/Src/system_stm32f4xx.o 
@@ -48,6 +50,7 @@ C_DEPS += \
 ./Core/Src/stm32f4xx_hal_msp.d \
 ./Core/Src/stm32f4xx_hal_timebase_tim.d \
 ./Core/Src/stm32f4xx_it.d \
+./Core/Src/sx126x.d \
 ./Core/Src/syscalls.d \
 ./Core/Src/sysmem.d \
 ./Core/Src/system_stm32f4xx.d 

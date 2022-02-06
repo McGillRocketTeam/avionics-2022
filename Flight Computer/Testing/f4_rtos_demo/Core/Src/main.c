@@ -22,6 +22,7 @@
 #include "cmsis_os.h"
 #include "fatfs.h"
 #include "usb_device.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -32,6 +33,7 @@
 #include "semphr.h"
 #include "gps.h"
 #include "MAX31855.h"
+#include "sx126x.h"
 
 /* USER CODE END Includes */
 
@@ -55,13 +57,17 @@ float temperature = 0;
 double latitude;
 double longitude;
 float time;
+int second = 0;
+int minute = 0;
+
+uint8_t tx_buffer[150];
 
 FATFS FatFs; 	//Fatfs handle
 FIL fil; 		//File handle
 FRESULT fres; //Result after operations
-BYTE writeBuf[100];
+char filename[13];
+uint8_t writeBuf[1000];
 UINT bytesWrote;
-GPIO_PinState buttonState;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -69,6 +75,7 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c3;
 
+SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi4;
 SPI_HandleTypeDef hspi5;
 
@@ -131,6 +138,7 @@ static void MX_SPI5_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_UART8_Init(void);
+static void MX_SPI2_Init(void);
 void printSensorsFunc(void *argument);
 void pollSensorsFunc(void *argument);
 void saveDataFunc(void *argument);
@@ -191,6 +199,7 @@ int main(void)
   MX_I2C3_Init();
   MX_USART6_UART_Init();
   MX_UART8_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
   // reset LEDs
   HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET);
@@ -222,7 +231,17 @@ int main(void)
   HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
 
   dev_ctx_lsm = lsm6dsl_init();
-  //dev_ctx_lps = lps22hh_init();
+  dev_ctx_lps = lps22hh_init();
+
+  //SRAD Radio init
+  set_hspi(hspi2);
+  set_NSS_pin(SX_NSS_GPIO_Port, SX_NSS_Pin);
+  set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+  set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+  set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+  Tx_setup();
+
+  sd_init_dynamic_filename("FC", "", filename);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -273,23 +292,6 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
-
-  HAL_Delay(1000);
-
-  //mount
-    fres = f_mount(&FatFs, "", 1); //1=mount now
-  	if (fres != FR_OK) {
-  	  myprintf("f_mount error (%i)\r\n", fres);
-  	  while(1);
-  	}
-  	//open file
-    fres = f_open(&fil, "new_file.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-  	if(fres == FR_OK) {
-  		myprintf("I was able to open 'new_file.txt' for writing\r\n");
-  	} else {
-  		myprintf("f_open error (%i)\r\n", fres);
-  	}
-
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
@@ -440,6 +442,44 @@ static void MX_I2C3_Init(void)
   /* USER CODE BEGIN I2C3_Init 2 */
 
   /* USER CODE END I2C3_Init 2 */
+
+}
+
+/**
+  * @brief SPI2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI2_Init(void)
+{
+
+  /* USER CODE BEGIN SPI2_Init 0 */
+
+  /* USER CODE END SPI2_Init 0 */
+
+  /* USER CODE BEGIN SPI2_Init 1 */
+
+  /* USER CODE END SPI2_Init 1 */
+  /* SPI2 parameter configuration*/
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi2.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI2_Init 2 */
+
+  /* USER CODE END SPI2_Init 2 */
 
 }
 
@@ -661,6 +701,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, PM_12V_EN_Pin|Vent_Valve_EN_Pin|Payload_EN_Pin|TH_CS_1_Pin
@@ -670,10 +711,18 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOF, SD_CS_Pin|Prop_Gate_2_Pin|Prop_Gate_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, LED1_Pin|LED2_Pin|LED3_Pin|VR_CTRL_PWR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, LED1_Pin|LED2_Pin|LED3_Pin|SX_AMP_Pin
+                          |VR_CTRL_PWR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, Prop_Pyro_Arming_Pin|Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin|Rcov_Arm_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, Prop_Pyro_Arming_Pin|SX_RST_Pin|SX_RF_SW_Pin|Rcov_Gate_Main_Pin
+                          |Rcov_Gate_Drogue_Pin|Rcov_Arm_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SX_NSS_GPIO_Port, SX_NSS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SX_FILTER_GPIO_Port, SX_FILTER_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, GPIO_PIN_RESET);
@@ -700,8 +749,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Button_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LED1_Pin LED2_Pin LED3_Pin VR_CTRL_PWR_Pin */
-  GPIO_InitStruct.Pin = LED1_Pin|LED2_Pin|LED3_Pin|VR_CTRL_PWR_Pin;
+  /*Configure GPIO pins : LED1_Pin LED2_Pin LED3_Pin SX_AMP_Pin
+                           VR_CTRL_PWR_Pin */
+  GPIO_InitStruct.Pin = LED1_Pin|LED2_Pin|LED3_Pin|SX_AMP_Pin
+                          |VR_CTRL_PWR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -726,18 +777,36 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Prop_Cont_1_Pin Rcov_Cont_Main_Pin Rcov_Cont_Drogue_Pin */
-  GPIO_InitStruct.Pin = Prop_Cont_1_Pin|Rcov_Cont_Main_Pin|Rcov_Cont_Drogue_Pin;
+  /*Configure GPIO pins : Prop_Cont_1_Pin SX_BUSY_Pin SX_DIO_Pin Rcov_Cont_Main_Pin
+                           Rcov_Cont_Drogue_Pin */
+  GPIO_InitStruct.Pin = Prop_Cont_1_Pin|SX_BUSY_Pin|SX_DIO_Pin|Rcov_Cont_Main_Pin
+                          |Rcov_Cont_Drogue_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Prop_Pyro_Arming_Pin Rcov_Gate_Main_Pin Rcov_Gate_Drogue_Pin Rcov_Arm_Pin */
-  GPIO_InitStruct.Pin = Prop_Pyro_Arming_Pin|Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin|Rcov_Arm_Pin;
+  /*Configure GPIO pins : Prop_Pyro_Arming_Pin SX_RST_Pin SX_RF_SW_Pin Rcov_Gate_Main_Pin
+                           Rcov_Gate_Drogue_Pin Rcov_Arm_Pin */
+  GPIO_InitStruct.Pin = Prop_Pyro_Arming_Pin|SX_RST_Pin|SX_RF_SW_Pin|Rcov_Gate_Main_Pin
+                          |Rcov_Gate_Drogue_Pin|Rcov_Arm_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SX_NSS_Pin */
+  GPIO_InitStruct.Pin = SX_NSS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SX_NSS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SX_FILTER_Pin */
+  GPIO_InitStruct.Pin = SX_FILTER_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SX_FILTER_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : VR_CTRL_REC_Pin */
   GPIO_InitStruct.Pin = VR_CTRL_REC_Pin;
@@ -773,10 +842,13 @@ void printSensorsFunc(void *argument)
   {
 	//myprintf("ACCEL: %f, %f, %f\r\n", acceleration[0], acceleration[1], acceleration[2]);
 	//myprintf("GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
-	xSemaphoreTake(mutexHandle,500);
-	GPS_Poll(&latitude, &longitude, &time);
-	myprintf("GPS 1: %lf, %lf, %f\r\n", latitude, longitude, time);
-	xSemaphoreGive(mutexHandle);
+	//xSemaphoreTake(mutexHandle,500);
+	//GPS_Poll(&latitude, &longitude, &time);
+	//myprintf("GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
+	//myprintf("Pressure: %f, Temperature %f\r\n", pressure, temperature);
+	//myprintf("Acceleration: %f,%f,%f\r\n", acceleration[0], acceleration[1], acceleration[2]);
+	//myprintf("IN angular_rate: %f,%f,%f\r\n", angular_rate[0], angular_rate[1], angular_rate[2]);
+	//xSemaphoreGive(mutexHandle);
     osDelay(1000);
   }
   /* USER CODE END 5 */
@@ -795,13 +867,14 @@ void pollSensorsFunc(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	get_pressure(dev_ctx_lps, &pressure);
+	get_temperature(dev_ctx_lps,  &temperature);
 	get_acceleration(dev_ctx_lsm, acceleration);
 	get_angvelocity(dev_ctx_lsm, angular_rate);
-	xSemaphoreTake(mutexHandle,500);
-	GPS_Poll(&latitude, &longitude, &time);
-	myprintf("GPS 2: %lf, %lf, %f\r\n", latitude, longitude, time);
-	xSemaphoreGive(mutexHandle);
-    osDelay(500);
+	//xSemaphoreTake(mutexHandle,500);
+	//GPS_Poll(&latitude, &longitude, &time);
+	//xSemaphoreGive(mutexHandle);
+    osDelay(100);
   }
   /* USER CODE END pollSensorsFunc */
 }
@@ -820,19 +893,12 @@ void saveDataFunc(void *argument)
 
   for(;;)
   {
-	buttonState = HAL_GPIO_ReadPin(Button_GPIO_Port, Button_Pin);
-	if(buttonState == GPIO_PIN_RESET){
-		//close file
-		f_close(&fil);
-		//demount
-		f_mount(NULL, "", 0);
-		while(1);
-	}
 	//write data
-	sprintf((char*)writeBuf, "GPS: %lf, %lf, %f\r\n", latitude, longitude, time);
-	UINT bytesWrote;
-	fres = f_write(&fil, writeBuf, 43, &bytesWrote);
-    osDelay(1000);
+	sd_open_file(&filename);
+	sprintf((char*)writeBuf, "Data: %f, %f, %d, %d\r\n", pressure, temperature, minute, second);
+	sd_write(&fil, writeBuf);
+	f_close(&fil);
+    osDelay(50);
   }
   /* USER CODE END saveDataFunc */
 }
@@ -868,7 +934,16 @@ void transmitDataFunc(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1000);
+	//S,ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E
+	second++;
+	if(second == 60){
+		second = 0;
+		minute++;
+	}
+	sprintf((char*)tx_buffer, "S,%f,%f,%f,%f,%f,%f,%f,%lf,%lf,%d,%d,%d,%d,%d,E",acceleration[0],acceleration[1],acceleration[2],angular_rate[0],angular_rate[1],angular_rate[2],pressure,latitude,longitude,minute,second,0,0,0);
+	//TxProtocol(tx_buffer,150);
+	HAL_UART_Transmit(&huart3, tx_buffer, sizeof(char)*strlen(tx_buffer), HAL_MAX_DELAY);
+    osDelay(1);
   }
   /* USER CODE END transmitDataFunc */
 }

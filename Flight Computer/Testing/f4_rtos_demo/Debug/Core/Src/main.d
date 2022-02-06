@@ -70,7 +70,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
- ../Core/Inc/gps.h ../Core/Inc/MAX31855.h
+ ../Core/Inc/gps.h ../Core/Inc/MAX31855.h ../Core/Inc/sx126x.h
 
 ../Core/Inc/main.h:
 
@@ -231,3 +231,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/gps.h:
 
 ../Core/Inc/MAX31855.h:
+
+../Core/Inc/sx126x.h:
