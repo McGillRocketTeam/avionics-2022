@@ -49,7 +49,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define TEST_BLINKY 						// pass
+//#define TEST_BLINKY 						// pass
 //#define TEST_EJECTION 					// pass
 //#define TEST_VR 							// pass
 //#define TEST_SD_CARD_ALONE 				// pass
@@ -57,7 +57,7 @@
 //#define TEST_GPS_ALONE					// pass but GPS fix inconsistent sometimes
 //#define TEST_FLASH_W25QXX_ALONE			// status?
 //#define TEST_I2C_SENSORS_ALONE			// pass
-//#define TEST_ALL_SENSORS_WITH_SD_CARD		// pass
+#define TEST_ALL_SENSORS_WITH_SD_CARD		// pass
 //#define RECORD_VIDEO_WITH_TEST			// activates video recorder in TEST_ALL_SENSORS_WITH_SD_CARD
 //#define OUTPUT_USB_WITH_TEST				// sends string to USB with TEST_ALL_SENSORS_WITH_SD_CARD
 
@@ -89,6 +89,7 @@ SPI_HandleTypeDef hspi5;
 
 TIM_HandleTypeDef htim2;
 
+UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
@@ -136,6 +137,7 @@ static void MX_SPI5_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_I2C2_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 // helpers
@@ -193,6 +195,7 @@ int main(void)
   MX_USART6_UART_Init();
   MX_I2C2_Init();
   MX_USB_DEVICE_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
   // reset LEDs
@@ -494,6 +497,8 @@ int main(void)
 				acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
 				angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
 				latitude, longitude);
+
+		HAL_UART_Transmit(&huart3, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
 
 		fres = sd_open_file(filename);
 		if (fres == FR_OK) {
@@ -1074,6 +1079,39 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 2 */
   HAL_TIM_MspPostInit(&htim2);
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 9600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
 
 }
 
