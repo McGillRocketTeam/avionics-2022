@@ -5,6 +5,8 @@
 2.  Convert Python code to C. 
 3.  Integrate into FC code. 
 
+## Quick Rundown of the project 
+
 
 
 
