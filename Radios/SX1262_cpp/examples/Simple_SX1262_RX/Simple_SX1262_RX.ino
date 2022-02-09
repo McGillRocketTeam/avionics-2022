@@ -139,7 +139,7 @@ void setup() {
     Serial.println("setBufferBaseAddress Failed");
   }
   
-  command_status = device.setLoRaModulationParams(LORA_SF9, LORA_BW_062, LORA_CR_4_5, 0x00); // No low data optimization
+  command_status = device.setLoRaModulationParams(LORA_SF5, LORA_BW_500, LORA_CR_4_5, 0x00); // No low data optimization
   if (command_status != COMMAND_SUCCESS) {
     Serial.println("setLoRaModulationParams Failed");
   }
@@ -189,7 +189,7 @@ void sx1262_setup() {
     Serial.println("setBufferBaseAddress Failed");
   }
   
-  command_status = device.setLoRaModulationParams(LORA_SF9, LORA_BW_062, LORA_CR_4_5, 0x00); // No low data optimization
+  command_status = device.setLoRaModulationParams(LORA_SF5, LORA_BW_500, LORA_CR_4_5, 0x00); // No low data optimization
   if (command_status != COMMAND_SUCCESS) {
     Serial.println("setLoRaModulationParams Failed");
   }
