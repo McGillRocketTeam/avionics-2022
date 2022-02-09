@@ -39,6 +39,10 @@
 #include "sd_card.h"
 #include "w25qxx.h" // external flash
 
+// sradio
+#include "sx126x.h"
+#include "sx126x_regs.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +53,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-//#define TEST_BLINKY 						// pass
+#define TEST_BLINKY 						// pass
 //#define TEST_EJECTION 					// pass
 //#define TEST_VR 							// pass
 //#define TEST_SD_CARD_ALONE 				// pass
@@ -57,13 +61,15 @@
 //#define TEST_GPS_ALONE					// pass but GPS fix inconsistent sometimes
 //#define TEST_FLASH_W25QXX_ALONE			// status?
 //#define TEST_I2C_SENSORS_ALONE			// pass
-#define TEST_ALL_SENSORS_WITH_SD_CARD		// pass
+//#define TEST_ALL_SENSORS_WITH_SD_CARD		// pass
 //#define RECORD_VIDEO_WITH_TEST			// activates video recorder in TEST_ALL_SENSORS_WITH_SD_CARD
 //#define OUTPUT_USB_WITH_TEST				// sends string to USB with TEST_ALL_SENSORS_WITH_SD_CARD
 
 //#define TEST_USB_VCP_ALONE				// pass
 
 //#define TEST_I2C_PAYLOAD
+
+//#define WITH_SRADIO
 
 //#define TEST_VENT_VALVE
 //#define TEST_PRESSURE_TRANSDUCER_ADC
@@ -84,11 +90,13 @@ ADC_HandleTypeDef hadc1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
 
+SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi4;
 SPI_HandleTypeDef hspi5;
 
 TIM_HandleTypeDef htim2;
 
+UART_HandleTypeDef huart8;
 UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
 
@@ -138,6 +146,8 @@ static void MX_I2C3_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_SPI2_Init(void);
+static void MX_UART8_Init(void);
 /* USER CODE BEGIN PFP */
 
 // helpers
@@ -196,6 +206,8 @@ int main(void)
   MX_I2C2_Init();
   MX_USB_DEVICE_Init();
   MX_USART3_UART_Init();
+  MX_SPI2_Init();
+  MX_UART8_Init();
   /* USER CODE BEGIN 2 */
 
   // reset LEDs
@@ -235,6 +247,17 @@ int main(void)
 
   dev_ctx_lsm = lsm6dsl_init();
   dev_ctx_lps = lps22hh_init();
+
+
+#ifdef WITH_SRADIO
+  set_hspi(hspi2);
+  set_NSS_pin(SX_NSS_GPIO_Port, SX_NSS_Pin);
+  set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+  set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+  set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+  Tx_setup();
+#endif
+
 
 #ifdef HOLIDAY_LED_BLINKY
 	// use ejection channels to blink LEDs like Christmas lights
@@ -492,13 +515,17 @@ int main(void)
 		GPS_check_nonzero_data(latitude, longitude, &gps_fix_lat, &gps_fix_long);
 
 		// make buffer with data and save
-		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,E\r\n",
+		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,E\n",
 				pressure_hPa, temperature_degC,
 				acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
 				angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
 				latitude, longitude);
 
-		HAL_UART_Transmit(&huart3, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+		// XTend
+//		HAL_UART_Transmit(&huart3, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+
+		// SRADio
+		TxProtocol(msg_buffer, strlen(msg_buffer));
 
 		fres = sd_open_file(filename);
 		if (fres == FR_OK) {
@@ -540,12 +567,20 @@ int main(void)
 
 
 #ifdef TEST_BLINKY
+	uint8_t counter = 0;
 	while (1)
 	{
 		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 		HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
-		HAL_Delay(500);
+
+		char msg_buffer[1000];
+		sprintf(msg_buffer, "printing count = %d!\r\n", counter++);
+
+		if (counter > 100) counter = 0;
+		HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+
+		HAL_Delay(200);
 	}
 
 #endif
@@ -948,6 +983,44 @@ static void MX_I2C3_Init(void)
 }
 
 /**
+  * @brief SPI2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI2_Init(void)
+{
+
+  /* USER CODE BEGIN SPI2_Init 0 */
+
+  /* USER CODE END SPI2_Init 0 */
+
+  /* USER CODE BEGIN SPI2_Init 1 */
+
+  /* USER CODE END SPI2_Init 1 */
+  /* SPI2 parameter configuration*/
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi2.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI2_Init 2 */
+
+  /* USER CODE END SPI2_Init 2 */
+
+}
+
+/**
   * @brief SPI4 Initialization Function
   * @param None
   * @retval None
@@ -1083,6 +1156,39 @@ static void MX_TIM2_Init(void)
 }
 
 /**
+  * @brief UART8 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART8_Init(void)
+{
+
+  /* USER CODE BEGIN UART8_Init 0 */
+
+  /* USER CODE END UART8_Init 0 */
+
+  /* USER CODE BEGIN UART8_Init 1 */
+
+  /* USER CODE END UART8_Init 1 */
+  huart8.Instance = UART8;
+  huart8.Init.BaudRate = 9600;
+  huart8.Init.WordLength = UART_WORDLENGTH_8B;
+  huart8.Init.StopBits = UART_STOPBITS_1;
+  huart8.Init.Parity = UART_PARITY_NONE;
+  huart8.Init.Mode = UART_MODE_TX_RX;
+  huart8.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart8.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART8_Init 2 */
+
+  /* USER CODE END UART8_Init 2 */
+
+}
+
+/**
   * @brief USART3 Initialization Function
   * @param None
   * @retval None
@@ -1178,11 +1284,15 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, LED1_Pin|LED2_Pin|LED3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, Prop_Pyro_Arming_Pin|VR_CTRL_PWR_Pin|Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin
-                          |Rcov_Arm_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, Prop_Pyro_Arming_Pin|SX_RST_Pin|SX_RF_SW_Pin|VR_CTRL_PWR_Pin
+                          |Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin|Rcov_Arm_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, FLASH_IO3_Pin|FLASH_WP_Pin|CS_FLASH_Pin|VR_CTRL_REC_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(SX_NSS_GPIO_Port, SX_NSS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, SX_FILTER_Pin|FLASH_IO3_Pin|FLASH_WP_Pin|CS_FLASH_Pin
+                          |VR_CTRL_REC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PM_12V_EN_Pin Vent_Valve_EN_Pin Payload_EN_Pin TH_CS_1_Pin
                            TH_CS_2_Pin */
@@ -1232,23 +1342,34 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Prop_Cont_1_Pin Rcov_Cont_Main_Pin Rcov_Cont_Drogue_Pin */
-  GPIO_InitStruct.Pin = Prop_Cont_1_Pin|Rcov_Cont_Main_Pin|Rcov_Cont_Drogue_Pin;
+  /*Configure GPIO pins : Prop_Cont_1_Pin SX_BUSY_Pin SX_DIO_Pin Rcov_Cont_Main_Pin
+                           Rcov_Cont_Drogue_Pin */
+  GPIO_InitStruct.Pin = Prop_Cont_1_Pin|SX_BUSY_Pin|SX_DIO_Pin|Rcov_Cont_Main_Pin
+                          |Rcov_Cont_Drogue_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Prop_Pyro_Arming_Pin VR_CTRL_PWR_Pin Rcov_Gate_Main_Pin Rcov_Gate_Drogue_Pin
-                           Rcov_Arm_Pin */
-  GPIO_InitStruct.Pin = Prop_Pyro_Arming_Pin|VR_CTRL_PWR_Pin|Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin
-                          |Rcov_Arm_Pin;
+  /*Configure GPIO pins : Prop_Pyro_Arming_Pin SX_RST_Pin SX_RF_SW_Pin VR_CTRL_PWR_Pin
+                           Rcov_Gate_Main_Pin Rcov_Gate_Drogue_Pin Rcov_Arm_Pin */
+  GPIO_InitStruct.Pin = Prop_Pyro_Arming_Pin|SX_RST_Pin|SX_RF_SW_Pin|VR_CTRL_PWR_Pin
+                          |Rcov_Gate_Main_Pin|Rcov_Gate_Drogue_Pin|Rcov_Arm_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FLASH_IO3_Pin FLASH_WP_Pin CS_FLASH_Pin VR_CTRL_REC_Pin */
-  GPIO_InitStruct.Pin = FLASH_IO3_Pin|FLASH_WP_Pin|CS_FLASH_Pin|VR_CTRL_REC_Pin;
+  /*Configure GPIO pin : SX_NSS_Pin */
+  GPIO_InitStruct.Pin = SX_NSS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SX_NSS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SX_FILTER_Pin FLASH_IO3_Pin FLASH_WP_Pin CS_FLASH_Pin
+                           VR_CTRL_REC_Pin */
+  GPIO_InitStruct.Pin = SX_FILTER_Pin|FLASH_IO3_Pin|FLASH_WP_Pin|CS_FLASH_Pin
+                          |VR_CTRL_REC_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
