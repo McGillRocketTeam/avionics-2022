@@ -15,6 +15,8 @@ RM := rm -rf
 -include Middlewares/Third_Party/FreeRTOS/Source/subdir.mk
 -include Drivers/SX1262_c/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
+-include Drivers/MRT_LSM6DSR_f4xx/Src/subdir.mk
+-include Drivers/MRT_LPS22HH_f4xx/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include subdir.mk
@@ -66,8 +68,8 @@ all: main-build
 main-build: FCV4.3\ Pinout\ F437ZI.elf secondary-outputs
 
 # Tool invocations
-FCV4.3\ Pinout\ F437ZI.elf: $(OBJS) $(USER_OBJS) C:\Users\Taha\ Mohamed\ Lazreg\Desktop\avionics-2022\Flight\ Computer\Integration\MiniFCDummyData\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "FCV4.3 Pinout F437ZI.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Taha Mohamed Lazreg\Desktop\avionics-2022\Flight Computer\Integration\MiniFCDummyData\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FCV4.3 Pinout F437ZI.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+FCV4.3\ Pinout\ F437ZI.elf: $(OBJS) $(USER_OBJS) C:\Users\SlinderKid\Desktop\McGill\00\ -\ MRT\avionics-2022\Flight\ Computer\Integration\MiniFCDummyData\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "FCV4.3 Pinout F437ZI.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\SlinderKid\Desktop\McGill\00 - MRT\avionics-2022\Flight Computer\Integration\MiniFCDummyData\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FCV4.3 Pinout F437ZI.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
