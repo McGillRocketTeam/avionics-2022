@@ -3,25 +3,35 @@
 #define xtendSerial Serial2
 
 String str = "s;aa.aaa;aa.aaa;aa.aaa;gg,ggg;gg,ggg;gg,ggg;------;ppppppp;llllllllll;lllllllllll;altalt;tt:tt:ttt;ssssss;e";
-String loopstr = "123456789-123456789-123456789-123456789-123456789-123456789-123456789";
+String loopstr = "----.----|----.----|----.----|";
+String loopstrs = "abcdefghijklmnopqrstuvwxyz1234567890-=_+";
 int duration = 1000;
 unsigned long one_sec;
 uint8_t count = 0;
+unsigned long init_time;
+unsigned long end_time;
 
 void setup() {
   Serial.begin(115200);
   Wire.begin();
   xtendSerial.begin(9600);
-
-  one_sec = millis()+1000;
+//  xtendSerial.print(str);
+//  one_sec = millis()+1000;
+//  init_time = millis();
 }
 
 void loop() {
-  if(millis() <= one_sec){
-    
+  if (count <= 10){
     xtendSerial.print(loopstr);
-//    Serial.println(str);
+    delay(45);
+    count++;
   }
+  
+//  if(millis() <= one_sec){
+//    
+//    xtendSerial.print(str);
+////    Serial.println(str);
+//  }
   
 //  xtendSerial.print(loopstr);
 //  Serial.println(loopstr);

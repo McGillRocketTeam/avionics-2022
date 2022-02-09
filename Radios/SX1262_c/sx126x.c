@@ -589,7 +589,6 @@ void RxProtocol(uint8_t buffer_received[]){
     HAL_Delay(1400);
 
     sx126x_irq_mask_t irq;
-    command_status = sx126x_get_irq_status(&hspi, &irq); //reading the irq into irq
     do {
         command_status = sx126x_get_irq_status(&hspi, &irq); //reading the irq into irq
     } while ( (!(irq & SX126X_IRQ_RX_DONE)) && (!(irq & SX126X_IRQ_TIMEOUT)) );

@@ -67,68 +67,62 @@ command_status_t SX1262::writeCommand(uint8_t opcode, uint8_t *cmd_buffer, uint1
 
     SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
 
-    // while(digitalRead(_BUSY));
-    if (isBusy()) {
-        return COMMAND_BUSY_TIMEOUT;
+    while (isBusy()) {
+        Serial.println("Radio is busy!");
     }
 
     digitalWrite(_NSS, LOW);
+
     SPI.transfer(opcode);
     uint8_t cmd_status = 0; 
     for (uint8_t i = 0; i < cmd_len; i++) {
         cmd_status = SPI.transfer(cmd_buffer[i]); 
     }
-    if( ((cmd_status & 0b00001110) == SX1262_STATUS_CMD_TIMEOUT) ||
-        ((cmd_status & 0b00001110) == SX1262_STATUS_CMD_ERROR) ||
-        ((cmd_status & 0b00001110) == SX1262_STATUS_CMD_FAILED) ||
+
+    if( (cmd_status & SX1262_STATUS_CMD_TIMEOUT) ||
+        (cmd_status & SX1262_STATUS_CMD_ERROR) ||
+        (cmd_status & SX1262_STATUS_CMD_FAILED) ||
         (cmd_status == 0x00) || (cmd_status == 0xFF)) {
-            Serial.println("Command Error!");
+            Serial.println("Writing Command Error!");
+            Serial.print("Opcode: ");
+            Serial.println(opcode, HEX);
+            Serial.print("Command Buffer: ");
             for (uint8_t i = 0; i < cmd_len; i++) {
                 Serial.print(cmd_buffer[i]);
                 Serial.print(" ");
             }
             Serial.println();
+            Serial.print("Command Status (bin): ");
             Serial.println(cmd_status, BIN);
-            Serial.println(cmd_status);
             status = COMMAND_SPI_FAILED;
     } 
     
     digitalWrite(_NSS, HIGH);
     SPI.endTransaction();
-    delay(10);
     return status;
     
 }
 
-command_status_t SX1262::readCommand(uint8_t opcode, uint8_t *cmd_buffer, uint16_t cmd_len, uint8_t *read_buffer, uint8_t read_offset, bool single_val, bool get_status) {
+command_status_t SX1262::readCommand(uint8_t opcode, uint8_t *cmd_buffer, uint16_t cmd_len, uint8_t *read_buffer) {
     command_status_t status = COMMAND_SUCCESS;
     
     SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
 
-    // while(digitalRead(_BUSY));
-    if (isBusy()) {
-        return COMMAND_BUSY_TIMEOUT;
+    while (isBusy()) {
+        Serial.println("Radio is busy!");
     }
 
     digitalWrite(_NSS, LOW);
     SPI.transfer(opcode);
+
     uint8_t cmd_status = 0;
     for (uint8_t i = 0; i < cmd_len; i++) {
         if (i==0) {
-            if (get_status) {
-                read_buffer[i] = SPI.transfer(cmd_buffer[i]);
-                cmd_status = read_buffer[i];
-                continue;
-            }
             cmd_status = SPI.transfer(cmd_buffer[i]); // Get Status (first byte)
-        } else if (single_val){
-            *read_buffer = SPI.transfer(cmd_buffer[i]);
+        } else if (i < read_offet){
+            SPI.transfer(cmd_buffer[i]);
         } else {
-            if (i < read_offset) {
-                SPI.transfer(cmd_buffer[i]);
-            } else {
-                read_buffer[i-read_offset] = SPI.transfer(cmd_buffer[i]);
-            }
+            read_buffer[i-read_offset] = SPI.transfer(cmd_buffer[i]);
         }
     }
     
@@ -137,12 +131,13 @@ command_status_t SX1262::readCommand(uint8_t opcode, uint8_t *cmd_buffer, uint16
         ((cmd_status & 0b00001110) == SX1262_STATUS_CMD_ERROR) ||
         ((cmd_status & 0b00001110) == SX1262_STATUS_CMD_FAILED) ||
         (cmd_status == 0x00) || (cmd_status == 0xFF)) {
-        status = COMMAND_SPI_FAILED;
+        Serial.println("Reading Command Error!");
+        Serial.print("Opcode: ");
+        Serial.println(opcode, HEX);
     } 
 
     digitalWrite(_NSS, HIGH);
     SPI.endTransaction();
-    delay(10);
     return status;
 }
 /* 
