@@ -20,8 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "usb_device.h"
-#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,7 +31,7 @@
 #include <gps.h>
 #include <sx126x.h>
 
-#include <usbd_cdc_if.h>
+//#include <usbd_cdc_if.h>
 
 #include <semphr.h> //TODO shouldn't have to do that?
 
@@ -115,7 +113,7 @@ const osThreadAttr_t Propulsion4_attributes = {
 osThreadId_t PrintingHandle;
 const osThreadAttr_t Printing_attributes = {
   .name = "Printing",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for MEMORY */
@@ -524,12 +522,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 72;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -797,7 +790,7 @@ static void MX_RTC_Init(void)
   /** Enable the Alarm A
   */
   sAlarm.AlarmTime.Hours = 0x0;
-  sAlarm.AlarmTime.Minutes = 0x0;
+  sAlarm.AlarmTime.Minutes = 0x1;
   sAlarm.AlarmTime.Seconds = 0x0;
   sAlarm.AlarmTime.SubSeconds = 0x0;
   sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
@@ -1253,8 +1246,6 @@ static void XTend_Transmit(char* Msg){
 /* USER CODE END Header_StartMemory0 */
 void StartMemory0(void *argument)
 {
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
 
 	osThreadExit();
@@ -1318,8 +1309,7 @@ void StartEjection1(void *argument)
 	//Mutex
 	while( (EJECT_SENSORS = xSemaphoreCreateMutex()) == NULL) osDelay(10);
 
-	char Start[] = "Starting XTend\r\n";
-	XTend_Transmit(Start); // Transmit to XTend
+	XTend_Transmit("Starting XTend\r\n"); // Transmit to XTend
 	HAL_UART_Transmit(&DEBUG_USART,Start, 16, HAL_MAX_DELAY); // Transmit to Serial Monitor
 	// Wait for Launch
 	HAL_UART_Receive(&XTEND_USART, xtend_rx_buffer, 8, HAL_MAX_DELAY);
@@ -1418,13 +1408,13 @@ void StartTelemetry2(void *argument)
 {
   /* USER CODE BEGIN StartTelemetry2 */
 
-	//osThreadExit();
+	osThreadExit();
 
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
 	//Mutex
-	//while( (TELEMETRY = xSemaphoreCreateMutex()) == NULL) osDelay(10);
+	while( (TELEMETRY = xSemaphoreCreateMutex()) == NULL) osDelay(10);
 
 	//Make the thread joinable?
 
@@ -1435,7 +1425,7 @@ void StartTelemetry2(void *argument)
   {
 	  //Poll sensors data in other thread
 
-	  //while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
+	  while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
@@ -1460,22 +1450,6 @@ void StartTelemetry2(void *argument)
   	  SUBSEC = 0.0;
   	  STATE = 0.0;
   	  CONT = 0.0;
-  	  /*
-  	  ACCx = 0;
-  	  ACCy = 0;
-  	  ACCz = 0;
-  	  GYROx = 0;
-  	  GYROy = 0;
-  	  GYROz = 0;
-  	  PRESSURE = 0;
-  	  LAT = 0;
-  	  LONG = 0;
-  	  MIN = 0;
-  	  SEC = 0;
-  	  SUBSEC = 0;
-  	  STATE = 0;
-  	  CONT = 0;
-  	  */
 
 
 	  //TODO Need to make this 't' variable from the Iridium or convert the seconds from the GPS
@@ -1501,7 +1475,7 @@ void StartTelemetry2(void *argument)
   	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,E", ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
 
 	  //Xtend send
-	  XTend_Transmit(xtend_tx_buffer);
+	  //XTend_Transmit(xtend_tx_buffer);
 
 	  //SRadio send
 	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer));
@@ -1654,7 +1628,7 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	osThreadExit();
+	//osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 
