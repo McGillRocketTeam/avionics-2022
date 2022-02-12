@@ -33,8 +33,6 @@
 
 //#include <usbd_cdc_if.h>
 
-#include <semphr.h> //TODO shouldn't have to do that?
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,6 +59,8 @@ ADC_HandleTypeDef hadc1;
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
+
+IWDG_HandleTypeDef hiwdg;
 
 RTC_HandleTypeDef hrtc;
 
@@ -99,7 +99,7 @@ const osThreadAttr_t Telemetry2_attributes = {
 osThreadId_t Sensors3Handle;
 const osThreadAttr_t Sensors3_attributes = {
   .name = "Sensors3",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for Propulsion4 */
@@ -152,8 +152,9 @@ uint8_t SEND_FREQ = 0.2; //Times per second that you want to transmit data
 
 //XTend
 #define XTEND_USART huart3
+#define XTEND_BUFFER_SIZE 512
 uint8_t xtend_rx_buffer[64] = {0}; // XTend Reception buffer
-char xtend_tx_buffer[512]; // XTend Transmit
+char xtend_tx_buffer[XTEND_BUFFER_SIZE]; // XTend Transmit
 //These variables are for testing
 float ACCx;
 float ACCy;
@@ -169,27 +170,6 @@ float SEC;
 float SUBSEC;
 float STATE;
 float CONT;
-
-
-
-//Mutexes are created in their respective threads
-SemaphoreHandle_t MEMORY;
-SemaphoreHandle_t PROP_SENSORS;
-SemaphoreHandle_t _SENSORS;
-SemaphoreHandle_t TELEMETRY;
-SemaphoreHandle_t EJECT_SENSORS;
-SemaphoreHandle_t PRINTING;
-
-SemaphoreHandle_t MUTEXES[5];
-
-/*
-MUTEXES[0] = MEMORY;
-MUTEXES[1] = PROP_SENSORS;
-MUTEXES[2] = SENSORS;
-MUTEXES[3] = TELEMETRY;
-MUTEXES[4] = EJECT_SENSORS;
-*/
-
 
 
 //Jasper's variables
@@ -241,6 +221,7 @@ static void MX_UART8_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_RTC_Init(void);
+static void MX_IWDG_Init(void);
 void StartMemory0(void *argument);
 void StartEjection1(void *argument);
 void StartTelemetry2(void *argument);
@@ -302,6 +283,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
   MX_RTC_Init();
+  //MX_IWDG_Init(); TODO remove
   /* USER CODE BEGIN 2 */
 
   /*
@@ -409,7 +391,7 @@ while(1){
     * For the SRadio
     * -SPI2 on v4.3
     */
-	HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET); //TODO is it necessary?
 	set_hspi(SRADIO_SPI);
 	// SPI2_SX_CS_GPIO_Port
 	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
@@ -430,6 +412,35 @@ while(1){
   MRT_SetupRTOS(DEBUG_USART,10);
 
   HAL_UART_Transmit(&DEBUG_USART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
+
+
+
+  /*
+   * Watch dog periodic interrupt
+   */
+  //HAL_TIM_Base_Start(&htim10); Used to be a simple global interrupt
+
+
+  /*
+   * An actual watch dog
+   * -Remove the MX_IWDG_Init() that is auto-generated and add it just before the osKernelStart
+   *
+   * IF THE WATCH DOG IS NOT REFRESH BEFORE THE X SECONDS TIMEOUT IT WILL RESET THE BOARD
+   * It doesn't garantie that if a thread stops running it's going to be detected
+   *
+   * DONT FORGET ABOUT ALARM A GETTING RESET BUT SHOULDNT
+   *
+   * Potential solutions:
+   * 	-A watch dog thread where the refresh function is called:
+   * 		This thread will be responsible for making sure that every other thread is running correctly
+   * 		If this specific thread stops running, restart the whole thing when the timeout occurs.
+   *
+   * 	-A global interrupts that acts as a watchdog:
+   * 		If the interrupts fails, we are doomed
+   *
+   */
+  MX_IWDG_Init();
+  HAL_IWDG_Refresh(&hiwdg);
 
   /* USER CODE END 2 */
 
@@ -731,6 +742,34 @@ static void MX_I2C3_Init(void)
 }
 
 /**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
+  hiwdg.Init.Reload = 2499;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+
+  /* USER CODE END IWDG_Init 2 */
+
+}
+
+/**
   * @brief RTC Initialization Function
   * @param None
   * @retval None
@@ -1022,7 +1061,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 9600;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
@@ -1253,14 +1292,10 @@ void StartMemory0(void *argument)
 	//Add thread id to the list
 	threadID[0]=osThreadGetId();
 
-	//Mutex
-	while( (MEMORY = xSemaphoreCreateMutex()) == NULL) osDelay(10);
 
 	  /* Infinite loop */
 	  for(;;)
 	  {
-	      while( xSemaphoreTake( MEMORY, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
-
 
 		  //Write data to sd and flash
 
@@ -1272,7 +1307,6 @@ void StartMemory0(void *argument)
 
 		  MRT_StandByMode(SLEEP_TIME);
 		}
-		  while(xSemaphoreGive(MEMORY)!= pdTRUE) osDelay(10);
 
 		  osDelay(1000/DATA_FREQ);
 	  }
@@ -1306,9 +1340,7 @@ void StartEjection1(void *argument)
 
 	char buffer[TX_BUF_DIM];
 
-	//Mutex
-	while( (EJECT_SENSORS = xSemaphoreCreateMutex()) == NULL) osDelay(10);
-
+	char* Start = "Starting XTend\r\n";
 	XTend_Transmit("Starting XTend\r\n"); // Transmit to XTend
 	HAL_UART_Transmit(&DEBUG_USART,Start, 16, HAL_MAX_DELAY); // Transmit to Serial Monitor
 	// Wait for Launch
@@ -1319,12 +1351,8 @@ void StartEjection1(void *argument)
 	  for(;;)
 	  {
 
-		  while( xSemaphoreTake( EJECT_SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
-
 		  //Poll altitude (poll pressure)
 		  //pressure_hPa =
-
-		  while(xSemaphoreGive(EJECT_SENSORS)!= pdTRUE) osDelay(10);
 
 
 		  if (MIN_APOGEE <= pressure_hPa && MAX_APOGEE > pressure_hPa){
@@ -1343,13 +1371,10 @@ void StartEjection1(void *argument)
 
 			  for(;;){
 
-				  while( xSemaphoreTake( EJECT_SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 				  //Poll altitude (pressure and acceleration?)
 				  //pressure_hPa =
 				  //altitude_m =
-
-				  while(xSemaphoreGive(EJECT_SENSORS)!= pdTRUE) osDelay(10);
 
 				  //We reached main deployment altitude
 				  if (altitude_m>DEPLOY_ALT_MIN && altitude_m<DEPLOY_ALT_MAX){
@@ -1370,12 +1395,9 @@ void StartEjection1(void *argument)
 
 					  for(;;){
 
-						  while( xSemaphoreTake( EJECT_SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 						  //Poll altitude (pressure and acceleration)
 						  //altitude_m =
-
-						  while(xSemaphoreGive(EJECT_SENSORS)!= pdTRUE) osDelay(10);
 
 						  if (altitude_m < GROUND_LEVEL)  osThreadExit();
 
@@ -1408,24 +1430,19 @@ void StartTelemetry2(void *argument)
 {
   /* USER CODE BEGIN StartTelemetry2 */
 
-	osThreadExit();
+	//osThreadExit();
 
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
-	//Mutex
-	while( (TELEMETRY = xSemaphoreCreateMutex()) == NULL) osDelay(10);
+	osDelay(1000);
 
 	//Make the thread joinable?
-
-	osDelay(1000);
 
   /* Infinite loop */
   for(;;)
   {
 	  //Poll sensors data in other thread
-
-	  while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
@@ -1471,11 +1488,11 @@ void StartTelemetry2(void *argument)
 
 	  //TODO maybe add variable for GPS time and both temperature values?
 
-  	  memset (xtend_tx_buffer,0,512);
+  	  memset (xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
   	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,E", ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
 
 	  //Xtend send
-	  //XTend_Transmit(xtend_tx_buffer);
+	  XTend_Transmit(xtend_tx_buffer);
 
 	  //SRadio send
 	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer));
@@ -1488,10 +1505,10 @@ void StartTelemetry2(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
+	  HAL_IWDG_Refresh(&hiwdg);
 
-	  //while(xSemaphoreGive(_SENSORS)!= pdTRUE) osDelay(10);
 
-    osDelay(1000/SEND_FREQ);
+    //osDelay(1000/SEND_FREQ);
     osDelay(1000);
   }
 
@@ -1518,18 +1535,8 @@ void StartSensors3(void *argument)
 	//Add thread id to the list
 	threadID[3]=osThreadGetId();
 
-
-	//Mutex
-	while( (_SENSORS = xSemaphoreCreateMutex()) == NULL) osDelay(10);
-
   for(;;)
   {
-
-	  while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) {
-		  HAL_UART_Transmit(&DEBUG_USART,"No sense\r\n",10,HAL_MAX_DELAY);
-		  osDelay(10);
-	  }
-
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, SET);
 
@@ -1560,7 +1567,7 @@ void StartSensors3(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
 
-	  while(xSemaphoreGive(_SENSORS)!= pdTRUE) osDelay(10);
+	  HAL_IWDG_Refresh(&hiwdg);
 
 	  osDelay(1000);
 
@@ -1594,16 +1601,11 @@ void StartPropulsion4(void *argument)
 
 		if (wakingUp) osThreadExit();
 
-		//Mutex
-		while( (PROP_SENSORS = xSemaphoreCreateMutex()) == NULL) osDelay(10);
-
 	  for(;;)
 	  {
-		  while( xSemaphoreTake( PROP_SENSORS, ( TickType_t ) 10 ) != pdTRUE ) osDelay(10);
 
 		  //Poll sensor data (burnout level)
 
-		  while(xSemaphoreGive(PROP_SENSORS)!= pdTRUE) osDelay(10);
 
 		  //Write to SD and SEND
 
@@ -1628,7 +1630,7 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	//osThreadExit();
+	osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 
@@ -1637,12 +1639,6 @@ void StartPrinting(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
-	  while( xSemaphoreTake( _SENSORS, ( TickType_t ) 10 ) != pdTRUE ) {
-		  HAL_UART_Transmit(&DEBUG_USART,"No print\r\n",10,HAL_MAX_DELAY);
-		  osDelay(10);
-	  }
-
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 	  //GPS
@@ -1681,7 +1677,7 @@ void StartPrinting(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
-	  while(xSemaphoreGive(_SENSORS)!= pdTRUE) osDelay(10);
+	  HAL_IWDG_Refresh(&hiwdg);
 
       osDelay(200);
 }
@@ -1709,6 +1705,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+
+  /*TODO Tried global interrupts instead of the watch dog but couldn't manage to make the interrupt work
+  if(htim == &htim10){
+	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
+	  HAL_Delay(20000);
+	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
+	  HAL_Delay(200);
+  }
+
+  if (htim->Instance == TIM10){
+	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
+	  HAL_Delay(20000);
+	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
+	  HAL_Delay(200);
+  }
+  */
 
   /* USER CODE END Callback 1 */
 }

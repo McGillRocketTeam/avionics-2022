@@ -18,9 +18,9 @@
 #include <lsm6dsr_reg.h>
 #include <lps22hh_reg.h>
 #include <stm32f4xx_hal.h>
-#include <string.h> /* memset */
+//#include <string.h> /* memset */
 
-#define TX_BUF_DIM          50
+#define TX_BUF_DIM          256
 
 
 static float pressure_hPa;
