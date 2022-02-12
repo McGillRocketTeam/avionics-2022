@@ -60,4 +60,7 @@ double GPS_nmea_to_dec(double deg_coord, char nsew);
 void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_lat, uint8_t *gps_fix_long);
 void GPS_Poll(double*, double*, float*);
 
+void GPS_Poll_IT(void);
+int GPS_ParseBuffer_IT(double *latitude, double *longitude, float *time);
+
 extern void tone(uint32_t duration, uint32_t repeats);

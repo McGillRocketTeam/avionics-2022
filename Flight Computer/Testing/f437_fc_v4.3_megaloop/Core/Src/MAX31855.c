@@ -25,24 +25,6 @@ float Max31855_Read_Temp(void) {
 
 	Error = v & 0x07;								  // Error Detection
 
-//	sign = (DATARX[0] & (0x80)) >> 7;					// Sign Bit calculation
-//
-//	if (DATARX[3] & 0x07)								 // Returns Error Number
-//		return (-1 * (DATARX[3] & 0x07));
-//
-//	else if (sign == 1) {								// Negative Temperature
-//		Temp = (DATARX[0] << 6) | (DATARX[1] >> 2);
-//		Temp &= 0b01111111111111;
-//		Temp ^= 0b01111111111111;
-//		return ((double) -Temp / 4);
-//	}
-//
-//	else												 // Positive Temperature
-//	{
-//		Temp = (DATARX[0] << 6) | (DATARX[1] >> 2);
-//		return ((double) Temp / 4);
-//	}
-
 	if (v & 0x7) {
 		// uh oh, a serious problem!
 		return -99999;

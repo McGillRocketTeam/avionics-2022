@@ -29,7 +29,7 @@
 // sensors
 #include "i2c_sensor_functions.h"
 #include "gps.h"
-#include "MAX31855.h"
+#include "MAX31855.h" // thermocouple
 
 // data storage
 #include "sd_card.h"
@@ -52,19 +52,12 @@
 // radios
 #define USING_XTEND // comment out to use SRADio
 
-//#ifdef USING_XTEND
-//#define radio_tx(msg_buffer)		HAL_UART_Transmit(&huart3, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY)
-//#else // SRADio
-//#define radio_tx(msg_buffer) 		TxProtocol(msg_buffer, strlen(msg_buffer))
-//#endif
-
-
 // buzzer durations
-#define BUZZ_SUCCESS_DURATION	100		// ms
-#define BUZZ_SUCCESS_REPEATS	3
+#define BUZZ_SUCCESS_DURATION	50		// ms
+#define BUZZ_SUCCESS_REPEATS	1
 
-#define BUZZ_FAILURE_DURATION	1000 	// ms
-#define BUZZ_FAILURE_REPEATS	2
+#define BUZZ_FAILURE_DURATION	100 	// ms
+#define BUZZ_FAILURE_REPEATS	1
 
 /* USER CODE END PTD */
 
@@ -106,20 +99,27 @@ volatile uint8_t state = 0;
 // i2c sensors
 stmdev_ctx_t dev_ctx_lsm;
 stmdev_ctx_t dev_ctx_lps;
-float acceleration_mg[] = {0, 0, 0};
-float angular_rate_mdps[]= {0, 0, 0};
-float pressure_hPa = 0;
-float temperature_degC = 0;
+volatile float acceleration_mg[] = {0, 0, 0};
+volatile float angular_rate_mdps[]= {0, 0, 0};
+volatile float pressure_hPa = 0;
+volatile float temperature_degC = 0;
 
 // gps data
-double latitude;
-double longitude;
-float time;
+volatile double latitude;
+volatile double longitude;
+volatile float time;
 static uint8_t gps_fix_lat = 0;
 static uint8_t gps_fix_long = 0; // beep when we get fix
+extern char *rx_buffer_it;
+
+// tank temperature (thermocouple)
+volatile float tank_temperature = 0.0f;
+volatile float tank_pressure = 0.0f;
+volatile uint8_t valve_state = 0;
 
 // rtc
-RTC_TimeTypeDef stimestructureget;
+RTC_TimeTypeDef stimeget = {0};
+RTC_DateTypeDef sdateget = {0};
 
 // sd card
 FATFS FatFs; 	//Fatfs handle
@@ -162,11 +162,32 @@ void tone(uint32_t duration, uint32_t repeats);
 int save_flash_to_sd(void);
 
 uint8_t get_continuity();
+float prop_poll_pressure_transducer(void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+// radio transmission wrapper
+// TODO: add reception
+#ifdef USING_XTEND
+void radio_tx(msg_buffer) {
+	HAL_UART_Transmit(&huart3, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+
+	#ifdef DEBUG
+	HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+	#endif
+}
+#else // SRADio
+void radio_tx(msg_buffer) {
+	TxProtocol(msg_buffer, strlen(msg_buffer))
+
+	#ifdef DEBUG
+	HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+	#endif
+}
+#endif
 
 // helper functions for buzzing
 void tone(uint32_t duration, uint32_t repeats) {
@@ -294,22 +315,11 @@ int main(void)
 	  buzz_failure();
   }
 
-  // open sd card file for simultaneous logging
-  fres = f_open(&fil, filename, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-
-  if (fres != FR_OK) {
-	  myprintf("f_open error (%i)\r\n", fres);
-	  buzz_failure();
-	  return fres; // TODO: determine what to do if cannot open file
-  }
-
-  // set pointer to end of file to append
-  f_lseek(&fil, f_size(&fil));
-
   // TODO: figure out where to add video recorder
 
   // init is done, can start timer 4 in interrupt mode for telemetry
   HAL_TIM_Base_Start_IT(&htim4);
+
 
   /* USER CODE END 2 */
 
@@ -427,7 +437,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_6;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -614,9 +624,9 @@ static void MX_RTC_Init(void)
 
   /** Initialize RTC and set the Time and Date
   */
-  sTime.Hours = 0x0;
-  sTime.Minutes = 0x0;
-  sTime.Seconds = 0x0;
+  sTime.Hours = 0x10;
+  sTime.Minutes = 0x20;
+  sTime.Seconds = 0x30;
   sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sTime.StoreOperation = RTC_STOREOPERATION_RESET;
   if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
@@ -624,9 +634,9 @@ static void MX_RTC_Init(void)
     Error_Handler();
   }
   sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x0;
+  sDate.Month = RTC_MONTH_FEBRUARY;
+  sDate.Date = 0x12;
+  sDate.Year = 0x21;
 
   if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
   {
@@ -872,7 +882,7 @@ static void MX_UART8_Init(void)
 
   /* USER CODE END UART8_Init 1 */
   huart8.Instance = UART8;
-  huart8.Init.BaudRate = 115200;
+  huart8.Init.BaudRate = 9600;
   huart8.Init.WordLength = UART_WORDLENGTH_8B;
   huart8.Init.StopBits = UART_STOPBITS_1;
   huart8.Init.Parity = UART_PARITY_NONE;
@@ -1136,37 +1146,66 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		get_temperature(dev_ctx_lps, &temperature_degC);
 
 		// rtc data
-		HAL_RTC_GetTime(&hrtc, &stimestructureget, RTC_FORMAT_BCD);
+		HAL_RTC_GetTime(&hrtc, &stimeget, RTC_FORMAT_BIN);
+		HAL_RTC_GetDate(&hrtc, &sdateget, RTC_FORMAT_BIN); // have to call GetDate for the time to be correct
 
 		// continuity on pyro channels (one hot encoded)
 		continuity = get_continuity();
 
-		// use beeper for GPS to make sure we know whether coordinates are nonzero
-//		GPS_Poll(&latitude, &longitude, &time);
-//		GPS_check_nonzero_data(latitude, longitude, &gps_fix_lat, &gps_fix_long); // sets LEDs, check if we want to keep that behavior
+		// propulsion data
+		tank_temperature = Max31855_Read_Temp();
+		tank_pressure = prop_poll_pressure_transducer();
+		valve_state = HAL_GPIO_ReadPin(IN_Prop_ActuatedVent_Feedback_GPIO_Port, IN_Prop_ActuatedVent_Feedback_Pin);
 
-		// print data into message
-		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%02lu,%d,%d,E\r\n",
+		// use beeper for GPS to make sure we know whether coordinates are nonzero
+		GPS_Poll(&latitude, &longitude, &time);
+		GPS_check_nonzero_data(latitude, longitude, &gps_fix_lat, &gps_fix_long); // sets LEDs, check if we want to keep that behavior
+
+		// avionics message
+		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
 						acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
 						angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
 						pressure_hPa, latitude, longitude,
-						stimestructureget.Minutes, stimestructureget.Seconds,stimestructureget.SecondFraction,
+						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
 						continuity, state);
 
 		// transmit via radio
-//		radio_tx(msg_buffer);
-		HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY); // xtend for now
+		radio_tx(msg_buffer);
+
+		// prop message
+		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
+						tank_pressure, tank_temperature, valve_state,
+						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
+
+		// transmit via radio (TODO: can be modified to send at different rate)
+		radio_tx(msg_buffer);
 
 		// save to sd card
 		fres = sd_open_file(filename);
 		sd_write(&fil, msg_buffer);
 		f_close(&fil);	// close file to make sure it stays saved
 
-		// TODO: save to flash
+		// TODO: save to FLASH
+		// calculate page address and offset based on number of bytes already written
+//		uint32_t page_address = (int) (flash_write_address / w25qxx.BlockSize);
+//		uint32_t page_offset = (int) (flash_write_address % w25qxx.BlockSize);
+
+//		W25qxx_WriteBlock(msg_buffer, page_address, page_offset, strlen((const char *)msg_buffer));
+//		flash_write_address += strlen((const char *)msg_buffer);
 
 	}
 }
 
+//
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+//	if (huart->Instance == USART6) {
+//
+//		// mcu has received data from GPS into buffer, time to parse buffer
+//		GPS_ParseBuffer_IT(&latitude, &longitude, &time);
+//		HAL_UART_Transmit(&huart8, rx_buffer_it, 150, HAL_MAX_DELAY);
+//
+//	}
+//}
 
 /**
  * reads data out of external FLASH and saves to SD card.
@@ -1249,6 +1288,22 @@ uint8_t get_continuity() {
 
 	return continuity;
 
+}
+
+float prop_poll_pressure_transducer(void) {
+
+	// reading adc
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1, 1000);
+	uint32_t pressure_sensor_raw = HAL_ADC_GetValue(&hadc1);
+	HAL_ADC_Stop(&hadc1);
+
+	float voltage = (float) (pressure_sensor_raw / 4095.0); // assuming 12 bits
+
+	// convert using transfer function
+	// TODO
+
+	return voltage;
 }
 
 /* USER CODE END 4 */
