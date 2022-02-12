@@ -332,10 +332,13 @@ static inline uint32_t sx126x_get_gfsk_crc_len_in_bytes( sx126x_gfsk_crc_types_t
 sx126x_hal_status_t sx126x_hal_write( const void* hspi, const uint8_t* command, const uint16_t command_length,
                                       const uint8_t* data, const uint16_t data_length ){
     HAL_StatusTypeDef status;
+    uint8_t response[10] = {0};
     while(HAL_GPIO_ReadPin(BUSY_GPIO,BUSY) == GPIO_PIN_SET);
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_RESET);
-    status = HAL_SPI_Transmit(hspi, command, command_length, 100);
-    status = HAL_SPI_Transmit(hspi, data, data_length, 100);
+    status = HAL_SPI_TransmitReceive(hspi, command, response, command_length, 100);
+    if (data_length != 0) {
+    	status = HAL_SPI_Transmit(hspi, data, data_length, 100);
+    }
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_SET);
     return status;
 }
@@ -401,10 +404,11 @@ sx126x_hal_status_t sx126x_hal_wakeup( const void* hspi ){
 
 HAL_StatusTypeDef writeCommand(uint8_t opcode, uint8_t params[], uint16_t numOfParams){
     HAL_StatusTypeDef status;
+    uint8_t response[10] = {0};
     while(HAL_GPIO_ReadPin(BUSY_GPIO, BUSY) == GPIO_PIN_SET);
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_RESET);
     status = HAL_SPI_Transmit(&hspi, &opcode, 1, 100);
-    status = HAL_SPI_Transmit(&hspi, (uint8_t*)params, numOfParams, 100);
+    status = HAL_SPI_TransmitReceive(&hspi, (uint8_t*)params, (uint8_t*)response, numOfParams, 100);
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_SET);
     return status;
 }
@@ -519,7 +523,7 @@ void TxProtocol(uint8_t data[], uint8_t data_length){
     command_status = sx126x_clear_irq_status(&hspi, dio1_mask);
     command_status = sx126x_write_buffer(&hspi, 0, data, data_length); // 0 is the offset
     command_status = sx126x_set_tx(&hspi, 6000, data_length);
-    HAL_Delay(1000);
+    HAL_Delay(1400);
 
     sx126x_irq_mask_t irq;
     do {

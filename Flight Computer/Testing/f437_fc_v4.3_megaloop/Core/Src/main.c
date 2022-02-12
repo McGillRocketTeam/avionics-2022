@@ -39,15 +39,16 @@
 #include "sx126x.h"
 #include "sx126x_regs.h"
 
+// others
+//#include <IridiumSBD_Static_API.h>
+#include "video_recorder.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
 #define DEBUG
-#ifdef DEBUG
-#define debug_tx_uart(msg_buffer)	HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY)
-#endif
 
 // radios
 #define USING_XTEND // comment out to use SRADio
@@ -125,9 +126,13 @@ RTC_DateTypeDef sdateget = {0};
 FATFS FatFs; 	//Fatfs handle
 FIL fil; 		//File handle
 FRESULT fres; //Result after operations
-static uint8_t msg_buffer[1000];
+static uint8_t msg_buffer[200];
+static uint8_t msg_buffer_av[200];
+static uint8_t msg_buffer_pr[50];
 static char filename[13]; // filename will be of form fc000000.txt which is 13 chars in the array (with null termination)
 const char sd_file_header[] = "S,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E\r\n"; // printed to top of SD card file
+
+volatile uint8_t curr_task = 0;
 
 // external flash
 extern w25qxx_t w25qxx;
@@ -172,19 +177,20 @@ float prop_poll_pressure_transducer(void);
 // radio transmission wrapper
 // TODO: add reception
 #ifdef USING_XTEND
-void radio_tx(msg_buffer) {
-	HAL_UART_Transmit(&huart3, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+void radio_tx(uint8_t *msg_buffer, uint16_t size) {
+	HAL_UART_Transmit(&huart3, msg_buffer, size, HAL_MAX_DELAY);
 
 	#ifdef DEBUG
-	HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart8, msg_buffer, size, HAL_MAX_DELAY);
 	#endif
 }
 #else // SRADio
-void radio_tx(msg_buffer) {
-	TxProtocol(msg_buffer, strlen(msg_buffer))
+void radio_tx(uint8_t *msg_buffer, uint16_t size) {
+//	TxProtocol(msg_buffer, strlen(msg_buffer));
+	TxProtocol(msg_buffer, size);
 
 	#ifdef DEBUG
-	HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart8, msg_buffer, size, HAL_MAX_DELAY);
 	#endif
 }
 #endif
@@ -201,6 +207,11 @@ void tone(uint32_t duration, uint32_t repeats) {
 void buzz_success() { tone(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS); };
 void buzz_failure() { tone(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS); };
 
+#ifdef DEBUG
+void debug_tx_uart(uint8_t *msg_buffer) {
+	HAL_UART_Transmit(&huart8, msg_buffer, strlen((char *)msg_buffer), HAL_MAX_DELAY);
+}
+#endif
 /* USER CODE END 0 */
 
 /**
@@ -283,7 +294,7 @@ int main(void)
   HAL_GPIO_WritePin(FLASH_IO3_GPIO_Port, FLASH_IO3_Pin, SET);
 
 
-#ifdef USING_SRADIO
+#ifndef USING_XTEND
   set_hspi(hspi2);
   set_NSS_pin(SX_NSS_GPIO_Port, SX_NSS_Pin);
   set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
@@ -301,7 +312,8 @@ int main(void)
   buzz_success();
   HAL_Delay(500);
 
-  if (!W25qxx_Init()) Error_Handler(); // init FLASH
+  // init FLASH
+//  if (!W25qxx_Init()) Error_Handler();
   buzz_success();
 
   // init sd card with dynamic filename
@@ -310,12 +322,20 @@ int main(void)
   		Error_Handler();
   }
 
-  int save_flash = save_flash_to_sd(); // check if flash empty and write to sd card if not
-  if (save_flash) {
-	  buzz_failure();
-  }
+//  int save_flash = save_flash_to_sd(); // check if flash empty and write to sd card if not
+//  if (save_flash) {
+//	  buzz_failure();
+//  }
 
-  // TODO: figure out where to add video recorder
+  VR_Power_On();
+
+  // init Iridium
+//  MRT_Static_Iridium_Setup(huart3);
+//  MRT_Static_Iridium_getIMEI();
+
+  // send message with Iridium
+//  MRT_Static_Iridium_sendMessage("message");
+//  MRT_Static_Iridium_Shutdown();
 
   // init is done, can start timer 4 in interrupt mode for telemetry
   HAL_TIM_Base_Start_IT(&htim4);
@@ -330,9 +350,46 @@ int main(void)
 
 //	  #ifdef DEBUG
 ////	  debug_tx_uart(msg_buffer); // data is in global variables
-//	  HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
-//	  HAL_Delay(100);
+//	  	  HAL_Delay(100);
 //	  #endif
+
+	  // start/stop video
+//	  VR_Start_Rec();
+//	  HAL_Delay(1000000);
+//	  VR_Stop_Rec();
+//	  buzz_success();
+
+//	  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
+//
+//	  	// avionics message
+//		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
+//						acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+//						angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
+//						pressure_hPa, latitude, longitude,
+//						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
+//						continuity, state);
+//
+//		// transmit via radio
+////		radio_tx(msg_buffer, strlen(msg_buffer));
+////		TxProtocol(msg_buffer, strlen(msg_buffer));
+//
+//		HAL_UART_Transmit(&huart3, msg_buffer, strlen((char *)msg_buffer), HAL_MAX_DELAY);
+//		HAL_Delay(250);
+//		memset(msg_buffer, 0, 100);
+//
+//		// prop message
+//		sprintf((char *)msg_buffer, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
+//						tank_pressure, tank_temperature, valve_state,
+//						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
+//
+//		// transmit via radio (TODO: can be modified to send at different rate)
+////		radio_tx(msg_buffer);
+////		TxProtocol(msg_buffer, strlen(msg_buffer));
+//		HAL_UART_Transmit(&huart3, msg_buffer, strlen((char *)msg_buffer), HAL_MAX_DELAY);
+//		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
+//		HAL_Delay(250);
+//
+//		memset(msg_buffer, 0, 100);
 
     /* USER CODE END WHILE */
 
@@ -671,7 +728,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -1094,7 +1151,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : SX_NSS_Pin */
   GPIO_InitStruct.Pin = SX_NSS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SX_NSS_GPIO_Port, &GPIO_InitStruct);
 
@@ -1132,58 +1189,91 @@ static void MX_GPIO_Init(void)
 // timer callback
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance == TIM4) {
-		// try running all code in one shot per timer interrupt
-		// if takes too much time, use switch case like FC v2 from 2021
 
-		// poll sensors
 		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
-		// lsm6dsl data
-		get_acceleration(dev_ctx_lsm, acceleration_mg);
-		get_angvelocity(dev_ctx_lsm, angular_rate_mdps);
+		switch (curr_task)
+		{
+			case 1:
+				// lsm6dsl data
+				get_acceleration(dev_ctx_lsm, acceleration_mg);
+				get_angvelocity(dev_ctx_lsm, angular_rate_mdps);
+				break;
 
-		// lps22hh data
-		get_pressure(dev_ctx_lps, &pressure_hPa);
-		get_temperature(dev_ctx_lps, &temperature_degC);
+			case 2:
+				// lps22hh data
+				get_pressure(dev_ctx_lps, &pressure_hPa);
+				get_temperature(dev_ctx_lps, &temperature_degC);
+				break;
 
-		// rtc data
-		HAL_RTC_GetTime(&hrtc, &stimeget, RTC_FORMAT_BIN);
-		HAL_RTC_GetDate(&hrtc, &sdateget, RTC_FORMAT_BIN); // have to call GetDate for the time to be correct
+			case 3:
+				// rtc data
+				HAL_RTC_GetTime(&hrtc, &stimeget, RTC_FORMAT_BIN);
+				HAL_RTC_GetDate(&hrtc, &sdateget, RTC_FORMAT_BIN); // have to call GetDate for the time to be correct
+				break;
 
-		// continuity on pyro channels (one hot encoded)
-		continuity = get_continuity();
+			case 4:
+				// continuity on pyro channels (one hot encoded)
+				continuity = get_continuity();
+				break;
 
-		// propulsion data
-		tank_temperature = Max31855_Read_Temp();
-		tank_pressure = prop_poll_pressure_transducer();
-		valve_state = HAL_GPIO_ReadPin(IN_Prop_ActuatedVent_Feedback_GPIO_Port, IN_Prop_ActuatedVent_Feedback_Pin);
+			case 5:
+				// propulsion data
+				tank_temperature = Max31855_Read_Temp();
+				tank_pressure = prop_poll_pressure_transducer();
+				valve_state = HAL_GPIO_ReadPin(IN_Prop_ActuatedVent_Feedback_GPIO_Port, IN_Prop_ActuatedVent_Feedback_Pin);
+				break;
 
-		// use beeper for GPS to make sure we know whether coordinates are nonzero
-		GPS_Poll(&latitude, &longitude, &time);
-		GPS_check_nonzero_data(latitude, longitude, &gps_fix_lat, &gps_fix_long); // sets LEDs, check if we want to keep that behavior
+			case 6:
+				// gps
+//				GPS_Poll(&latitude, &longitude, &time);
 
-		// avionics message
-		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
-						acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
-						angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
-						pressure_hPa, latitude, longitude,
-						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
-						continuity, state);
+				break;
 
-		// transmit via radio
-		radio_tx(msg_buffer);
+			case 7:
+				// avionics message
+				sprintf((char *)msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
+								acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+								angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
+								pressure_hPa, latitude, longitude,
+								stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
+								continuity, state);
+				HAL_UART_Transmit(&huart3, msg_buffer_av, strlen((char *)msg_buffer_av), HAL_MAX_DELAY);
+				break;
 
-		// prop message
-		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
-						tank_pressure, tank_temperature, valve_state,
-						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
+			case 8:
+				// prop message
+				sprintf((char *)msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
+								tank_pressure, tank_temperature, valve_state,
+								stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
+				HAL_UART_Transmit(&huart3, msg_buffer_pr, strlen((char *)msg_buffer_pr), HAL_MAX_DELAY);
+				break;
 
-		// transmit via radio (TODO: can be modified to send at different rate)
-		radio_tx(msg_buffer);
+			case 9:
+				// save to sd
+				fres = sd_open_file(filename);
+				sd_write(&fil, msg_buffer_av);
+				sd_write(&fil, msg_buffer_pr);
+				f_close(&fil);
+				memset(msg_buffer_av, 0, 200);
+				memset(msg_buffer_pr, 0, 50);
+				break;
 
-		// save to sd card
-		fres = sd_open_file(filename);
-		sd_write(&fil, msg_buffer);
-		f_close(&fil);	// close file to make sure it stays saved
+//			case 10:
+				// radio send avionics
+//				HAL_UART_Transmit(&huart3, msg_buffer_av, strlen((char *)msg_buffer_av), HAL_MAX_DELAY);
+//				break;
+
+//			case 11:
+				// radio send avionics
+//				HAL_UART_Transmit(&huart3, msg_buffer_pr, strlen((char *)msg_buffer_pr), HAL_MAX_DELAY);
+//				break;
+
+			default:
+				curr_task = 0;
+		}
+		curr_task++;
+
+		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET);
 
 		// TODO: save to FLASH
 		// calculate page address and offset based on number of bytes already written
@@ -1316,7 +1406,9 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+	HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, GPIO_PIN_SET);
+	buzz_failure();
+	__BKPT();
   /* USER CODE END Error_Handler_Debug */
 }
 
