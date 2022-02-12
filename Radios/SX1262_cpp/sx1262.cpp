@@ -234,7 +234,7 @@ command_status_t SX1262::writeBuffer(uint8_t offset, uint8_t *tx_buf, uint8_t si
     return writeCommand(SX1262_WRITE_BUFFER, cmd_buf, buf_size);
 }
 
-command_status_t SX1262::readBuffer(uint8_t offset, uint8_t size, uint8_t *received_buf, bool checkStatus) {
+command_status_t SX1262::readBufferUnknownLength(uint8_t offset, uint8_t size, uint8_t *received_buf, bool checkStatus) {
     uint8_t rx_status[2] = {0};
     if (checkStatus) {
         getRXBufferStatus(rx_status); // Update size and offset for new packet
