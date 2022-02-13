@@ -148,7 +148,7 @@ uint8_t GROUND_LEVEL = 20;
 //Telemetry
 uint8_t SLEEP_TIME = 10;
 uint8_t DATA_FREQ = 1; //Times per second that you want to save data
-uint8_t SEND_FREQ = 0.2; //Times per second that you want to transmit data
+uint8_t SEND_FREQ = 10; //Times per second that you want to transmit data
 
 //XTend
 #define XTEND_USART huart3
@@ -1508,8 +1508,7 @@ void StartTelemetry2(void *argument)
 	  HAL_IWDG_Refresh(&hiwdg);
 
 
-    //osDelay(1000/SEND_FREQ);
-    osDelay(1000);
+    osDelay(1000/SEND_FREQ);
   }
 
   //In case it leaves the infinite loop
