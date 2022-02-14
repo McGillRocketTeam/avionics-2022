@@ -1,6 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-NOTE : THIS IS AN OLD KF CODE. I HAVE YET TO MAKE IT INTO AN EKF. 
+NOTE : THIS IS BASED ON AN OLD KF CODE. 
+
+EKF additional features: 
+            -Jacobian instead of transition matrix 
+
+Sensors aboard the roket:
+    -IMU (gyroscope, accelerometer, magnetometer)
+    -GPS 
+    -Barometer 
+
+
 """
 
 import numpy as np
