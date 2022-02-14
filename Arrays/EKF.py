@@ -5,11 +5,15 @@ NOTE : THIS IS BASED ON AN OLD KF CODE.
 EKF additional features: 
             -Jacobian instead of transition matrix 
 
-Sensors aboard the roket:
-    -IMU (gyroscope, accelerometer, magnetometer)
-    -GPS 
-    -Barometer 
+There are many sensors aboard the rocket, the current string format is: 
+S,ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E
+where S: Start, E: end, CONT: continuity (pyro). 
 
+However, we only care about:
+    -IMU: ACCx,ACCy,ACCz,GYROx,GYROy,GYROz
+    -GPS: LAT,LONG
+    -Barometer: PRESSURE
+    -Time: MIN,SEC,SUBSEC (optional)
 
 """
 
