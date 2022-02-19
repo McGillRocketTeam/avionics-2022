@@ -50,3 +50,27 @@ void tone(uint32_t duration, uint32_t repeats, TIM_HandleTypeDef htim)
 	}
 }
 */
+
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+
+	if (GPIO_Pin == IN_Button_Pin){
+		//Manual reset
+
+		MRT_ResetFromStart();
+	}
+
+}
+
+
+void MRT_ResetFromStart(void){
+
+	//Clear all saved data of stages
+
+
+	//Clear wakeup flag and start_reset flag
+
+
+	//Reset function
+	NVIC_SystemReset();
+}

@@ -52,7 +52,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h ../Core/Inc/i2c_sensors.h \
  ../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_LPS22HH_f4xx/Inc/lps22hh_reg.h \
- ../Drivers/MRT_GPS_f4xx/Inc/gps.h ../Drivers/SX1262_c/sx126x.h
+ ../Drivers/MRT_GPS_f4xx/Inc/gps.h ../Drivers/SX1262_c/sx126x.h \
+ ../Drivers/MRT_Thermocouple_f4xx/Inc/MAX31855.h
 
 ../Core/Inc/main.h:
 
@@ -167,3 +168,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/MRT_GPS_f4xx/Inc/gps.h:
 
 ../Drivers/SX1262_c/sx126x.h:
+
+../Drivers/MRT_Thermocouple_f4xx/Inc/MAX31855.h:

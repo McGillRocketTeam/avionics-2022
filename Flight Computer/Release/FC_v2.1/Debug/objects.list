@@ -21,6 +21,7 @@
 "./Drivers/MRT_LPS22HH_f4xx/Src/lps22hh_reg.o"
 "./Drivers/MRT_LSM6DSR_f4xx/Src/lsm6dsr_reg.o"
 "./Drivers/MRT_RTOS_f4xx/Src/MRT_RTOS.o"
+"./Drivers/MRT_Thermocouple_f4xx/Src/MAX31855.o"
 "./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o"
 "./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o"
 "./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.o"

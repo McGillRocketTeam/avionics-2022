@@ -30,6 +30,7 @@
 #include <i2c_sensors.h>
 #include <gps.h>
 #include <sx126x.h>
+#include <MAX31855.h>
 
 //#include <usbd_cdc_if.h>
 
@@ -155,7 +156,7 @@ uint8_t SEND_FREQ = 10; //Times per second that you want to transmit data
 #define XTEND_BUFFER_SIZE 512
 uint8_t xtend_rx_buffer[64] = {0}; // XTend Reception buffer
 char xtend_tx_buffer[XTEND_BUFFER_SIZE]; // XTend Transmit
-//These variables are for testing
+//These variables are for testing the XTend
 float ACCx;
 float ACCy;
 float ACCz;
@@ -192,6 +193,7 @@ char gps_data[GPS_DATA_BUF_DIM];
 //SRadio
 #define SRADIO_SPI hspi2
 
+//I2C devices
 stmdev_ctx_t lsm_ctx;
 stmdev_ctx_t lps_ctx;
 
@@ -286,6 +288,14 @@ int main(void)
   //MX_IWDG_Init(); TODO remove
   /* USER CODE BEGIN 2 */
 
+
+
+  //Check for wakeup
+
+
+
+
+
   /*
    * Reinitialize all peripherals
    */
@@ -326,18 +336,6 @@ int main(void)
 
 
   #define DEBUG_USART huart8
-
-  /* init code for USB_DEVICE (DOESN'T WORK) (virtual com port)
-  MX_USB_DEVICE_Init();
-
-while(1){
-	char string[] = "YOOOOOO\r\n";
-	CDC_Transmit_FS(string, sizeof(string));
-	HAL_Delay(500);
-}¸
-#define HAL_UART_Transmit(u,b,size,HAL_MAX_DELAY)		CDC_Transmit_FS(b, size); //TODO if we use USB instead of huart for debugging
-*/
-
 
   checkForI2CDevices(huart8,hi2c1);
   checkForI2CDevices(huart8,hi2c2);
@@ -388,10 +386,16 @@ while(1){
 
 
    /*
+    * For the xtend
+    * -huart3 on v4.3
+    */
+   HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET); //TODO is it necessary?
+
+
+   /*
     * For the SRadio
     * -SPI2 on v4.3
     */
-	HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET); //TODO is it necessary?
 	set_hspi(SRADIO_SPI);
 	// SPI2_SX_CS_GPIO_Port
 	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
@@ -399,6 +403,14 @@ while(1){
 	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
 	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
 	Tx_setup();
+
+
+	/*
+	 * For the thermocouple
+	 * -SPI4 on v4.3
+	 * -No setup needed (just activate SPI4, the work is done by a MAX31855)
+	 */
+
 
 
   /*
@@ -422,7 +434,7 @@ while(1){
 
 
   /*
-   * An actual watch dog
+   * Watch dog
    * -Remove the MX_IWDG_Init() that is auto-generated and add it just before the osKernelStart
    *
    * IF THE WATCH DOG IS NOT REFRESH BEFORE THE X SECONDS TIMEOUT IT WILL RESET THE BOARD
@@ -438,9 +450,20 @@ while(1){
    * 	-A global interrupts that acts as a watchdog:
    * 		If the interrupts fails, we are doomed
    *
+   *
+   *Since the WD reset the board at random times, we need to know at which stage of ejection we were and we
+   *need to keep track of other things. The solution to this is to save the data that we want to use after these
+   *random resets. Now the problem is how do we start the FC from the beginning if we have a random
+   *amount of resets?
+   *Solution : We use the external IN_Button has an external reset that resets the board from
+   *the beginning using the callback function (defined in MRT_Helpers.c)
    */
   MX_IWDG_Init();
   HAL_IWDG_Refresh(&hiwdg);
+
+
+
+
 
   /* USER CODE END 2 */
 
@@ -1303,6 +1326,11 @@ void StartMemory0(void *argument)
 		  //Check if it's sleep time
 		if (flagA==1){
 
+
+			//DEACTIVATE WATCHDOG TODO
+
+			//Maybe put a refresh in Iridium Shutdown
+
 		  //MRT_Static_Iridium_Shutdown();TODO
 
 		  MRT_StandByMode(SLEEP_TIME);
@@ -1430,7 +1458,7 @@ void StartTelemetry2(void *argument)
 {
   /* USER CODE BEGIN StartTelemetry2 */
 
-	//osThreadExit();
+	osThreadExit();
 
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
@@ -1465,7 +1493,7 @@ void StartTelemetry2(void *argument)
   	  MIN = 0.0;
   	  SEC = 0.0;
   	  SUBSEC = 0.0;
-  	  STATE = 0.0;
+  	  STATE = THERMO_TEMP;
   	  CONT = 0.0;
 
 
@@ -1488,8 +1516,8 @@ void StartTelemetry2(void *argument)
 
 	  //TODO maybe add variable for GPS time and both temperature values?
 
-  	  memset (xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
-  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,E", ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
+  	  memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
+  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%.2f,%i,E", ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
 
 	  //Xtend send
 	  XTend_Transmit(xtend_tx_buffer);
@@ -1561,7 +1589,8 @@ void StartSensors3(void *argument)
 	  //Pressure tank (just use an analog sensor if you don't have it)
 
 
-	  //Thermocouple (don't have it)
+	  //Thermocouple
+	  Max31855_Read_Temp();
 
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
@@ -1629,7 +1658,7 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	osThreadExit();
+	//osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 
@@ -1672,6 +1701,12 @@ void StartPrinting(void *argument)
 
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lps_temperature_degC);
+	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+
+	  //Thermocouple
+	  memset(buffer, 0, TX_BUF_DIM);
+	  sprintf(buffer, "Thermocouple temperature [degC]: %6.2f\r\n", THERMO_TEMP);
 	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);

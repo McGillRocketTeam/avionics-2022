@@ -60,6 +60,7 @@
 									<listOptionValue builtIn="false" value="../Drivers/MRT_RTOS_f4xx/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/MRT_GPS_f4xx/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/MRT_LPS22HH_f4xx/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/MRT_Thermocouple_f4xx/Inc"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1536187390" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -87,6 +88,7 @@
 									<listOptionValue builtIn="false" value="../Drivers/MRT_GPS_f4xx/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/MRT_LPS22HH_f4xx/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/SX1262_c"/>
+									<listOptionValue builtIn="false" value="../Drivers/MRT_Thermocouple_f4xx/Inc"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.1133230860" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp"/>
 							</tool>
