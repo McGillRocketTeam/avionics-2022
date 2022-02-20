@@ -22,6 +22,10 @@ from numpy.linalg import inv
 
 class KF:
 
+    """ process model
+            DT:  x[n] = x[n-1] + 0.5 * a * dt^2, where a is a combination of multiple measurements 
+    """
+
     
     def __init__(self, r1_init, dt, Q_init, R_init):
         #predict 
