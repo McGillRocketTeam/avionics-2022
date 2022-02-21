@@ -137,7 +137,6 @@ const osMutexAttr_t SENSOR_POLLING_attributes = {
 
 //General
 osThreadId_t threadID[5];
-bool wakingUp;
 
 //Ejection (just invented variables for the sake of testing)
 uint8_t MIN_APOGEE = 20;
@@ -285,15 +284,8 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
   MX_RTC_Init();
-  //MX_IWDG_Init(); TODO remove
+  //MX_IWDG_Init(); TODO to remove
   /* USER CODE BEGIN 2 */
-
-
-
-  //Check for wakeup
-
-
-
 
 
   /*
@@ -427,10 +419,35 @@ int main(void)
 
 
 
+
+
   /*
-   * Watch dog periodic interrupt
+   * For Internal Flash Memory
+   * -Set the address of the values in MRT_Helpers.c (VirtAddVarTab)
+   * -Map the values to their respective address in MRT_Helpers.h
    */
-  //HAL_TIM_Base_Start(&htim10); Used to be a simple global interrupt
+  /* Unlock the Flash Program Erase controller */
+  HAL_FLASH_Unlock();
+
+  /* EEPROM Init */
+  if( EE_Init() != EE_OK)
+  {
+	HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, SET);
+    Error_Handler();
+  }
+  MRT_getFlags();
+  MRT_resetInfo(&DEBUG_USART);
+
+  char buffer[100];
+  //sprintf(buffer,"Reset: %i,  WU: %i\r\n",0,0);
+  sprintf(buffer,"Reset: %i,  WU: %i\r\n",reset_flag, wakeup_flag);
+  HAL_UART_Transmit(&huart8, buffer, strlen(buffer), HAL_MAX_DELAY);
+  HAL_Delay(1000);
+
+  /*For testing*/
+  HAL_Delay(1000);
+  NVIC_SystemReset();
+
 
 
   /*
@@ -1194,7 +1211,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : IN_Button_Pin */
   GPIO_InitStruct.Pin = IN_Button_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IN_Button_GPIO_Port, &GPIO_InitStruct);
 
@@ -1283,6 +1300,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -1360,7 +1381,7 @@ void StartEjection1(void *argument)
 	osThreadExit();
 
 	if (altitude_m < GROUND_LEVEL)  osThreadExit(); //WHEN WAKING UP
-	if (wakingUp) osThreadExit();
+	if (wakeup_flag) osThreadExit();
 
 
 	//Add thread id to the list
@@ -1627,7 +1648,7 @@ void StartPropulsion4(void *argument)
 		//Add thread id to the list
 		threadID[4]=osThreadGetId();
 
-		if (wakingUp) osThreadExit();
+		if (wakeup_flag) osThreadExit();
 
 	  for(;;)
 	  {

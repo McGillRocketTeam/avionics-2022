@@ -66,6 +66,7 @@ void Error_Handler(void);
 #define SPI5_SD_CS_GPIO_Port GPIOF
 #define IN_Button_Pin GPIO_PIN_0
 #define IN_Button_GPIO_Port GPIOC
+#define IN_Button_EXTI_IRQn EXTI0_IRQn
 #define OUT_LED1_Pin GPIO_PIN_1
 #define OUT_LED1_GPIO_Port GPIOC
 #define OUT_LED2_Pin GPIO_PIN_2

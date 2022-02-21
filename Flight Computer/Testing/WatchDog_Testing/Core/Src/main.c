@@ -27,9 +27,6 @@
 #include <string.h>
 #include <MRT_Helpers.h>
 
-//TODO
-#include <eeprom.h>
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -210,7 +207,7 @@ char buffer[TX_BUF_DIM];
 
   //Test external button interrupt
   //Add External Falling Edge Trigger detection to the GPIO and activate NVIC for its line (line0 here)
-  //CALL BACK DEFINED IN USE CODE $ BUT WILL BE INCLUDED INSIDE MRT_HELPERS_f4xx
+  //CALL BACK DEFINED IN USE CODE 4 BUT WILL BE INCLUDED INSIDE MRT_HELPERS_f4xx
 
 
   //Write to flash Memory
@@ -221,38 +218,12 @@ char buffer[TX_BUF_DIM];
   /* EEPROM Init */
   if( EE_Init() != EE_OK)
   {
-	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, SET);
     Error_Handler();
   }
-
-
   MRT_getFlags();
-
-  memset(buffer, 0, TX_BUF_DIM);
-  sprintf(buffer,"Reset: %i\r\n",reset_flag);
-  HAL_UART_Transmit(&huart8, buffer, strlen(buffer), HAL_MAX_DELAY);
-  HAL_Delay(1000);
-
-
-  if (reset_flag==0){
-	  HAL_UART_Transmit(&huart8, "FC restarted\r\n", 14, HAL_MAX_DELAY);
-  }
-
-  //Flip flag to signal it's not the restart
-  reset_flag = 1;
-
-
-  HAL_FLASH_Unlock();
-
-  if((EE_WriteVariable(RESET_FLAG_ADDRESS, reset_flag)) != HAL_OK)
-  {
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-    Error_Handler();
-  }
+  MRT_resetInfo(&huart8);
 
   HAL_Delay(1000);
-
-  HAL_FLASH_Lock();
 
 
   //Random reset

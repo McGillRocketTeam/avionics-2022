@@ -23,23 +23,72 @@ void MRT_getFlags(void){
 
 	HAL_FLASH_Unlock();
 
+
 	//Reset flag
 	if((EE_ReadVariable(RESET_FLAG_ADDRESS,  &reset_flag)) != HAL_OK)
 	{
-	  Error_Handler();
+	  //Error_Handler(); Variable doesn't exist so try writing it?
+		reset_flag = 0;
+		if((EE_WriteVariable(RESET_FLAG_ADDRESS, reset_flag)) != HAL_OK)
+		{
+		  Error_Handler();
+		}
+	}
+	if (reset_flag != 0 && reset_flag !=1){ //If random value (none was written)
+		reset_flag = 0;
+		if((EE_WriteVariable(RESET_FLAG_ADDRESS, reset_flag)) != HAL_OK)
+		{
+		  Error_Handler();
+		}
 	}
 
-	/*
+
 	//Wakeup flag
 	if((EE_ReadVariable(WAKEUP_FLAG_ADDRESS,  &wakeup_flag)) != HAL_OK)
 	{
-		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-	  Error_Handler();
+	   //Error_Handler(); Variable doesn't exist so try writing it?
+		 wakeup_flag = 0;
+		 if((EE_WriteVariable(WAKEUP_FLAG_ADDRESS,  wakeup_flag)) != HAL_OK)
+		 {
+		   Error_Handler();
+		 }
 	}
-	*/
+	if (wakeup_flag != 0 && wakeup_flag !=1){ //If random value (none was written)
+		wakeup_flag = 0;
+		if((EE_WriteVariable(WAKEUP_FLAG_ADDRESS,  wakeup_flag)) != HAL_OK)
+		{
+		  Error_Handler();
+		}
+	}
 
 	HAL_FLASH_Lock();
 
+}
+
+
+void MRT_resetInfo(UART_HandleTypeDef* uart){
+
+
+	  char buffer[50];
+	  sprintf(buffer,"Reset: %i,  WU: %i\r\n",reset_flag, wakeup_flag);
+	  HAL_UART_Transmit(uart, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_Delay(1000);
+
+
+	  //Check if we start from the beginning
+	  if (reset_flag==0){
+		  HAL_UART_Transmit(uart, "FC restarted\r\n", 14, HAL_MAX_DELAY);
+
+		  reset_flag = 1; //Flip flag
+
+		  //Write new flag to flash memory
+		  HAL_FLASH_Unlock();
+		  if((EE_WriteVariable(RESET_FLAG_ADDRESS, reset_flag)) != HAL_OK)
+		  {
+		    Error_Handler();
+		  }
+		  HAL_FLASH_Lock();
+	  }
 }
 
 
@@ -118,13 +167,19 @@ void MRT_ResetFromStart(void){
 	//Clear all saved data of stages
 
 
-	//Clear wakeup flag and start_reset flag
-	reset_flag = 0;
+	//Clear wakeup and reset flag
 
 	HAL_FLASH_Unlock();
+
+	reset_flag = 0;
 	if((EE_WriteVariable(RESET_FLAG_ADDRESS, reset_flag)) != HAL_OK)
 	{
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
+	  Error_Handler();
+	}
+
+	wakeup_flag = 0;
+	if((EE_WriteVariable(WAKEUP_FLAG_ADDRESS, wakeup_flag)) != HAL_OK)
+	{
 	  Error_Handler();
 	}
 	HAL_FLASH_Lock();
