@@ -117,6 +117,13 @@ const osThreadAttr_t Printing_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for SaveData */
+osThreadId_t SaveDataHandle;
+const osThreadAttr_t SaveData_attributes = {
+  .name = "SaveData",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* Definitions for MEMORY */
 osMutexId_t MEMORYHandle;
 const osMutexAttr_t MEMORY_attributes = {
@@ -196,13 +203,13 @@ char gps_data[GPS_DATA_BUF_DIM];
 stmdev_ctx_t lsm_ctx;
 stmdev_ctx_t lps_ctx;
 
-/*
 // sd card
 FATFS FatFs; 	//Fatfs handle
 FIL fil; 		//File handle
 FRESULT fres; //Result after operations
-static uint8_t msg_buffer[1000];
-*/
+char filename[13];
+uint8_t writeBuf[1000];
+UINT bytesWrote;
 
 
 /* USER CODE END PV */
@@ -229,6 +236,7 @@ void StartTelemetry2(void *argument);
 void StartSensors3(void *argument);
 void StartPropulsion4(void *argument);
 void StartPrinting(void *argument);
+void StartSaveData(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -284,7 +292,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
   MX_RTC_Init();
-  //MX_IWDG_Init(); TODO to remove
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
 
@@ -395,6 +403,9 @@ int main(void)
 	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
 	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
 	Tx_setup();
+
+	//sd card setup
+	sd_init_dynamic_filename("FC", "", filename);
 
 
 	/*
@@ -530,6 +541,9 @@ int main(void)
 
   /* creation of Printing */
   PrintingHandle = osThreadNew(StartPrinting, NULL, &Printing_attributes);
+
+  /* creation of SaveData */
+  SaveDataHandle = osThreadNew(StartSaveData, NULL, &SaveData_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1743,6 +1757,28 @@ void StartPrinting(void *argument)
   /* USER CODE END StartPrinting */
 }
 
+/* USER CODE BEGIN Header_StartSaveData */
+/**
+* @brief Function implementing the SaveData thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSaveData */
+void StartSaveData(void *argument)
+{
+  /* USER CODE BEGIN StartSaveData */
+  /* Infinite loop */
+  for(;;)
+  {
+	  sd_open_file(&filename);
+	  sprintf((char*)writeBuf, "Data: %f, %f, %d, %d\r\n", pressure, temperature, minute, second);
+	  sd_write(&fil, writeBuf);
+	  f_close(&fil);
+	  osDelay(50);
+  }
+  /* USER CODE END StartSaveData */
+}
+
 /**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM6 interrupt took place, inside
@@ -1809,4 +1845,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
