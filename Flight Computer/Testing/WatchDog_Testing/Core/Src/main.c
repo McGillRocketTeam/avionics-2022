@@ -210,20 +210,43 @@ char buffer[TX_BUF_DIM];
   //CALL BACK DEFINED IN USE CODE 4 BUT WILL BE INCLUDED INSIDE MRT_HELPERS_f4xx
 
 
+/*
+ * TODO BIG BUG:
+ * When activating sprintf and scanf for float AND using FLASH memory on MCU seems to be crashing everything, also sprintf
+ * creates an hardfault. When going back to not activated, the values acts weirdly (stays at 0 on each
+ * cycle for no reason even though it's supposed to work. When going into
+ * debugger mode, the weird behavior disappears.
+ *
+ * Potential solutions:
+ * -Let the init function have a setup delay (DOESN'T WORK)
+ * -Add the delay before the init (DOESN'T WORK)
+ * -Cast the flags to uint8_t or char before printing
+ * -The newlib nano library (the one used when activating sprinf) is the cause of the problem
+ */
+
   //Write to flash Memory
 
   /* Unlock the Flash Program Erase controller */
+/*
   HAL_FLASH_Unlock();
 
-  /* EEPROM Init */
+  /* EEPROM Init
   if( EE_Init() != EE_OK)
   {
     Error_Handler();
   }
+
   MRT_getFlags();
   MRT_resetInfo(&huart8);
+  */
 
-  HAL_Delay(1000);
+
+char vbuffer[50];
+sprintf(vbuffer,"Reset: %i,  WU: %i\r\n",1, 1);
+HAL_UART_Transmit(&huart8, vbuffer, strlen(vbuffer), HAL_MAX_DELAY);
+
+
+  HAL_Delay(2000);
 
 
   //Random reset

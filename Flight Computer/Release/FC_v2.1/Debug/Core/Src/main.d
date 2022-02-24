@@ -48,10 +48,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Drivers/MRT_RTOS_f4xx/Inc/MRT_RTOS.h \
- ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h \
  ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h \
- ../Drivers/MRT_Helpers_f4xx/Inc/eeprom.h ../Core/Inc/i2c_sensors.h \
- ../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h \
+ ../Drivers/MRT_Helpers_f4xx/Inc/w25qxx.h \
+ ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h \
+ ../Core/Inc/i2c_sensors.h ../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_LPS22HH_f4xx/Inc/lps22hh_reg.h \
  ../Drivers/MRT_GPS_f4xx/Inc/gps.h ../Drivers/SX1262_c/sx126x.h \
  ../Drivers/MRT_Thermocouple_f4xx/Inc/MAX31855.h
@@ -156,11 +156,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Drivers/MRT_RTOS_f4xx/Inc/MRT_RTOS.h:
 
-../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h:
-
 ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h:
 
-../Drivers/MRT_Helpers_f4xx/Inc/eeprom.h:
+../Drivers/MRT_Helpers_f4xx/Inc/w25qxx.h:
+
+../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h:
 
 ../Core/Inc/i2c_sensors.h:
 

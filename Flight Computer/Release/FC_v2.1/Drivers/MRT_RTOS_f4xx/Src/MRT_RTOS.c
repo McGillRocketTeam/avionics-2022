@@ -14,6 +14,7 @@ struct MRT_RTOS rtos;
 
 uint8_t flagA = 0;
 uint8_t flagB = 0;
+uint8_t wu_flag = 0;
 
 RTC_TimeTypeDef sTime = {0};
 RTC_DateTypeDef sDate = {0};
@@ -36,24 +37,22 @@ void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
 
 
 
-bool MRT_SetupRTOS(UART_HandleTypeDef uart,uint8_t sleepT){
-	HAL_UART_Transmit(&(rtos.huart),"Setting up RTOS\r\n", 17, HAL_MAX_DELAY);
+void MRT_SetupRTOS(UART_HandleTypeDef uart,uint8_t sleepT){
 	rtos.huart = uart;
 	rtos.sleepTime = sleepT;
-	bool wakingUp = MRT_WUProcedure();
-	return wakingUp;
+	HAL_UART_Transmit(&(rtos.huart),"Setting up RTOS\r\n", 17, HAL_MAX_DELAY);
+	MRT_WUProcedure();
 }
 
 
 
-bool MRT_WUProcedure(void){
-
-	bool wakingUp = false;
+void MRT_WUProcedure(void){
 
 	//If WU flag set, wake up procedure
 	if (__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
 	{
-		wakingUp = true;
+
+		wu_flag = 1;
 
 		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);  // clear the flag
 
@@ -69,9 +68,8 @@ bool MRT_WUProcedure(void){
 	}
 
 	MRT_ClearFlags();
-
-	return wakingUp;
 }
+
 
 void MRT_ClearFlags(void){
 	//Must be after alarm A was activated and before going to sleep
@@ -146,6 +144,8 @@ void MRT_StandByMode( uint32_t seconds){
 }
 
 
+
+
 void MRT_DefaultRTC(void){
 
 	/*Can be setup using the ioc files*/
@@ -192,6 +192,51 @@ void MRT_DefaultRTC(void){
 	  }
 }
 
+
+
+void MRT_setAlarmA(uint8_t h, uint8_t m, uint8_t s){
+	  /** Enable the Alarm A
+	  */
+	  sAlarm.AlarmTime.Hours = h;
+	  sAlarm.AlarmTime.Minutes = m;
+	  sAlarm.AlarmTime.Seconds = s;
+	  sAlarm.AlarmTime.SubSeconds = 0x0;
+	  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+	  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
+	  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+	  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+	  sAlarm.AlarmDateWeekDay = 0x1;
+	  sAlarm.Alarm = RTC_ALARM_A;
+	  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+}
+
+
+void MRT_setRTC(uint8_t h, uint8_t m, uint8_t s){
+	  /** Initialize RTC and set the Time and Date
+	  */
+	  sTime.Hours = h;
+	  sTime.Minutes = m;
+	  sTime.Seconds = s;
+	  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+	  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+	  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+	  sDate.Month = RTC_MONTH_JANUARY;
+	  sDate.Date = 0x1;
+	  sDate.Year = 0x0;
+
+	  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+}
 
 
 

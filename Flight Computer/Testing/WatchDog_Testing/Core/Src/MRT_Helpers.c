@@ -13,7 +13,8 @@ uint8_t wakeup_flag = 0;
 
 //TODO VirtAddVarTab NEED TO BE DEFINED (can go and change NB_OF_VAR as needed)
 /* Virtual address defined by the user: 0xFFFF value is prohibited */
-uint16_t VirtAddVarTab[NB_OF_VAR] = {0x5555, 0x6666, 0x7777};
+//uint16_t VirtAddVarTab[NB_OF_VAR] = {0x5555, 0x6666, 0x7777};
+uint16_t VirtAddVarTab[NB_OF_VAR] = {0x08010000, 0x08011000, 0x08012000};
 
 
 /*
@@ -68,11 +69,9 @@ void MRT_getFlags(void){
 
 void MRT_resetInfo(UART_HandleTypeDef* uart){
 
-
 	  char buffer[50];
 	  sprintf(buffer,"Reset: %i,  WU: %i\r\n",reset_flag, wakeup_flag);
 	  HAL_UART_Transmit(uart, buffer, strlen(buffer), HAL_MAX_DELAY);
-	  HAL_Delay(1000);
 
 
 	  //Check if we start from the beginning

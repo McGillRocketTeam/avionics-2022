@@ -43,6 +43,8 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 
+
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -168,6 +170,30 @@ void Error_Handler(void);
 #define UART8_TX_Debug_Pin GPIO_PIN_1
 #define UART8_TX_Debug_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
+
+
+//TODO
+
+#define DEBUG_USART huart8
+
+
+//RTOS
+#define SLEEP_TIME 30 //In seconds
+#define WHEN_SLEEP_TIME 0x15  //In seconds
+
+//Telemetry
+#define DATA_FREQ 1 //Times per second that you want to save data
+#define SEND_FREQ 10 //Times per second that you want to transmit data
+
+//SRadio
+#define SRADIO_SPI hspi2
+
+//XTend
+#define XTEND_USART huart3
+#define XTEND_BUFFER_SIZE 512
+
+
+
 
 /* USER CODE END Private defines */
 

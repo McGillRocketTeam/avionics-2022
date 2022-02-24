@@ -15,7 +15,7 @@
 
 #include "cmsis_os.h"
 #include <stm32f4xx_hal.h>
-#include <stdbool.h>
+#include <MRT_Helpers.h>
 
 #ifndef INC_MRT_RTOS_H_
 #define INC_MRT_RTOS_H_
@@ -34,22 +34,27 @@ typedef struct MRT_RTOS{
 extern struct MRT_RTOS rtos; //Only used for huart
 extern uint8_t flagA; //Alarm A usable flag
 extern uint8_t flagB; //Alarm B usable flag
+extern uint8_t wu_flag;
 
 
 //For RTC
+extern RTC_HandleTypeDef hrtc;
 extern RTC_TimeTypeDef sTime;
 extern RTC_DateTypeDef sDate;
 extern RTC_AlarmTypeDef sAlarm;
 
 
 //Helper functions
-bool MRT_WUProcedure(void);
+void MRT_WUProcedure(void);
 void MRT_ClearFlags(void);
 void MRT_DefaultRTC(void);
 
 
 //User functions
-bool MRT_SetupRTOS(UART_HandleTypeDef uart,uint8_t sleepT);
+void MRT_SetupRTOS(UART_HandleTypeDef uart,uint8_t sleepT);
 void MRT_SetSleepTime(uint8_t sleepT);
 void MRT_StandByMode(uint32_t seconds);
+void MRT_setAlarmA(uint8_t h, uint8_t m, uint8_t s);
+void MRT_setRTC(uint8_t h, uint8_t m, uint8_t s);
+
 void MRT_CustomRTC(int values[]); //Only used if not set in .ioc or default alarm not chosen in MRT_SetupRTOS

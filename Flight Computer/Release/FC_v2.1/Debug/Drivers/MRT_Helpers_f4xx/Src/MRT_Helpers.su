@@ -1,6 +1,8 @@
 core_cm4.h:1939:34:__NVIC_SystemReset	4	static,ignoring_inline_asm
-MRT_Helpers.c:22:6:MRT_getFlags	8	static
-MRT_Helpers.c:67:6:MRT_resetInfo	72	static
-MRT_Helpers.c:93:6:checkForI2CDevices	88	static
-MRT_Helpers.c:152:6:HAL_GPIO_EXTI_Callback	16	static
-MRT_Helpers.c:163:6:MRT_ResetFromStart	8	static
+MRT_Helpers.c:29:6:MRT_externalFlashSetup	24	static
+MRT_Helpers.c:66:6:checkForI2CDevices	88	static
+MRT_Helpers.c:117:6:HAL_GPIO_EXTI_Callback	16	static
+MRT_Helpers.c:127:6:MRT_resetFromStart	8	static
+MRT_Helpers.c:140:6:MRT_updateExternalFlashBuffer	16	static
+MRT_Helpers.c:147:6:MRT_getFlags	16	static
+MRT_Helpers.c:194:6:MRT_resetInfo	80	static
