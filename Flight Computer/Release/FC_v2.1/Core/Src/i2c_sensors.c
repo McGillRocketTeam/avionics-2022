@@ -175,7 +175,7 @@ void MRT_LSM6DSR_getTemperature(stmdev_ctx_t lsm_ctx,float* temperature_degC){
 	//if (reg.status_reg.tda) {
     if(reg){
 		//Read temperature data
-		memset(lsm_data_raw_temperature, 0x00, sizeof(int16_t));
+		memset(&lsm_data_raw_temperature, 0x00, sizeof(int16_t));
 		lsm6dsr_temperature_raw_get(&lsm_ctx, &lsm_data_raw_temperature);
 		*temperature_degC = lsm6dsr_from_lsb_to_celsius(lsm_data_raw_temperature);
 
@@ -289,7 +289,7 @@ void MRT_LPS22HH_getPressure(stmdev_ctx_t lps_ctx,float* pressure){
 
 	if (reg.status.p_da) {
 	//if (reg) {
-	  memset(data_raw_pressure, 0x00, sizeof(uint32_t));
+	  memset(&data_raw_pressure, 0x00, sizeof(uint32_t)); //TODO CAN CAUSE AN HARDFAULT
 	  lps22hh_pressure_raw_get(&lps_ctx, &data_raw_pressure);
 	  *pressure = lps22hh_from_lsb_to_hpa(data_raw_pressure);
 	}
@@ -305,7 +305,7 @@ void MRT_LPS22HH_getTemperature(stmdev_ctx_t lps_ctx,float* temperature_degC){
 
 	//if (reg.status.t_da) {
 	if (reg) {
-	  memset(lps_data_raw_temperature, 0x00, sizeof(int16_t));
+	  memset(&lps_data_raw_temperature, 0x00, sizeof(int16_t));
 	  lps22hh_temperature_raw_get(&lps_ctx, &lps_data_raw_temperature);
 	  *temperature_degC = lps22hh_from_lsb_to_celsius(lps_data_raw_temperature);
 	}
