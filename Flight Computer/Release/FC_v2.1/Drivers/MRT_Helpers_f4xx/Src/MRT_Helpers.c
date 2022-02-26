@@ -22,7 +22,6 @@ uint8_t* flash_flags[NB_OF_FLAGS] = {&reset_flag, &wu_flag, &iwdg_flag};
 //Null buffer values for when clearing flags
 uint8_t NULL_BUFFER[NB_OF_FLAGS];
 
-
 /*
  * User functions
  */
@@ -244,4 +243,16 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 	  }
 }
+
+
+uint8_t MRT_getContinuity(void){
+	uint8_t drogue1 = HAL_GPIO_ReadPin(IN_EJ_Drogue_Cont_GPIO_Port, IN_EJ_Drogue_Cont_Pin);
+	uint8_t drogue2 = HAL_GPIO_ReadPin(IN_EJ_Main_Cont_GPIO_Port, IN_EJ_Main_Cont_Pin);
+	uint8_t prop1 = HAL_GPIO_ReadPin(IN_PyroValve_Cont_1_GPIO_Port, IN_PyroValve_Cont_1_Pin);
+	uint8_t prop2 = HAL_GPIO_ReadPin(IN_PyroValve_Cont_2_GPIO_Port, IN_PyroValve_Cont_2_Pin);
+	uint8_t continuity = 8*drogue1 + 4*drogue2 + 2*prop1 + prop2;
+	return continuity;
+}
+
+
 

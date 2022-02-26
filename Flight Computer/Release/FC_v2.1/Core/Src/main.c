@@ -93,7 +93,7 @@ const osThreadAttr_t Ejection1_attributes = {
 osThreadId_t Telemetry2Handle;
 const osThreadAttr_t Telemetry2_attributes = {
   .name = "Telemetry2",
-  .stack_size = 512 * 4,
+  .stack_size = 1024 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for Sensors3 */
@@ -154,7 +154,7 @@ float MIN;
 float SEC;
 float SUBSEC;
 float STATE;
-float CONT;
+uint8_t CONT;
 
 
 //Jasper's variables
@@ -267,7 +267,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
   MX_RTC_Init();
-  //MX_IWDG_Init();
+  //MX_IWDG_Init(); TODO remove
   /* USER CODE BEGIN 2 */
 
 
@@ -281,12 +281,12 @@ int main(void)
   HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
   // reset recovery pyro pins
-  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
+  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
   HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, RESET); //PG12 DROGUE GATE
   HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, RESET); //PG11 MAIN GATE
 
   // reset prop pyro pins
-  HAL_GPIO_WritePin(OUT_PyroValve_Arming_GPIO_Port, OUT_PyroValve_Arming_Pin, RESET); //PG1 ARMING_PROP
+  HAL_GPIO_WritePin(OUT_PyroValve_Arming_GPIO_Port, OUT_PyroValve_Arming_Pin, SET); //PG1 ARMING_PROP
   HAL_GPIO_WritePin(OUT_PyroValve_Gate_1_GPIO_Port, OUT_PyroValve_Gate_1_Pin, RESET); //PF15 PROP GATE 1
   HAL_GPIO_WritePin(OUT_PyroValve_Gate_2_GPIO_Port,OUT_PyroValve_Gate_2_Pin, RESET); //PF14 PROP GATE 2
 
@@ -318,7 +318,7 @@ int main(void)
   /*
    * In general:
    *-Activate freeRTOS
-   *-Change SysTic to any other timer
+   *-Change SysTic to any other timer (done in .ioc)
    *-Include the path to all includes folders of the drivers (for C and C++ linkers)
    */
 
@@ -385,7 +385,7 @@ int main(void)
     * -Set its uart to 9600)
     *
     */
-   GPS_init(&huart6, &huart8);
+   GPS_init(&huart6, &DEBUG_USART);
 
 
    /*
@@ -443,10 +443,10 @@ int main(void)
    *Solution : We use the external IN_Button has an external reset that resets the board from
    *the beginning using the callback function (defined in MRT_Helpers.c)
    */
-  MX_IWDG_Init();
+  //MX_IWDG_Init();
 
 
-
+//TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED
 
   /* USER CODE END 2 */
 
@@ -1440,7 +1440,7 @@ void StartTelemetry2(void *argument)
 {
   /* USER CODE BEGIN StartTelemetry2 */
 
-	osThreadExit();
+	//osThreadExit();
 
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
@@ -1470,13 +1470,13 @@ void StartTelemetry2(void *argument)
   	  GYROy = angular_rate_mdps[1];
   	  GYROz = angular_rate_mdps[2];
   	  PRESSURE = pressure_hPa;
-  	  LAT = 0.0;
-  	  LONG = 0.0;
+  	  LAT = latitude;
+  	  LONG = longitude;
   	  MIN = 0.0;
   	  SEC = 0.0;
   	  SUBSEC = 0.0;
   	  STATE = THERMO_TEMP;
-  	  CONT = 0.0;
+  	  CONT = MRT_getContinuity();
 
 
 	  //TODO Need to make this 't' variable from the Iridium or convert the seconds from the GPS
@@ -1486,20 +1486,21 @@ void StartTelemetry2(void *argument)
 	  SEC = t.tm_sec;
 	  */
 	  //From the GPS time value
-  	  /*
+
 	  MIN = ((uint8_t) time % 3600) / 60.0;
 	  sprintf(&MIN, "%.0f",MIN);
 	  SEC = (uint8_t) time % 60;
 	  sprintf(&SEC,"%.0f",SEC);
 	  SUBSEC = time / 3600.0;
 	  sprintf(&SUBSEC,"%.0f",SUBSEC);
-	  */
+
 
 
 	  //TODO maybe add variable for GPS time and both temperature values?
 
   	  memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
-  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%.2f,%i,E", ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
+  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.1f,%.1f,%.1f,%.2f,%i,E",
+  			  	  	  	  	  	  ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
 
 	  //Xtend send
 	  XTend_Transmit(xtend_tx_buffer);
@@ -1554,15 +1555,14 @@ void StartSensors3(void *argument)
 	  GPS_Poll(&latitude, &longitude, &time);
   	  //LSM6DSR
   	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
-  	   //TODO NEEDS FILTERING BUT WORKS (maybe acceleration needs filtering too)
   	  MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
 	  MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
 
 	  //LPS22HH
-  	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa); //TODO MAKES CRASH (didn't make crash before playing with RTC)
+  	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
 	  MRT_LPS22HH_getTemperature(lps_ctx,&lps_temperature_degC);
 
-	  //Pressure tank (just use an analog sensor if you don't have it)
+	  //TODO Pressure tank (just use an analog sensor if you don't have it)
 
 
 	  //Thermocouple
@@ -1631,7 +1631,7 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	//osThreadExit();
+	osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 
@@ -1704,7 +1704,7 @@ void StartWatchDog(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	 HAL_IWDG_Refresh(&hiwdg);
+	 //HAL_IWDG_Refresh(&hiwdg);
     osDelay(1);
   }
   /* USER CODE END StartWatchDog */
@@ -1727,22 +1727,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
-  /*TODO Tried global interrupts instead of the watch dog but couldn't manage to make the interrupt work
-  if(htim == &htim10){
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-	  HAL_Delay(20000);
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
-	  HAL_Delay(200);
-  }
-
-  if (htim->Instance == TIM10){
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-	  HAL_Delay(20000);
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
-	  HAL_Delay(200);
-  }
-  */
 
   /* USER CODE END Callback 1 */
 }

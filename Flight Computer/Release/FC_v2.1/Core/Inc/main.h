@@ -190,7 +190,7 @@ void Error_Handler(void);
 
 //XTend
 #define XTEND_USART huart3
-#define XTEND_BUFFER_SIZE 512
+#define XTEND_BUFFER_SIZE 256
 
 
 

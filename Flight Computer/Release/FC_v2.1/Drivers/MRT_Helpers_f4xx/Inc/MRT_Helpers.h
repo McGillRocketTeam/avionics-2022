@@ -37,5 +37,6 @@ void MRT_externalFlashSetup(UART_HandleTypeDef* uart);
 void MRT_freezeWatchDog(void);
 void MRT_getFlags(void);
 void MRT_resetInfo(UART_HandleTypeDef* uart);
+uint8_t MRT_getContinuity(void);
 
 //void tone(uint32_t duration, uint32_t repeats, TIM_HandleTypeDef htim);
