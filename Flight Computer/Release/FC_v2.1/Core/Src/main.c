@@ -94,7 +94,7 @@ osThreadId_t Telemetry2Handle;
 const osThreadAttr_t Telemetry2_attributes = {
   .name = "Telemetry2",
   .stack_size = 1024 * 4,
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityHigh2,
 };
 /* Definitions for Sensors3 */
 osThreadId_t Sensors3Handle;
@@ -122,7 +122,7 @@ osThreadId_t WatchDogHandle;
 const osThreadAttr_t WatchDog_attributes = {
   .name = "WatchDog",
   .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+  .priority = (osPriority_t) osPriorityHigh1,
 };
 /* USER CODE BEGIN PV */
 
@@ -345,7 +345,7 @@ int main(void)
    * For external FLASH memory
    *
    */
-	MRT_externalFlashSetup(&huart8);
+	MRT_externalFlashSetup(&DEBUG_USART);
 
 
    //checkForI2CDevices(huart8,hi2c1);
@@ -363,7 +363,8 @@ int main(void)
    * For Iridium:
    * -Set the project as c++
    */
-   //wakingUp = MRT_Static_Iridium_Setup(huart3);
+	HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
+   uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_USART);
 
   /*
    * For LSM6DSR
@@ -443,7 +444,10 @@ int main(void)
    *Solution : We use the external IN_Button has an external reset that resets the board from
    *the beginning using the callback function (defined in MRT_Helpers.c)
    */
-  //MX_IWDG_Init();
+  MX_IWDG_Init();
+
+
+
 
 
 //TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED
@@ -1440,7 +1444,7 @@ void StartTelemetry2(void *argument)
 {
   /* USER CODE BEGIN StartTelemetry2 */
 
-	//osThreadExit();
+	osThreadExit();
 
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
@@ -1499,7 +1503,7 @@ void StartTelemetry2(void *argument)
 	  //TODO maybe add variable for GPS time and both temperature values?
 
   	  memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
-  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.1f,%.1f,%.1f,%.2f,%i,E",
+  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.7f,%.7f,%.1f,%.1f,%.1f,%.2f,%i,E",
   			  	  	  	  	  	  ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
 
 	  //Xtend send
@@ -1508,15 +1512,13 @@ void StartTelemetry2(void *argument)
 	  //SRadio send
 	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer));
 
-
+	  HAL_IWDG_Refresh(&hiwdg);
 
 	  //Iridium send
-	  //MRT_Static_Iridium_getTime(); TODO doesn't cost anything
+	  MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
 	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
-
-	  HAL_IWDG_Refresh(&hiwdg);
 
 
     osDelay(1000/SEND_FREQ);
@@ -1567,6 +1569,9 @@ void StartSensors3(void *argument)
 
 	  //Thermocouple
 	  Max31855_Read_Temp();
+
+	  HAL_IWDG_Refresh(&hiwdg);
+
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
 
@@ -1631,7 +1636,7 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	osThreadExit();
+	//osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 
@@ -1680,6 +1685,10 @@ void StartPrinting(void *argument)
 	  sprintf(buffer, "Thermocouple temperature [degC]: %6.2f\r\n", THERMO_TEMP);
 	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
+
+	  //Iridium
+	  MRT_Static_Iridium_getTime();
+
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
 	  osDelay(1000/DATA_FREQ);
@@ -1701,11 +1710,23 @@ void StartPrinting(void *argument)
 void StartWatchDog(void *argument)
 {
   /* USER CODE BEGIN StartWatchDog */
+
+	char buffer[50];
   /* Infinite loop */
   for(;;)
   {
+	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
 	 //HAL_IWDG_Refresh(&hiwdg);
-    osDelay(1);
+
+	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+
+	  memset(buffer, 0, TX_BUF_DIM);
+	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n", sTime.Hours,sTime.Minutes,sTime.Seconds);
+	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_USART, "YO\r\n", 4, HAL_MAX_DELAY);
+	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
+    osDelay(200);
   }
   /* USER CODE END StartWatchDog */
 }

@@ -6,6 +6,7 @@
  */
 #include <stm32f4xx_hal.h>
 #include <MRT_RTOS.h>
+#include <IridiumSBD_Static_API.h>
 
 uint8_t reset_flag = 0;
 uint8_t iwdg_flag = 0;
@@ -130,6 +131,9 @@ void MRT_resetFromStart(void){
 	//Clear wakeup and reset flags
 	W25qxx_EraseSector(1);
 	W25qxx_WriteSector(NULL_BUFFER, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+
+	//Shutdown Iridium
+	MRT_Static_Iridium_Shutdown();
 
 	//Reset function
 	NVIC_SystemReset();

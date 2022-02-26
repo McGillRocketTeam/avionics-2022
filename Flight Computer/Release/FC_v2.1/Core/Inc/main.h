@@ -192,6 +192,9 @@ void Error_Handler(void);
 #define XTEND_USART huart3
 #define XTEND_BUFFER_SIZE 256
 
+//Iridium
+//#define IRIDIUM_I2C I2C2 //TODO defined in the IridiumSBD.h
+
 
 
 

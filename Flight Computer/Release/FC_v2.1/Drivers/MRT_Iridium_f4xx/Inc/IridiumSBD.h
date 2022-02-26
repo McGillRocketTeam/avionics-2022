@@ -144,6 +144,9 @@ public:
          UART_HandleTypeDef uart;
          char* IMEI;
 
+      //TODO define the right I2C bus using the "Wire"
+		#define MRT_IRIDIUM_I2C Wire1 //I2C2
+
 
    /* Not using this constructor
    IridiumSBD(Stream &str, int sleepPinNo = -1, int ringPinNo = -1)
@@ -176,7 +179,7 @@ public:
    }
    */
 
-   IridiumSBD(TwoWire &wirePort = Wire, uint8_t deviceAddress = 0x63)
+IridiumSBD(TwoWire &wirePort = MRT_IRIDIUM_I2C, uint8_t deviceAddress = 0x63)
    {
       useSerial = false;
       wireport = &wirePort;
