@@ -81,7 +81,9 @@ class KF:
 
         print("init done")
         
-    def kf_predict(self): 
+    def kf_predict(self, IMU_input): 
+        self.IMU_input = IMU_input 
+
         self.Cab_k = self.Cab_k_1 @ np.exp(self.T*self.IMU_input)
         self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.IMU_input + self.T * self.ga
         self.ra_k = self.ra_k_1 + self.Va_k_1 * T
@@ -89,7 +91,9 @@ class KF:
         
         
 
-    def kf_correct(self):
+    def kf_correct(self, GPS_input):
+        self.GPS_input = GPS_input 
+
         self.S1 = np.eye(3) - self.K_k @ self.C_k #utility
         self.S2 = self.M_k @ self.R @ self.M_k #utility 
         self.P_k = self.S1 @ self.P_k @ self.S1.T + self.K_k @ self.S2 @ self.K_k.T
