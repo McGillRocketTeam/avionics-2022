@@ -1,16 +1,19 @@
 
 import matplotlib.pyplot as plt
+import numpy as np
+import csvHandler
 
 """
 This file's main purpose is testing. 
 
 """
 
-def PlotKF(time, position, ylabel, col): #Plots KF
-    plt.scatter(time, position, color=col, linestyle='--', linewidths=0.1, 
-                marker='o', label=ylabel)
-    plt.xlabel('time')
-    plt.ylabel(ylabel)
+#Create fake IMU and GPS data 
+
+
+data1 = np.array([20, 30, 40])
+csvHandler.store(data1)
+
     
 #create instance 
 

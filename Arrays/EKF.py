@@ -18,7 +18,6 @@ However, we only care about:
 
 import numpy as np
 from numpy.linalg import inv
-from pyrsistent import T
 
 class KF:
 
@@ -86,7 +85,7 @@ class KF:
 
         self.Cab_k = self.Cab_k_1 @ np.exp(self.T*self.IMU_input)
         self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.IMU_input + self.T * self.ga
-        self.ra_k = self.ra_k_1 + self.Va_k_1 * T
+        self.ra_k = self.ra_k_1 + self.Va_k_1 * self.T
         self.P_k = self.A @ self.P_k_1 @ self.A.T + self.L @ self.Q @ self.L.T
         
         
@@ -97,7 +96,7 @@ class KF:
         self.S1 = np.eye(3) - self.K_k @ self.C_k #utility
         self.S2 = self.M_k @ self.R @ self.M_k #utility 
         self.P_k = self.S1 @ self.P_k @ self.S1.T + self.K_k @ self.S2 @ self.K_k.T
-        self.K_k = self.P_k @ self.C_k.T @ (self.C_k @ self.P_k @ self.C_k + self.S2)
+        self.K_k = self.P_k @ self.C_k.T @ inv(self.C_k @ self.P_k @ self.C_k + self.S2)
         self.correction_term = self.K_k @ (self.GPS_input - self.ra_k)
 
         self.Cab_k = self.Cab_k @ np.exp(-self.correction_term)
