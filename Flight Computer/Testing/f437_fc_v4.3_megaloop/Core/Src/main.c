@@ -42,6 +42,7 @@
 // others
 //#include <IridiumSBD_Static_API.h>
 #include "video_recorder.h"
+#include "ejection.h"
 
 /* USER CODE END Includes */
 
@@ -54,10 +55,10 @@
 #define USING_XTEND // comment out to use SRADio
 
 // buzzer durations
-#define BUZZ_SUCCESS_DURATION	50		// ms
+#define BUZZ_SUCCESS_DURATION	10		// ms
 #define BUZZ_SUCCESS_REPEATS	1
 
-#define BUZZ_FAILURE_DURATION	100 	// ms
+#define BUZZ_FAILURE_DURATION	500 	// ms
 #define BUZZ_FAILURE_REPEATS	1
 
 /* USER CODE END PTD */
@@ -74,7 +75,6 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
-I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
 
@@ -104,6 +104,7 @@ volatile float acceleration_mg[] = {0, 0, 0};
 volatile float angular_rate_mdps[]= {0, 0, 0};
 volatile float pressure_hPa = 0;
 volatile float temperature_degC = 0;
+volatile float local_pressure = 0.0;
 
 // gps data
 volatile double latitude;
@@ -130,7 +131,8 @@ static uint8_t msg_buffer[200];
 static uint8_t msg_buffer_av[200];
 static uint8_t msg_buffer_pr[50];
 static char filename[13]; // filename will be of form fc000000.txt which is 13 chars in the array (with null termination)
-const char sd_file_header[] = "S,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E\r\n"; // printed to top of SD card file
+//const char sd_file_header[] = "S,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E\r\n"; // printed to top of SD card file
+const char sd_file_header[] = "pressure,altitude_raw,altitude_filtered,flight_state\r\n"; // printed to top of SD card file
 
 volatile uint8_t curr_task = 0;
 
@@ -140,13 +142,18 @@ uint8_t flash_write_buffer[256]; // page size is 256 bytes for w25qxx
 uint8_t flash_read_buffer[256];
 static volatile uint32_t flash_write_address = 0;
 
+// ejection
+float SmoothData = 0.0;
+float alt_ground = 0.0;
+float alt_filtered = 0.0;
+uint8_t flight_state = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_SPI2_Init(void);
@@ -168,6 +175,9 @@ int save_flash_to_sd(void);
 
 uint8_t get_continuity();
 float prop_poll_pressure_transducer(void);
+
+float getAltitude(void);
+void getAltitudeDataLog(void);
 
 /* USER CODE END PFP */
 
@@ -201,7 +211,8 @@ void tone(uint32_t duration, uint32_t repeats) {
 		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 		HAL_Delay(duration);
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
-		HAL_Delay(duration);
+		if (repeats > 1)
+			HAL_Delay(duration);
 	}
 }
 void buzz_success() { tone(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS); };
@@ -243,7 +254,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ADC1_Init();
-  MX_I2C1_Init();
   MX_I2C2_Init();
   MX_I2C3_Init();
   MX_SPI2_Init();
@@ -265,12 +275,12 @@ int main(void)
   HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, RESET);
 
   // reset recovery pyro pins
-  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, RESET);
+  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, SET);
   HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, RESET);
   HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
 
   // reset prop pyro pins
-  HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, RESET);
+  HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, SET);
   HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, RESET);
   HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, RESET);
 
@@ -312,6 +322,14 @@ int main(void)
   buzz_success();
   HAL_Delay(500);
 
+  // get local_pressure
+  local_pressure = 1022.0;  // https://montreal.weatherstats.ca/charts/pressure_sea-hourly.html
+  for (uint8_t i = 0; i < 100; i++) {
+	  alt_ground += getAltitude();
+  }
+
+  alt_ground /= 100.0;
+
   // init FLASH
 //  if (!W25qxx_Init()) Error_Handler();
   buzz_success();
@@ -327,7 +345,7 @@ int main(void)
 //	  buzz_failure();
 //  }
 
-  VR_Power_On();
+//  VR_Power_On();
 
   // init Iridium
 //  MRT_Static_Iridium_Setup(huart3);
@@ -341,55 +359,165 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim4);
 
 
+//  sprintf(msg_buffer_av, "hello world!\n");
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+  while (1) // ejection code, only goes through loop once.
   {
 
+
+	  /*// ejection
+	  // initialize values
+	  getAltitudeDataLog();
+
+	  // wait for launch
+	  while (alt_filtered < 50) {
+		  getAltitudeDataLog();
+		  HAL_Delay(5);
+	  }
+
+	  HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET);
+	  flight_state = 1;
+
+	  // save launched message to sd card
+	  sprintf(msg_buffer_av, "launched, altitude_filtered = %.7f\r\n", alt_filtered);
+	  fres = sd_open_file(filename);
+	  sd_write(&fil, msg_buffer_av);
+	  f_close(&fil);
+
+	  // wait for apogee
+	  uint8_t numNVals = 0;
+	  float alt_prev = alt_filtered; // previous altitude in next while loop
+	  float fittedSlope = 0;
+
+	  while (1) {
+		  getAltitudeDataLog();
+
+		  if (alt_filtered > alt_prev) {
+			  alt_prev = alt_filtered;
+		  }
+		  else {
+			  fittedSlope = LSLinRegression();
+
+			  if (fittedSlope < 0) {
+				  numNVals += 1;
+				  if (numNVals > NUM_DESCENDING_SAMPLES) {
+					  break;
+				  }
+			  }
+			  else {
+				  numNVals = 0;
+		  }
+
+		  HAL_Delay(5);
+	  }
+	  flight_state = 2;
+	  HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET); // apogee reached, drogue deployed
+
+	  // save launched message to sd card
+	  sprintf(msg_buffer_av, "apogee, altitude_filtered = %.7f\r\n", alt_filtered);
+	  fres = sd_open_file(filename);
+	  sd_write(&fil, msg_buffer_av);
+	  f_close(&fil);
+
+	  // wait for main
+	  while (alt_filtered > MAIN_DEPLOYMENT) {
+		  getAltitudeDataLog();
+		  HAL_Delay(5);
+	  }
+	  HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
+	  flight_state = 3;
+
+	  // save launched message to sd card
+	  sprintf(msg_buffer_av, "main chute, altitude_filtered = %.7f\r\n", alt_filtered);
+	  fres = sd_open_file(filename);
+	  sd_write(&fil, msg_buffer_av);
+	  f_close(&fil);
+
+	  // wait for landing
+	  uint8_t count = 0;
+	  while (count < LANDING_SAMPLES) {
+		  getAltitudeDataLog();
+		  if(alt_filtered - alt_previous[NUM_MEAS_REG-1] < LANDING_THRESHOLD)
+			  count++;
+		  else
+			  count = 0;
+
+		  HAL_Delay(5);
+	  }
+	  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
+	  flight_state = 4;
+
+	  // save launched message to sd card
+	  sprintf(msg_buffer_av, "landed, altitude_filtered = %.7f\r\n", alt_filtered);
+	  fres = sd_open_file(filename);
+	  sd_write(&fil, msg_buffer_av);
+	  f_close(&fil);
+
+
+	  while (1); // terminate
+	  // -------------------------------------- //
+	   */
+
 //	  #ifdef DEBUG
-////	  debug_tx_uart(msg_buffer); // data is in global variables
+//	  debug_tx_uart(msg_buffer); // data is in global variables
 //	  	  HAL_Delay(100);
 //	  #endif
 
-	  // start/stop video
+//	   start/stop video
 //	  VR_Start_Rec();
 //	  HAL_Delay(1000000);
 //	  VR_Stop_Rec();
 //	  buzz_success();
 
-//	  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
-//
-//	  	// avionics message
-//		sprintf((char *)msg_buffer, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
-//						acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
-//						angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
-//						pressure_hPa, latitude, longitude,
-//						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
-//						continuity, state);
-//
-//		// transmit via radio
-////		radio_tx(msg_buffer, strlen(msg_buffer));
-////		TxProtocol(msg_buffer, strlen(msg_buffer));
-//
-//		HAL_UART_Transmit(&huart3, msg_buffer, strlen((char *)msg_buffer), HAL_MAX_DELAY);
-//		HAL_Delay(250);
+	  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
+//	  buzz_success();
+
+	  // av message
+	  sprintf((char *)msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
+						acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+						angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
+						pressure_hPa, latitude, longitude,
+						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
+						continuity, state);
+		HAL_UART_Transmit(&huart3, msg_buffer_av, strlen((char *)msg_buffer_av), HAL_MAX_DELAY);
+//		HAL_Delay(1);
+
+
+		// prop message
+		sprintf((char *)msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
+						tank_pressure, tank_temperature, valve_state,
+						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
+		HAL_UART_Transmit(&huart3, msg_buffer_pr, strlen((char *)msg_buffer_pr), HAL_MAX_DELAY);
+//		HAL_Delay(1); // 35 minimum
+
+		// transmit via radio
+//		radio_tx(msg_buffer, strlen(msg_buffer));
+//		TxProtocol(msg_buffer, strlen(msg_buffer));
+
+//		HAL_UART_Transmit(&huart3, msg_buffer_av, strlen((char *)msg_buffer_av), HAL_MAX_DELAY);
+//		HAL_Delay(20);
 //		memset(msg_buffer, 0, 100);
-//
-//		// prop message
+
+		// prop message
 //		sprintf((char *)msg_buffer, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
 //						tank_pressure, tank_temperature, valve_state,
 //						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
-//
-//		// transmit via radio (TODO: can be modified to send at different rate)
-////		radio_tx(msg_buffer);
-////		TxProtocol(msg_buffer, strlen(msg_buffer));
-//		HAL_UART_Transmit(&huart3, msg_buffer, strlen((char *)msg_buffer), HAL_MAX_DELAY);
-//		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
+
+		// transmit via radio (TODO: can be modified to send at different rate)
+//		radio_tx(msg_buffer);
+//		TxProtocol(msg_buffer, strlen(msg_buffer));
+//		HAL_UART_Transmit(&huart3, msg_buffer_pr, strlen((char *)msg_buffer), HAL_MAX_DELAY);
+
+		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
 //		HAL_Delay(250);
-//
+
 //		memset(msg_buffer, 0, 100);
+
+//		HAL_Delay(200);
 
     /* USER CODE END WHILE */
 
@@ -502,52 +630,6 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -1059,7 +1141,7 @@ static void MX_GPIO_Init(void)
                           |Rcov_Arm_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SX_NSS_GPIO_Port, SX_NSS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, SX_NSS_Pin|GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, XTend_CTS_Pin|XTend_RTS_Pin|XTend_SLEEP_Pin|XTend_RX_LED_Pin
@@ -1178,6 +1260,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PB8 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
@@ -1185,6 +1274,31 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+
+// just for vacuum chamber testing of the baro sensor
+void getAltitudeDataLog() {
+	// get value
+	float raw_altitude = getAltitude();
+	alt_filtered = runAltitudeMeasurements(HAL_GetTick(), raw_altitude);
+	alt_filtered = raw_altitude;
+
+	// save to sd
+	sprintf(msg_buffer_av, "%.7f,%.7f,%.7f,%d\r\n", pressure_hPa, raw_altitude, alt_filtered, flight_state);
+	fres = sd_open_file(filename);
+	sd_write(&fil, msg_buffer_av);
+	f_close(&fil);
+
+#ifdef DEBUG
+	HAL_UART_Transmit(&huart8, msg_buffer_av, strlen(msg_buffer_av), HAL_MAX_DELAY);
+#endif
+}
+
+float getAltitude() {
+	get_pressure(dev_ctx_lps, &pressure_hPa);
+	uint32_t altitude = 145442.1609 * (1.0 - pow(pressure_hPa/local_pressure, 0.190266436));
+	return altitude;
+}
 
 // timer callback
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
@@ -1231,21 +1345,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 			case 7:
 				// avionics message
-				sprintf((char *)msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
-								acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
-								angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
-								pressure_hPa, latitude, longitude,
-								stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
-								continuity, state);
-				HAL_UART_Transmit(&huart3, msg_buffer_av, strlen((char *)msg_buffer_av), HAL_MAX_DELAY);
+//				sprintf((char *)msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
+//								acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+//								angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
+//								pressure_hPa, latitude, longitude,
+//								stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
+//								continuity, state);
+//				HAL_UART_Transmit(&huart3, msg_buffer_av, strlen((char *)msg_buffer_av), HAL_MAX_DELAY);
+//				memset(msg_buffer_av, 0, 200);
 				break;
 
 			case 8:
 				// prop message
-				sprintf((char *)msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
-								tank_pressure, tank_temperature, valve_state,
-								stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
-				HAL_UART_Transmit(&huart3, msg_buffer_pr, strlen((char *)msg_buffer_pr), HAL_MAX_DELAY);
+//				sprintf((char *)msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
+//								tank_pressure, tank_temperature, valve_state,
+//								stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
+//				HAL_UART_Transmit(&huart3, msg_buffer_pr, strlen((char *)msg_buffer_pr), HAL_MAX_DELAY);
+//				memset(msg_buffer_pr, 0, 50);
 				break;
 
 			case 9:
@@ -1254,17 +1370,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 				sd_write(&fil, msg_buffer_av);
 				sd_write(&fil, msg_buffer_pr);
 				f_close(&fil);
-				memset(msg_buffer_av, 0, 200);
-				memset(msg_buffer_pr, 0, 50);
+
 				break;
 
 //			case 10:
-				// radio send avionics
+////				 radio send avionics
 //				HAL_UART_Transmit(&huart3, msg_buffer_av, strlen((char *)msg_buffer_av), HAL_MAX_DELAY);
 //				break;
-
+//
 //			case 11:
-				// radio send avionics
+////				 radio send avionics
 //				HAL_UART_Transmit(&huart3, msg_buffer_pr, strlen((char *)msg_buffer_pr), HAL_MAX_DELAY);
 //				break;
 
@@ -1406,7 +1521,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-	HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
 	buzz_failure();
 	__BKPT();
   /* USER CODE END Error_Handler_Debug */

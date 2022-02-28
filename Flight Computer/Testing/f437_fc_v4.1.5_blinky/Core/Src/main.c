@@ -53,8 +53,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define TEST_BLINKY 						// pass
-//#define TEST_EJECTION 					// pass
+//#define TEST_BLINKY 						// pass
+#define TEST_EJECTION 					// pass
 //#define TEST_VR 							// pass
 //#define TEST_SD_CARD_ALONE 				// pass
 //#define TEST_SD_CARD_DYNAMIC_FILE_NAMES	// pass
@@ -522,10 +522,10 @@ int main(void)
 				latitude, longitude);
 
 		// XTend
-//		HAL_UART_Transmit(&huart3, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
+		HAL_UART_Transmit(&huart8, msg_buffer, strlen(msg_buffer), HAL_MAX_DELAY);
 
 		// SRADio
-		TxProtocol(msg_buffer, strlen(msg_buffer));
+//		TxProtocol(msg_buffer, strlen(msg_buffer));
 
 		fres = sd_open_file(filename);
 		if (fres == FR_OK) {
@@ -700,15 +700,19 @@ int main(void)
 	  if (start_ejection)
 	  {
 		  // indicate arming occurred
-//		  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+		  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 		  HAL_Delay(2000); // wait so i can probe voltage
-//		  HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
+		  start_ejection = 0;
+		  HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
 		  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
 		  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, SET);
 		  HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, SET);
 		  HAL_GPIO_WritePin(Payload_EN_GPIO_Port, Payload_EN_Pin, SET);
 
-		  HAL_Delay(3000);
+		  while (!start_ejection);
+
+		  HAL_Delay(1000);
+		  start_ejection = 0;
 
 		  GPIO_PinState cont_drogue = HAL_GPIO_ReadPin(Rcov_Cont_Drogue_GPIO_Port, Rcov_Cont_Drogue_Pin);
 		  GPIO_PinState cont_main = HAL_GPIO_ReadPin(Rcov_Cont_Main_GPIO_Port, Rcov_Cont_Main_Pin);
@@ -717,14 +721,24 @@ int main(void)
 		  GPIO_PinState cont_prop_2 = HAL_GPIO_ReadPin(Prop_Cont_2_GPIO_Port, Prop_Cont_2_Pin);
 
 		  HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET); // fire drogue and main
-		  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
-		  HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET); // prop pyro channels
-		  HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET);
+//		  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
+
+//		  HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET); // prop pyro channels
+//		  HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET);
 
 		  HAL_Delay(100);
 
 		  HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, RESET);
 		  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
+
+		  while (!start_ejection);
+		  HAL_Delay(1000);
+
+		  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
+		  HAL_Delay(100);
+		  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
+
+
 		  HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, RESET);
 		  HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, RESET);
 		  HAL_GPIO_WritePin(Payload_EN_GPIO_Port, Payload_EN_Pin, RESET);
