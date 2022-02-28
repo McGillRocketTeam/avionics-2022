@@ -23,7 +23,7 @@
 #define DIO1 18      // DIO1
 #define ANT_SW 19     // Antenna switch
 #define NSS 10        //SX126X SPI device select, active low
-#define DATA_SIZE 16
+#define DATA_SIZE 10
 
 SX1262 device; // Create instance of device class
 
@@ -34,8 +34,8 @@ uint8_t received_data[DATA_SIZE] = {0};
 uint8_t device_status;
 uint16_t irq_status;
 int i = 0;
-uint8_t lora_sf = LORA_SF9;
-uint8_t lora_bw = LORA_BW_062;
+uint8_t lora_sf = LORA_SF5;
+uint8_t lora_bw = LORA_BW_500;
 uint8_t lora_cr = LORA_CR_4_5;
 #define irq_set_mask                                0b1000000011 // Set Mask for TXDone, RXDone and Rx/Tx Timeout
 
@@ -149,7 +149,7 @@ void loop() {
       device.clearIrqStatus(SX1262_IRQ_HEADER_ERR | SX1262_IRQ_CRC_ERR);
       Serial.println("CRC or HEADER Error");
     } else if (irq_status & SX1262_IRQ_RX_DONE) {
-        command_status = device.readBufferKnownLength(0, DATA_SIZE, received_data);
+        command_status = device.readBufferUnknownLength(received_data);
         
         if (command_status != COMMAND_SUCCESS) {                          
           Serial.print("receive Failed, Command Status: ");

@@ -1,0 +1,42 @@
+[1mdiff --cc Radios/read_from_sradio_into_uart/read_from_sradio_into_uart.ino[m
+[1mindex 1532004,2c8c5da..0000000[m
+[1m--- a/Radios/read_from_sradio_into_uart/read_from_sradio_into_uart.ino[m
+[1m+++ b/Radios/read_from_sradio_into_uart/read_from_sradio_into_uart.ino[m
+[36m@@@ -23,7 -23,7 +23,11 @@@[m
+  #define DIO1 18      // DIO1[m
+  #define ANT_SW 19     // Antenna switch[m
+  #define NSS 10        //SX126X SPI device select, active low[m
+[32m++<<<<<<< HEAD[m
+[32m +#define DATA_SIZE 16[m
+[32m++=======[m
+[32m+ #define DATA_SIZE 10[m
+[32m++>>>>>>> mini-fc[m
+  [m
+  SX1262 device; // Create instance of device class[m
+  [m
+[36m@@@ -34,8 -34,8 +38,13 @@@[m [muint8_t received_data[DATA_SIZE] = {0}[m
+  uint8_t device_status;[m
+  uint16_t irq_status;[m
+  int i = 0;[m
+[32m++<<<<<<< HEAD[m
+[32m +uint8_t lora_sf = LORA_SF9;[m
+[32m +uint8_t lora_bw = LORA_BW_062;[m
+[32m++=======[m
+[32m+ uint8_t lora_sf = LORA_SF5;[m
+[32m+ uint8_t lora_bw = LORA_BW_500;[m
+[32m++>>>>>>> mini-fc[m
+  uint8_t lora_cr = LORA_CR_4_5;[m
+  #define irq_set_mask                                0b1000000011 // Set Mask for TXDone, RXDone and Rx/Tx Timeout[m
+  [m
+[36m@@@ -149,7 -149,7 +158,11 @@@[m [mvoid loop() [m
+        device.clearIrqStatus(SX1262_IRQ_HEADER_ERR | SX1262_IRQ_CRC_ERR);[m
+        Serial.println("CRC or HEADER Error");[m
+      } else if (irq_status & SX1262_IRQ_RX_DONE) {[m
+[32m++<<<<<<< HEAD[m
+[32m +        command_status = device.readBufferKnownLength(0, DATA_SIZE, received_data);[m
+[32m++=======[m
+[32m+         command_status = device.readBufferUnknownLength(received_data);[m
+[32m++>>>>>>> mini-fc[m
+          [m
+          if (command_status != COMMAND_SUCCESS) {                          [m
+            Serial.print("receive Failed, Command Status: ");[m
