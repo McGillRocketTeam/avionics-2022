@@ -86,6 +86,10 @@ class KF:
         self.Cab_k = self.Cab_k_1 @ np.exp(self.T*self.IMU_input)
         self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.IMU_input + self.T * self.ga
         self.ra_k = self.ra_k_1 + self.Va_k_1 * self.T
+
+        self.A = np.array( [[np.exp(self.T*self.IMU_input), self.T @ self.Cab_k_1 @ self.IMU_input, 0],
+                             [0, 1, self.T], 
+                             [0, 0, 1] ] )
         self.P_k = self.A @ self.P_k_1 @ self.A.T + self.L @ self.Q @ self.L.T
         
         
