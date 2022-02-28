@@ -26,6 +26,9 @@
 #include <string.h>
 #include "sx126x.h"
 #include "i2c_sensors.h"
+#include <stdio.h>
+#include <string.h>
+#include "sx126x.h"
 
 /* USER CODE END Includes */
 /* Private typedef -----------------------------------------------------------*/
@@ -89,10 +92,12 @@ const osThreadAttr_t fakeSensors_attributes = {
 };
 /* USER CODE BEGIN PV */
 // S,ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E
-float acceleration_mg[3], angular_rate_mdps[3], lsm_temperature_degC = 0;
+//float acceleration_mg[3], angular_rate_mdps[3], lsm_temperature_degC = 0;
 float PRESSURE = 0, LAT = 0, LONG = 0, MIN = 0, SEC = 0, SUBSEC = 0;
 uint8_t STATE = 0, CONT = 0;
 uint16_t nbOfFriends = 0;
+stmdev_ctx_t lsm_ctx;
+stmdev_ctx_t lps_ctx;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -167,7 +172,7 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init scheduler */
-  osKernelInitialize();
+//  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -187,10 +192,10 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of radioShenanigan */
-  radioShenaniganHandle = osThreadNew(StartDefaultTask, NULL, &radioShenanigan_attributes);
+//  radioShenaniganHandle = osThreadNew(StartDefaultTask, NULL, &radioShenanigan_attributes);
 
   /* creation of fakeSensors */
-  fakeSensorsHandle = osThreadNew(StartFakeSensors, NULL, &fakeSensors_attributes);
+//  fakeSensorsHandle = osThreadNew(StartFakeSensors, NULL, &fakeSensors_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -201,16 +206,25 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
-  osKernelStart();
+//  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  char buffer[10]="abcdefghij";
+	set_hspi(hspi2);
+	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
+	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+	Tx_setup();
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  TxProtocol(buffer, strlen(buffer));
+	  HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }

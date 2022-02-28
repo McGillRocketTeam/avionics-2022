@@ -265,8 +265,8 @@ static uint8_t tx_address_base = 0x00;
 static uint8_t rx_address_base = 0x00;
 
 // LoRa modulation params
-static sx126x_lora_sf_t lora_sf = SX126X_LORA_SF9;      //spreading factor
-static sx126x_lora_bw_t lora_bw = SX126X_LORA_BW_062;   //bandwidth
+static sx126x_lora_sf_t lora_sf = SX126X_LORA_SF5;      //spreading factor
+static sx126x_lora_bw_t lora_bw = SX126X_LORA_BW_500;   //bandwidth
 static sx126x_lora_cr_t lora_cr = SX126X_LORA_CR_4_5;   //coding rate
 static uint8_t lora_ldro = 0x00;                        //low data rate optimizer
 
@@ -517,9 +517,8 @@ void TxProtocol(uint8_t data[], uint8_t data_length){
 
     HAL_StatusTypeDef command_status;
     command_status = sx126x_clear_irq_status(&hspi, dio1_mask);
-    command_status = sx126x_write_buffer(&hspi, 0, data, data_length); // 0 is the offset
-    command_status = sx126x_set_tx(&hspi, 6000, data_length);
-    HAL_Delay(1400);
+    command_status = sx126x_write_buffer(&hspi, 0, "abcdefg", 7); // 0 is the offset
+    command_status = sx126x_set_tx(&hspi, 6000, 7);
 
     sx126x_irq_mask_t irq;
     do {
