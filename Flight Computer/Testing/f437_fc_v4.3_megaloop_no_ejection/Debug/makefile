@@ -38,34 +38,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := f437_fc_v4.3_megaloop
+BUILD_ARTIFACT_NAME := f437_fc_v4.3_megaloop_no_ejection
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-f437_fc_v4.3_megaloop.elf \
+f437_fc_v4.3_megaloop_no_ejection.elf \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-f437_fc_v4.3_megaloop.list \
+f437_fc_v4.3_megaloop_no_ejection.list \
 
 OBJCOPY_BIN += \
-f437_fc_v4.3_megaloop.bin \
+f437_fc_v4.3_megaloop_no_ejection.bin \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: f437_fc_v4.3_megaloop.elf secondary-outputs
+main-build: f437_fc_v4.3_megaloop_no_ejection.elf secondary-outputs
 
 # Tool invocations
-f437_fc_v4.3_megaloop.elf: $(OBJS) $(USER_OBJS) C:\Users\jaspe\Desktop\Rocket\ Team\ STM32\00\ STM32\ Workspace\avionics-2022\Flight\ Computer\Testing\f437_fc_v4.3_megaloop\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "f437_fc_v4.3_megaloop.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\jaspe\Desktop\Rocket Team STM32\00 STM32 Workspace\avionics-2022\Flight Computer\Testing\f437_fc_v4.3_megaloop\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f437_fc_v4.3_megaloop.map" -Wl,--gc-sections -static -u _printf_float -u _scanf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+f437_fc_v4.3_megaloop_no_ejection.elf: $(OBJS) $(USER_OBJS) C:\Users\jaspe\Desktop\Rocket\ Team\ STM32\00\ STM32\ Workspace\avionics-2022\Flight\ Computer\Testing\f437_fc_v4.3_megaloop_no_ejection\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "f437_fc_v4.3_megaloop_no_ejection.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\jaspe\Desktop\Rocket Team STM32\00 STM32 Workspace\avionics-2022\Flight Computer\Testing\f437_fc_v4.3_megaloop_no_ejection\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f437_fc_v4.3_megaloop_no_ejection.map" -Wl,--gc-sections -static -u _printf_float -u _scanf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -74,19 +74,19 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-f437_fc_v4.3_megaloop.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "f437_fc_v4.3_megaloop.list"
+f437_fc_v4.3_megaloop_no_ejection.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "f437_fc_v4.3_megaloop_no_ejection.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-f437_fc_v4.3_megaloop.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "f437_fc_v4.3_megaloop.bin"
+f437_fc_v4.3_megaloop_no_ejection.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "f437_fc_v4.3_megaloop_no_ejection.bin"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout f437_fc_v4.3_megaloop.bin f437_fc_v4.3_megaloop.elf f437_fc_v4.3_megaloop.list
+	-$(RM) default.size.stdout f437_fc_v4.3_megaloop_no_ejection.bin f437_fc_v4.3_megaloop_no_ejection.elf f437_fc_v4.3_megaloop_no_ejection.list
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)

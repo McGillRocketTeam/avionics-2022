@@ -178,7 +178,7 @@ stmdev_ctx_t lps22hh_init(void){
 	lps22hh_block_data_update_set(&dev_ctx_lps22hh, PROPERTY_ENABLE);
 
 	/* Set Output Data Rate */
-	lps22hh_data_rate_set(&dev_ctx_lps22hh, LPS22HH_75_Hz_LOW_NOISE);
+	lps22hh_data_rate_set(&dev_ctx_lps22hh, LPS22HH_200_Hz);
 
 	return dev_ctx_lps22hh;
 }

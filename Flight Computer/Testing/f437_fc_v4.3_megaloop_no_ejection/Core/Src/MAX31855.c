@@ -9,21 +9,20 @@ SPI_HandleTypeDef hspi4;
 
 // ------------------- Variables ----------------
 
-uint8_t Error=0;                                      // Thermocouple Connection acknowledge Flag
-uint32_t sign=0;									  // Sign bit
-uint8_t DATARX[4];                                    // Raw Data from MAX6675
-//uint8_t DATATX = {0xFF, 0xFF, 0xFF, 0xFF};                                    // Raw Data from MAX6675
+uint8_t Error=0;                                      	// Thermocouple Connection acknowledge Flag
+uint32_t sign=0;									  	// Sign bit
+uint8_t DATARX[4];                                    	// Raw Data from MAX6675
+//uint8_t DATATX = {0xFF, 0xFF, 0xFF, 0xFF};         	// Raw Data from MAX6675
+
 // ------------------- Functions ----------------
 float Max31855_Read_Temp(void) {
-	int Temp = 0;                                        // Temperature Variable
-	HAL_GPIO_WritePin(SSPORT, SSPIN, GPIO_PIN_RESET); // Low State for SPI Communication
-	HAL_SPI_Receive(&hspi4, DATARX, 4, 1000);                // DATA Transfer
-	HAL_GPIO_WritePin(SSPORT, SSPIN, GPIO_PIN_SET); // High State for SPI Communication
-
+	HAL_GPIO_WritePin(SSPORT, SSPIN, GPIO_PIN_RESET); 	// Low State for SPI Communication
+	HAL_SPI_Receive(&hspi4, DATARX, 4, 1000);         	// DATA Transfer
+	HAL_GPIO_WritePin(SSPORT, SSPIN, GPIO_PIN_SET);   	// High State for SPI Communication
 
 	uint32_t v = DATARX[3] | (DATARX[2] << 8) | (DATARX[1] << 16) | (DATARX[0] << 24);
 
-	Error = v & 0x07;								  // Error Detection
+	Error = v & 0x07;								  	// Error Detection
 
 	if (v & 0x7) {
 		// uh oh, a serious problem!
@@ -37,7 +36,6 @@ float Max31855_Read_Temp(void) {
 		// Positive value, just drop the lower 18 bits.
 		v >>= 18;
 	}
-	// Serial.println(v, HEX);
 
 	double centigrade = v;
 

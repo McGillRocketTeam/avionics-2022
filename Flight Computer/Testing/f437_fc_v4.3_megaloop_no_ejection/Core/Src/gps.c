@@ -42,7 +42,6 @@
 #endif
 
 uint8_t rx_buffer[75] = {0};
-volatile uint8_t rx_buffer_it[150] = {0};
 uint16_t rx_current = 0;
 uint8_t rx_index = 0;
 
@@ -101,42 +100,6 @@ void GPS_Poll(double *latitude, double *longitude, float *time)
 	}
 }
 
-//void GPS_Poll_IT(void) {
-//	// uart wait for 100 chars to be saved to input buffer
-//	// on callback, parse buffer then validate with GPS_validate()
-//
-//	uint16_t rx_chars = 100; // chars to be received
-//	HAL_UART_Receive_IT(GPS_USART, rx_buffer_it, rx_chars); // non blocking
-//}
-//
-//int GPS_ParseBuffer_IT(double *latitude, double *longitude, float *time) {
-//
-//	uint8_t index_start = 0;
-//	uint8_t index_end = 0;
-//
-//	for(index_start = 0; rx_buffer_it[index_start] != '$' && index_start < 100; index_start++); // skip until find $ or until end of array
-//	for(index_end = index_start + 1; rx_buffer_it[index_end] != '\n' && index_end < 100; index_end++); // skip until find \n or until end of array
-//
-//	if (index_start > 100 || index_end > 100 || index_end <= index_start) return -1; // error
-//
-//	// extract the string
-//	char to_validate[100] = {0};
-//	strncpy(to_validate, rx_buffer_it + index_start, index_end-index_start);
-//
-//	// found valid string? check with GPS_validate
-//	if(GPS_validate(strdup(to_validate))) {
-//		if(GPS_parse((char*) rx_buffer)){
-//			*latitude = GPS.dec_latitude;
-//			*longitude = GPS.dec_longitude;
-//			*time = GPS.utc_time;
-//
-//		}
-//	}
-//
-//	memset(rx_buffer_it, 0, 100);
-//
-//
-//}
 
 int GPS_validate(char *nmeastr){
     char check[3];
