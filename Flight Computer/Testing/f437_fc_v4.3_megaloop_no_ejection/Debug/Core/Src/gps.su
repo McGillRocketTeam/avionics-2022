@@ -1,5 +1,6 @@
-gps.c:62:6:GPS_Poll	56	static
-gps.c:104:5:GPS_validate	32	static
-gps.c:143:5:GPS_parse	48	static
-gps.c:175:8:GPS_nmea_to_dec	56	static
-gps.c:186:6:GPS_check_nonzero_data	24	static
+gps.c:64:6:GPS_Poll	56	static
+gps.c:115:7:GPS_ParseBuffer	1256	static
+gps.c:192:5:GPS_validate	32	static
+gps.c:231:5:GPS_parse	48	static
+gps.c:263:8:GPS_nmea_to_dec	56	static
+gps.c:274:6:GPS_check_nonzero_data	24	static

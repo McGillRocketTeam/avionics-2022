@@ -41,7 +41,7 @@ Core/Src/sd_card.o: ../Core/Src/sd_card.c ../Core/Inc/sd_card.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
  ../FATFS/Target/user_diskio_spi.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h \
- ../Middlewares/Third_Party/FatFs/src/diskio.h
+ ../Middlewares/Third_Party/FatFs/src/diskio.h ../Core/Inc/w25qxx.h
 
 ../Core/Inc/sd_card.h:
 
@@ -140,3 +140,5 @@ Core/Src/sd_card.o: ../Core/Src/sd_card.c ../Core/Inc/sd_card.h \
 ../Middlewares/Third_Party/FatFs/src/integer.h:
 
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
+
+../Core/Inc/w25qxx.h:

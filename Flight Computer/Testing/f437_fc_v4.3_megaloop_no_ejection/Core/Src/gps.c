@@ -47,6 +47,8 @@ uint8_t rx_index = 0;
 
 extern uint8_t gps_fix_lat;
 extern uint8_t gps_fix_long; // beep when we get fix
+extern volatile char gps_rx_buf[GPS_RX_DMA_BUF_LEN+1];
+extern volatile char gps_parsed[100];
 extern UART_HandleTypeDef huart8;
 
 GPS_t GPS;
@@ -100,6 +102,92 @@ void GPS_Poll(double *latitude, double *longitude, float *time)
 	}
 }
 
+/**
+ * parse buffer of GPS data received via DMA/interrupt.
+ *
+ * pseudocode:
+ * 		1. use strchr to find '$' sign and '\n' characters
+ * 		2. use memcpy to extract string between '$' and '\n' found
+ * 		3. parse
+ * 				a. if valid gps coordinates are found, stop
+ * 				b. else repeat with rest of buffer
+ */
+char* GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
+
+	#if (GPS_DEBUG == 1)
+	// debugging: print full buffer first
+	HAL_UART_Transmit(&huart8, rx_buf, strlen(rx_buf), HAL_MAX_DELAY);
+	#endif
+
+	// limits on the DMA buffer
+	uint16_t buf_end = GPS_RX_DMA_BUF_LEN + 1; // +1 for null terminator
+	uint8_t valid_string_found = 0;
+
+	// for extracting substrings to be parsed
+	char current_substring[200]; // max size of valid NMEA string is 75 for the validate function
+	memset(current_substring, 0, 200);
+	char txbuasdf[1000] = {0};
+
+	// need to know where we are in the buffer to be able to loop automatically
+	char *head_of_parse_buffer = gps_rx_buf;
+	char *dollar;
+	char *newline;
+	uint8_t loopcount = 0;
+
+	while (head_of_parse_buffer != NULL) {
+
+//		sprintf(txbuasdf, "loop start: address head = %p\r\n", head_of_parse_buffer);
+//		HAL_UART_Transmit(&huart8, txbuasdf, strlen(txbuasdf), HAL_MAX_DELAY);
+
+		// get index of '$' and '\n'. note: gps_rx_buf MUST be null terminated!
+		dollar = strchr(head_of_parse_buffer, '$');
+		newline = strchr(dollar, '\n'); // start after $ sign
+
+		if (dollar != NULL && newline != NULL) {
+			// copy substring into string
+//			sprintf(txbuasdf, "lc = %lu\taddresses: dollar = %p\tnewline = %p\tnewline-dollar = %d\r\n", loopcount, dollar, newline, newline-dollar);
+//			HAL_UART_Transmit(&huart8, txbuasdf, strlen(txbuasdf), HAL_MAX_DELAY);
+
+			memcpy(current_substring, dollar, (newline - dollar));
+		}
+		else {
+			break;
+		}
+
+		// parse
+		if (GPS_validate((char*) current_substring)) {
+			if (GPS_parse((char*) current_substring)) {
+				*latitude = GPS.dec_latitude;
+				*longitude = GPS.dec_longitude;
+				*time = GPS.utc_time;
+				valid_string_found = 1;
+
+				break; // got valid coordinates, stop parsing
+			}
+		}
+
+		memset(current_substring, 0, (newline - dollar) + 10);
+		head_of_parse_buffer = newline; // move head of buffer to newline character found
+
+//		sprintf(txbuasdf, "addresses: newline = %p\thead = %p\r\n", newline, head_of_parse_buffer);
+//		HAL_UART_Transmit(&huart8, txbuasdf, strlen(txbuasdf), HAL_MAX_DELAY);
+	}
+
+
+	memset(gps_rx_buf, 0, buf_end);
+
+	// return so we can save the parsed string to sd card without including
+	// sd card in this file
+	if (valid_string_found) {
+		valid_string_found = 0;
+		strcpy(gps_parsed, current_substring);
+		return gps_parsed;
+	}
+	else {
+		strcpy(gps_parsed, "\nno valid GPS parsed\n");
+		return ((char *)"\nno valid GPS parsed\n");
+	}
+}
 
 int GPS_validate(char *nmeastr){
     char check[3];
@@ -189,14 +277,12 @@ void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_la
 
 		if (*gps_fix_lat == 1) {
 			*gps_fix_lat = 0;
-//			tone(200, 2);
 		}
 	}
 	else {
 		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
 		if (*gps_fix_lat == 0) {
 			*gps_fix_lat = 1;
-//			tone(200, 4);
 		}
 	}
 
@@ -204,14 +290,12 @@ void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_la
 		HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, RESET);
 		if (*gps_fix_long == 1) {
 			*gps_fix_long = 0;
-//			tone(200, 2);
 		}
 	}
 	else {
 		HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, SET);
 		if (*gps_fix_long == 0) {
 			*gps_fix_long = 1;
-//			tone(200, 4);
 		}
 	}
 }

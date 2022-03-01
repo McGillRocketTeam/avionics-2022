@@ -27,5 +27,6 @@ FRESULT sd_open_file(char *filename);
 int8_t sd_write(FIL* fp, uint8_t* buffer);
 FRESULT scan_files(char* path, char* prefix, uint32_t* max_used_value);
 uint8_t extract_filename_suffix(char* filename, uint8_t len_prefix, uint32_t* num_value);
+int8_t save_flash_to_sd(void);
 
 #endif /* INC_SD_CARD_H_ */

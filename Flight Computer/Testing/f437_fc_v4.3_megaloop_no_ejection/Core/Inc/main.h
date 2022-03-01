@@ -29,6 +29,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,8 +50,6 @@ extern "C" {
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
-
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
@@ -172,22 +171,39 @@ void Error_Handler(void);
 extern I2C_HandleTypeDef hi2c3;
 extern UART_HandleTypeDef huart6;
 
-#define		MAIN_DEPLOYMENT			1500		// ft
-#define		THRESHOLD_ALTITUDE		10000		// ft
-
+// -- 2020 FC parameters -- //
 #define		DROGUE_DELAY			500			// ms (Time that drogue is HIGH)
 #define		MAIN_DELAY				500			// ms (Time that main is HIGH)
-
-#define   	TELEMETRY_DELAY   		1400
-#define		LPF_A					6.28318		// LPF_A = 2 * 3.14159 * 1
-#define		LANDING_THRESHOLD		4			// Change in altitude to detect landing
-#define		LANDING_SAMPLES			200
 
 // Configurations
 #define		NUM_MEAS_REG			50			// Number of historic measurements for linear regression
 #define		ALT_MEAS_AVGING			500
 #define		NUM_DESCENDING_SAMPLES	10			// Number of descending slope values for apogee detection to pass
+// -- end 2020 parameters -- //
 
+// -- 2021 megaloop parameters -- //
+#define LAUNCH_ALT_CHANGE_THRESHOLD		75		// ft, change in altitude needed to change to "launched" state
+#define APOGEE_NUM_DESCENDING_SAMPLES	30 		// ejection does not depend on this megaloop, can be more conservative
+#define MAIN_NUM_DESCENDING_SAMPLES		10
+#define LANDING_NUM_DESCENDING_SAMPLES	20		// number of samples needed to set as landing
+#define MAIN_DEPLOY_ALTITUDE			1500	// ft
+#define LANDING_ALT_CHANGE_THRESHOLD	5		// ft
+
+// flight states
+#define FLIGHT_STATE_PAD				0		// on pad, waiting for launch
+#define FLIGHT_STATE_PRE_APOGEE			1		// after launch, waiting for apogee
+#define FLIGHT_STATE_PRE_MAIN			2		// after apogee, waiting for main
+#define FLIGHT_STATE_PRE_LANDED			3		// after main, waiting for landing
+#define FLIGHT_STATE_LANDED				4		// landed
+
+// loop timing, tune these later
+#define LOOP_DURATION_PAD				100		// 100 ms per loop ==>  10 Hz
+#define LOOP_DURATION_PRE_APOGEE		500		// 500 ms per loop ==>   2 Hz
+#define LOOP_DURATION_PRE_MAIN			250		// 250 ms per loop ==>   4 Hz
+#define LOOP_DURATION_PRE_LANDED		100		// 100 ms per loop ==>  10 Hz
+#define LOOP_DURATION_LANDED			1000	// 1 s per loop    ==> 	 1 Hz
+
+#define GPS_RX_DMA_BUF_LEN				175		// characters
 
 /* USER CODE END Private defines */
 

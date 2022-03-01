@@ -2,13 +2,15 @@
  * sd_card.c
  *
  *  Created on: Dec 22, 2021
- *      Author: JO
+ *      Author: jasper
  */
 
 #include "sd_card.h"
+#include "w25qxx.h" // for FLASH
 
 extern FATFS FatFs;
 extern FIL fil;
+extern FRESULT fres;
 uint8_t msg_buffer[1000];
 
 
@@ -248,6 +250,72 @@ uint8_t extract_filename_suffix(char* filename, uint8_t len_prefix, uint32_t* nu
 	}
 
 	return 0;
+}
+
+
+/**
+ * reads data out of external FLASH and saves to SD card.
+ * erases the used flash after finished.
+ * returns:
+ * 		-1 : failed to save to SD
+ * 		 0 : no data saved
+ * 		 n : some positive number, number of pages of FLASH saved
+ *
+ * assumes f_mount has already been run.
+ * this function does not close the file system.
+ * opens a file "datalog.txt" and closes it when finished.
+ */
+int8_t save_flash_to_sd(void) {
+	// FLASH variables
+	uint32_t page_num = 0;
+	uint16_t page_bytes = w25qxx.PageSize; // 256 bytes saved per page
+	uint8_t readBuf[page_bytes];
+
+	// write to file
+	fres = f_open(&fil, "flashlog.txt", FA_WRITE | FA_OPEN_ALWAYS);
+	if (fres != FR_OK) {
+		myprintf("f_open error (%i)\r\n", fres);
+		return -1;
+	}
+
+	// set pointer to end of file
+	f_lseek(&fil, f_size(&fil));
+
+	// print string to indicate new log session
+	sprintf((char *)msg_buffer, "\n--- new logging session! ---\r\n");
+	sd_write(&fil, msg_buffer);
+
+	for (page_num = 0; page_num < w25qxx.PageCount; page_num++) {
+
+		if (!W25qxx_IsEmptyPage(page_num, 0, page_bytes)) {
+
+			// page not empty, read page out of flash
+			W25qxx_ReadPage(readBuf, page_num, 0, page_bytes);
+
+			// save to SD
+			int8_t status = sd_write(&fil, readBuf);
+			if (status <= 0) {
+				return -1; // failed
+			}
+		}
+		else break; // page empty, no need to continue
+	}
+
+	// close file
+	f_close(&fil);
+
+	if (page_num == 0) { // nothing saved
+		return 0;
+	}
+	else {
+		// clear the blocks with data
+		uint32_t blocks_to_clear = W25qxx_PageToBlock(page_num);
+		for (uint32_t block = 0; block <= blocks_to_clear; block++) {
+			W25qxx_EraseBlock(block);
+		}
+	}
+
+	return page_num;
 }
 
 

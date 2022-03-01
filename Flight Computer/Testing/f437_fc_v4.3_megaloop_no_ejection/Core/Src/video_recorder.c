@@ -12,7 +12,7 @@
 void VR_Power_On() {
 	HAL_GPIO_WritePin(VR_CTRL_PWR_GPIO_Port, VR_CTRL_PWR_Pin, SET);
 	// note that runcam needs around 3-5 seconds to fully power on
-//	HAL_Delay(5000);
+	HAL_Delay(5000);
 }
 
 void VR_Start_Rec() {
