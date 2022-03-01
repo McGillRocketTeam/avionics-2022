@@ -55,7 +55,7 @@
 #define USING_XTEND // comment out to use SRADio
 
 // buzzer durations
-#define BUZZ_SUCCESS_DURATION	10		// ms
+#define BUZZ_SUCCESS_DURATION	5		// ms
 #define BUZZ_SUCCESS_REPEATS	1
 
 #define BUZZ_FAILURE_DURATION	500 	// ms
@@ -361,6 +361,17 @@ int main(void)
 
 //  sprintf(msg_buffer_av, "hello world!\n");
 
+//  sprintf((char *)msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
+//  						acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+//  						angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
+//  						pressure_hPa, latitude, longitude,
+//  						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
+//  						continuity, state);
+//
+//  sprintf((char *)msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
+//  						tank_pressure, tank_temperature, valve_state,
+//  						stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -474,7 +485,7 @@ int main(void)
 //	  buzz_success();
 
 	  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
-//	  buzz_success();
+	  buzz_success();
 
 	  // av message
 	  sprintf((char *)msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
@@ -513,7 +524,7 @@ int main(void)
 //		HAL_UART_Transmit(&huart3, msg_buffer_pr, strlen((char *)msg_buffer), HAL_MAX_DELAY);
 
 		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
-//		HAL_Delay(250);
+		HAL_Delay(1);
 
 //		memset(msg_buffer, 0, 100);
 
