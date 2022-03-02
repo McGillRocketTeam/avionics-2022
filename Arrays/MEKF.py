@@ -19,7 +19,7 @@ However, we only care about:
 import numpy as np
 from numpy.linalg import inv
 
-class KF:
+class MEKF:
 
     """ process model
             Cab_k = Cab_k-1 . e^(T*gyro_input)
@@ -56,7 +56,8 @@ class KF:
         # R : get value from sensor datasheet 
 
             #sensor intial
-        self.IMU_input = np.eye(3)  #initial input (IMU)
+        self.GYRO_input = np.eye(3) *0.1 #initial input (GYRO)
+        self.ACC_input = np.eye(3) *0.1 #initial input (IMU)
 
             #other variables
         self.Cab_k = np.eye(3)
@@ -80,14 +81,15 @@ class KF:
 
         print("init done")
         
-    def kf_predict(self, IMU_input): 
-        self.IMU_input = IMU_input 
+    def kf_predict(self, GYRO_input, ACC_input): 
+        self.GYRO_input = GYRO_input 
+        self.ACC_input = ACC_input 
 
-        self.Cab_k = self.Cab_k_1 @ np.exp(self.T*self.IMU_input)
-        self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.IMU_input + self.T * self.ga
+        self.Cab_k = self.Cab_k_1 @ np.exp(self.T*self.GYRO_input)
+        self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.ACC_input + self.T * self.ga
         self.ra_k = self.ra_k_1 + self.Va_k_1 * self.T
 
-        self.A = np.array( [[np.exp(self.T*self.IMU_input), self.T @ self.Cab_k_1 @ self.IMU_input, 0],
+        self.A = np.array( [[np.exp(self.T*self.GYRO_input), self.T @ self.Cab_k_1 @ self.ACC_input, 0],
                              [0, 1, self.T], 
                              [0, 0, 1] ] )
         self.P_k = self.A @ self.P_k_1 @ self.A.T + self.L @ self.Q @ self.L.T
