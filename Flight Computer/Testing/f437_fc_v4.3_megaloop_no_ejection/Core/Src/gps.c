@@ -136,18 +136,12 @@ char* GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
 
 	while (head_of_parse_buffer != NULL) {
 
-//		sprintf(txbuasdf, "loop start: address head = %p\r\n", head_of_parse_buffer);
-//		HAL_UART_Transmit(&huart8, txbuasdf, strlen(txbuasdf), HAL_MAX_DELAY);
-
 		// get index of '$' and '\n'. note: gps_rx_buf MUST be null terminated!
 		dollar = strchr(head_of_parse_buffer, '$');
 		newline = strchr(dollar, '\n'); // start after $ sign
 
 		if (dollar != NULL && newline != NULL) {
 			// copy substring into string
-//			sprintf(txbuasdf, "lc = %lu\taddresses: dollar = %p\tnewline = %p\tnewline-dollar = %d\r\n", loopcount, dollar, newline, newline-dollar);
-//			HAL_UART_Transmit(&huart8, txbuasdf, strlen(txbuasdf), HAL_MAX_DELAY);
-
 			memcpy(current_substring, dollar, (newline - dollar));
 		}
 		else {
@@ -168,9 +162,6 @@ char* GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
 
 		memset(current_substring, 0, (newline - dollar) + 10);
 		head_of_parse_buffer = newline; // move head of buffer to newline character found
-
-//		sprintf(txbuasdf, "addresses: newline = %p\thead = %p\r\n", newline, head_of_parse_buffer);
-//		HAL_UART_Transmit(&huart8, txbuasdf, strlen(txbuasdf), HAL_MAX_DELAY);
 	}
 
 

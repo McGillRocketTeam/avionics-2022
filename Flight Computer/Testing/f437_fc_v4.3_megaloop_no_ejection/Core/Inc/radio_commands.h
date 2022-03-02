@@ -10,20 +10,26 @@
 
 typedef enum radio_command {
 	LAUNCH = 1,
-	ARM_PROP = 2,
-	ARM_RCOV = 3,
-	VR_POWER_ON = 4,
-	VR_REC_START = 5,
-	VR_REC_STOP = 6,	// should not be used at comp
-	VR_POWER_OFF = 7,	// should not be used at comp
+	ARM_PROP,
+	ARM_RCOV,
+	DISARM_PROP,
+	DISARM_RCOV,
+	VR_POWER_ON,
+	VR_REC_START,
+	VR_REC_STOP,	// should not be used at comp
+	VR_POWER_OFF,	// should not be used at comp
+
 } radio_command;
 
 
 // functions
 radio_command xtend_parse_dma_command(void);
+void execute_parsed_command(radio_command cmd);
 void rocket_launch(void);
 void arming_propulsion(void);
 void arming_recovery(void);
+void disarm_propulsion(void);
+void disarm_recovery(void);
 
 
 #endif /* INC_RADIO_COMMANDS_H_ */

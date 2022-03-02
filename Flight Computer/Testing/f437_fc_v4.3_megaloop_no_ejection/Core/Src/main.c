@@ -131,7 +131,7 @@ static uint32_t flash_write_address = 0;
 
 // state of flight (for changing radio transmission rate)
 volatile uint8_t state = FLIGHT_STATE_PAD;
-uint8_t num_radio_transmissions = 0;
+volatile uint8_t num_radio_transmissions = 0;
 
 // tracking altitude for state of flight changing
 float alt_ground = 0;
@@ -144,6 +144,10 @@ uint8_t num_descending_samples = 0; // for crude apogee detection
 // bidirectional xtend communication
 volatile char xtend_rx_buf[10];
 volatile uint8_t xtend_rx_dma_ready = 0;
+volatile uint8_t xtend_tx_completed = 1; // to allow first tx
+
+volatile uint8_t xtend_tx_start_av = 0;	 // distinguishing tx of av and pr in callback with timer
+volatile uint8_t xtend_tx_start_pr = 0;
 
 /* USER CODE END PV */
 
@@ -172,9 +176,10 @@ uint8_t xtend_parse_dma_command(void);
 // TODO: add reception
 #ifdef USING_XTEND
 void radio_tx(uint8_t *msg_buffer, uint16_t size) {
-	HAL_UART_Transmit(&huart3, msg_buffer, size, HAL_MAX_DELAY);
+//	HAL_UART_Transmit(&huart3, msg_buffer, size, HAL_MAX_DELAY);
+	HAL_UART_Transmit_DMA(&huart3, msg_buffer, size);
 
-	#ifdef DEBUG
+	#ifdef DEBUG_DMA
 	HAL_UART_Transmit(&huart8, msg_buffer, size, HAL_MAX_DELAY);
 	#endif
 }
@@ -250,6 +255,7 @@ int main(void)
   MX_FATFS_Init();
   MX_RTC_Init();
   MX_TIM4_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   // *** IMPORTANT: DMA Init function must be called before peripheral init! *** //
@@ -292,7 +298,6 @@ int main(void)
   HAL_GPIO_WritePin(VR_CTRL_PWR_GPIO_Port, VR_CTRL_PWR_Pin, RESET);
   HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
 
-
 #ifndef USING_XTEND
   set_hspi(hspi2);
   set_NSS_pin(SX_NSS_GPIO_Port, SX_NSS_Pin);
@@ -327,9 +332,6 @@ int main(void)
 	  buzz_failure();
   }
 
-//  VR_Power_On();
-//  VR_Start_Rec();
-
   // init Iridium
 //  MRT_Static_Iridium_Setup(huart3);
 //  MRT_Static_Iridium_getIMEI();
@@ -337,12 +339,6 @@ int main(void)
   // send message with Iridium
 //  MRT_Static_Iridium_sendMessage("message");
 //  MRT_Static_Iridium_Shutdown();
-
-  // start/stop video
-//	  VR_Start_Rec();
-//	  HAL_Delay(1000000);
-//	  VR_Stop_Rec();
-//	  buzz_success();
 
   // get ground altitude
   for (uint8_t i = 0; i < 100; i++) {
@@ -352,12 +348,31 @@ int main(void)
   alt_current = alt_ground;
 
   // initial DMA request for GPS
-  HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
+//  HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
 
   // initial DMA request for XTend
   memset(xtend_rx_buf, 0, 10);
-  HAL_UART_Receive_DMA(&huart3, xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
+  HAL_UART_Receive_DMA(&huart3, (uint8_t *)xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
 
+  // initialize avionics and propulsion xtend buffers with *something* so DMA can happen without zero length error
+  sprintf((char*) msg_buffer_av,
+    				"S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
+    				acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+    				angular_rate_mdps[0], angular_rate_mdps[1],
+    				angular_rate_mdps[2], pressure_hPa, latitude, longitude,
+    				stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
+    				continuity, state);
+  sprintf((char*) msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
+  					tank_pressure, tank_temperature, valve_state, stimeget.Minutes,
+  					stimeget.Seconds, stimeget.SubSeconds);
+
+  // start timer 3 for radio transmissions
+  HAL_TIM_Base_Start_IT(&htim3);
+
+  // try do this here bc init function seems to be triggering it at higher rate
+  TIM3->ARR = 1000;
+  TIM3->EGR |= TIM_EGR_UG;
+  HAL_UART_Transmit(&huart8, (uint8_t *)"10hz\r\n", 6, HAL_MAX_DELAY);
 
   /* USER CODE END 2 */
 
@@ -365,10 +380,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	    uint32_t start_tick = HAL_GetTick();
-	    uint32_t end_tick = 0; 	// polled later
-	    uint32_t loop_duration; // end_tick - start_tick
-
 //	    buzz_success();
 	    HAL_Delay(10);
 		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
@@ -383,41 +394,7 @@ int main(void)
 			HAL_UART_Receive_DMA(&huart3, xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
 			xtend_rx_dma_ready = 0;
 
-			switch (cmd) {
-			case LAUNCH:
-				rocket_launch();
-				HAL_UART_Transmit(&huart8, "launch\r\n", 8, HAL_MAX_DELAY);
-				break;
-
-			case ARM_PROP:
-				arming_propulsion();
-				HAL_UART_Transmit(&huart8, "arm pr\r\n", 8, HAL_MAX_DELAY);
-				break;
-
-			case ARM_RCOV:
-				arming_recovery();
-				HAL_UART_Transmit(&huart8, "arm rc\r\n", 8, HAL_MAX_DELAY);
-				break;
-
-			case VR_POWER_ON:
-				VR_Power_On();
-				break;
-
-			case VR_REC_START:
-				VR_Start_Rec();
-				break;
-
-			case VR_REC_STOP:
-				VR_Stop_Rec();
-				break;
-
-			case VR_POWER_OFF:
-				VR_Power_Off();
-				break;
-
-			default:
-				break;
-			}
+			execute_parsed_command(cmd);
 		}
 
 		// -----  GATHER AVIONICS TELEMETRY ----- //
@@ -437,22 +414,21 @@ int main(void)
 		continuity = get_continuity();
 
 		// gps
-//		if (gps_dma_ready) {
-//			gps_dma_ready = 0;
-//
-//			char *gps_parsed = GPS_ParseBuffer(&latitude, &longitude, &time);
-//			fres = sd_open_file(filename);
-//			sd_write(&fil, "\nNew GPS\n");
-//			f_close(&fil);
-//
-//			HAL_UART_Transmit(&huart8, gps_parsed, strlen(gps_parsed), HAL_MAX_DELAY);
-//
-//			// start new DMA request
-//			HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
-//		}
+		if (gps_dma_ready) {
+			gps_dma_ready = 0;
 
-//		GPS_Poll(&latitude, &longitude, &time);
+			char *gps_parsed = GPS_ParseBuffer(&latitude, &longitude, &time);
+			fres = sd_open_file(filename);
+			sd_write(&fil, "\nNew GPS\n");
+			f_close(&fil);
 
+			HAL_UART_Transmit(&huart8, gps_parsed, strlen(gps_parsed), HAL_MAX_DELAY);
+
+			// start new DMA request
+			HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
+		}
+
+		// debugging state of GPS coordinates during testing, remove later
 		if (latitude != 0) {
 			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
 		} else {
@@ -503,7 +479,7 @@ int main(void)
 //			debug_tx_uart(msg_buffer_pr);
 		#endif
 
-		// radio transmission
+		// logic to change states of flight
 		switch (state) {
 		case FLIGHT_STATE_PAD: // launch pad, waiting. prioritize prop data
 
@@ -514,27 +490,12 @@ int main(void)
 				fres = sd_open_file(filename);
 				sd_write(&fil, (uint8_t *)"launched\r\n");
 				f_close(&fil);
+
+				HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET);
+
+				// generate software interrupt to change TIM3 update rate
+				__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 			}
-
-			// send prop
-			radio_tx(msg_buffer_pr, strlen((char *)msg_buffer_pr));
-
-			if (num_radio_transmissions % 1 == 0) { // av at 2 Hz
-				// send av
-				radio_tx(msg_buffer_av, strlen((char *)msg_buffer_av));
-			}
-
-			num_radio_transmissions++;
-			if (num_radio_transmissions == 10) {
-				num_radio_transmissions = 0;
-			}
-
-			// loop timing calculation
-			end_tick = HAL_GetTick();
-			loop_duration = end_tick - start_tick;
-			if (loop_duration < LOOP_DURATION_PAD) { // ticks in ms, hopefully loop runs at 10 Hz
-				HAL_Delay(LOOP_DURATION_PAD - loop_duration);
-			} // else just go straight back to top of loop
 
 			break;
 
@@ -555,19 +516,12 @@ int main(void)
 					sd_write(&fil, (uint8_t *)"apogee\r\n");
 					f_close(&fil);
 
+					HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET);
+
+					// generate software interrupt to change TIM3 update rate
+					__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 				}
 			}
-
-			// transmit avionics and prop at equal priority
-			radio_tx(msg_buffer_av, strlen((char *)msg_buffer_av));
-			radio_tx(msg_buffer_pr, strlen((char *)msg_buffer_pr));
-
-			// loop timing calculation
-			end_tick = HAL_GetTick();
-			loop_duration = end_tick - start_tick;
-			if (loop_duration < LOOP_DURATION_PRE_APOGEE) {
-				HAL_Delay(LOOP_DURATION_PRE_APOGEE - loop_duration);
-			} // else just go straight back to top of loop
 
 			break;
 
@@ -585,19 +539,15 @@ int main(void)
 					fres = sd_open_file(filename);
 					sd_write(&fil, (uint8_t *)"main deployed\r\n");
 					f_close(&fil);
+
+					HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
+
+					// generate software interrupt to change TIM3 update rate
+					__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 				}
 			} else {
 				num_descending_samples = 0;
 			}
-
-			// transmit avionics only
-			radio_tx(msg_buffer_av, strlen((char *)msg_buffer_av));
-
-			// loop timing calculation
-			loop_duration = end_tick - start_tick;
-			if (loop_duration < LOOP_DURATION_PRE_MAIN) {
-				HAL_Delay(LOOP_DURATION_PRE_MAIN - loop_duration);
-			} // else just go straight back to top of loop
 
 			break;
 
@@ -620,45 +570,32 @@ int main(void)
 					fres = sd_open_file(filename);
 					sd_write(&fil, (uint8_t *)"landed\r\n");
 					f_close(&fil);
+
+					HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
+
+					// generate software interrupt to change TIM3 update rate
+					__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 				}
 			} else {
 				num_descending_samples = 0;
 			}
 
-			// transmit avionics only
-			radio_tx(msg_buffer_av, strlen((char *)msg_buffer_av));
-
-			// loop timing calculation
-			loop_duration = end_tick - start_tick;
-			if (loop_duration < LOOP_DURATION_PRE_LANDED) {
-				HAL_Delay(LOOP_DURATION_PRE_LANDED - loop_duration);
-			} // else just go straight back to top of loop
-
 			alt_prev = alt_current;
 			break;
 
 		case FLIGHT_STATE_LANDED: // landed
-			// reduce transmission rate to save power. no need to check state anymore
+			__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 
-			// transmit avionics only
-			radio_tx(msg_buffer_av, strlen((char *)msg_buffer_av));
-
-			// loop timing calculation
-			loop_duration = end_tick - start_tick;
-			if (loop_duration < LOOP_DURATION_LANDED) {
-				HAL_Delay(LOOP_DURATION_LANDED - loop_duration);
-			} // else just go straight back to top of loop
+			while (1) {
+				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
+				HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, SET);
+				HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, SET);
+			}
 
 			break;
 
 		default:
-			VR_Stop_Rec();
-			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
-			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
-			HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, SET);
-			HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, SET);
-
-			while (1); // terminate
 
 			break;
 		}
@@ -730,24 +667,138 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	if (GPIO_Pin == IN_Button_Pin) {
 		button_pressed = 1;
 		state++;
+
+		__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
+	}
+	else if (GPIO_Pin == EXTI_SWIER_SWIER4) { // software interrupt to change timer settings
+		switch (state) {
+		// assuming clock freq = 36 MHz, PSC = 3600-1, use ARR to get desired counter freq
+		// idk why tf PSC needs to be 7200-1...maybe TIM3 uses APB2 not APB1?
+		// 		10 Hz -> ARR = 1000
+		// 		 5 Hz -> ARR = 2000
+		// 		 2 Hz -> ARR = 5000
+		// 		 1 Hz -> ARR = 10000
+
+		case FLIGHT_STATE_PAD:
+			TIM3->ARR = 1000-1;
+			TIM3->EGR |= TIM_EGR_UG;
+			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
+			break;
+
+		case FLIGHT_STATE_PRE_APOGEE:
+			TIM3->ARR = 5000-1;
+			TIM3->EGR |= TIM_EGR_UG;
+			HAL_UART_Transmit(&huart8, "02hz\r\n", 6, HAL_MAX_DELAY);
+			break;
+
+		case FLIGHT_STATE_PRE_MAIN:
+			TIM3->ARR = 2000-1;
+			TIM3->EGR |= TIM_EGR_UG;
+			HAL_UART_Transmit(&huart8, "05hz\r\n", 6, HAL_MAX_DELAY);
+			break;
+
+		case FLIGHT_STATE_PRE_LANDED:
+			TIM3->ARR = 1000-1;
+			TIM3->EGR |= TIM_EGR_UG;
+			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
+			break;
+
+		case FLIGHT_STATE_LANDED:
+			TIM3->ARR = 20000-1;
+			TIM3->EGR |= TIM_EGR_UG;
+			HAL_UART_Transmit(&huart8, "01hz\r\n", 6, HAL_MAX_DELAY);
+			break;
+
+		default:
+			TIM3->ARR = 1000-1;
+			TIM3->EGR |= TIM_EGR_UG;
+			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
+			state = 0;
+			break;
+		}
 	}
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	if (huart == &huart6) {
+	if (huart == &huart6) { // gps
 
 		// received data from GPS into buffer.
 		// insert null termination and parse buffer (total buffer length is GPS_RX_DMA_BUF_LEN + 1)
 		gps_rx_buf[GPS_RX_DMA_BUF_LEN] = '\0';
 		gps_dma_ready = 1;
 	}
-	else if (huart == &huart3) {
+	else if (huart == &huart3) { // xtend radio
 		xtend_rx_dma_ready = 1;
-
 		// the launch command is time critical, let's not wait until the next loop
-		if (xtend_parse_dma_command() == LAUNCH) {
+		// arming is kinda critical too
+		radio_command cmd = xtend_parse_dma_command();
+		if (cmd == LAUNCH) {
 			rocket_launch();
 		}
+		else if (cmd == ARM_PROP) {
+			arming_propulsion();
+		}
+		else if (cmd == ARM_RCOV) {
+			arming_recovery();
+		}
+
+		// main loop will clear the buffer and start new DMA request
+	}
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+	if (huart == &huart3) {
+		// don't care who started it, transmit is complete
+		xtend_tx_start_av = 0;
+		xtend_tx_start_pr = 0;
+
+		num_radio_transmissions++;
+		if (num_radio_transmissions == 10) {
+			num_radio_transmissions = 0;
+		}
+	}
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	if (htim == &htim3) {
+		HAL_GPIO_TogglePin(LEDF_GPIO_Port, LEDF_Pin);
+//		HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, SET);
+
+		switch (state) {
+		case FLIGHT_STATE_PAD:
+
+			// send av
+			if (num_radio_transmissions % 5 == 0 && xtend_tx_start_pr == 0 && xtend_tx_start_av == 0) {
+				radio_tx(msg_buffer_av, strlen((char *)msg_buffer_av));
+				xtend_tx_start_av = 1;
+			}
+
+			// send prop
+			else if (xtend_tx_start_av == 0 && xtend_tx_start_pr == 0) {
+				radio_tx(msg_buffer_pr, strlen((char *)msg_buffer_pr));
+				xtend_tx_start_pr = 1;
+			}
+
+			break;
+
+		case FLIGHT_STATE_PRE_APOGEE:
+			// transmit avionics and prop at equal priority
+			if (xtend_tx_start_pr == 0 && xtend_tx_start_av == 0 && num_radio_transmissions % 2 == 0) {
+				radio_tx(msg_buffer_av, strlen((char *)msg_buffer_av));
+			}
+			else if (xtend_tx_start_pr == 0 && xtend_tx_start_av == 0 && num_radio_transmissions % 2 == 1) {
+				radio_tx(msg_buffer_pr, strlen((char *)msg_buffer_pr));
+			}
+			break;
+
+		default:
+			if (xtend_tx_start_av == 0) {
+				radio_tx(msg_buffer_av, strlen((char *)msg_buffer_av));
+			}
+			break;
+		}
+
+//		HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, RESET);
 	}
 }
 

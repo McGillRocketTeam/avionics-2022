@@ -61,6 +61,9 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define PM_12V_EN_Pin GPIO_PIN_2
 #define PM_12V_EN_GPIO_Port GPIOE
+#define GPIO_EXTI_SW4_Pin GPIO_PIN_4
+#define GPIO_EXTI_SW4_GPIO_Port GPIOE
+#define GPIO_EXTI_SW4_EXTI_IRQn EXTI4_IRQn
 #define SD_CS_Pin GPIO_PIN_10
 #define SD_CS_GPIO_Port GPIOF
 #define IN_Button_Pin GPIO_PIN_0
