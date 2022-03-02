@@ -13,7 +13,7 @@ This file's main purpose is testing.
 
 data1 = np.array([20, 30, 40])
 csvHandler.store(data1)
-
+print(csvHandler.read(0))
     
 #create instance 
 
