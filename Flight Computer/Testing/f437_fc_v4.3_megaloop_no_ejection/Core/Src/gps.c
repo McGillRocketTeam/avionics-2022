@@ -126,13 +126,11 @@ char* GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
 	// for extracting substrings to be parsed
 	char current_substring[200]; // max size of valid NMEA string is 75 for the validate function
 	memset(current_substring, 0, 200);
-	char txbuasdf[1000] = {0};
 
 	// need to know where we are in the buffer to be able to loop automatically
 	char *head_of_parse_buffer = gps_rx_buf;
 	char *dollar;
 	char *newline;
-	uint8_t loopcount = 0;
 
 	while (head_of_parse_buffer != NULL) {
 

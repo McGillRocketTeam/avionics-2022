@@ -61,7 +61,12 @@
 #define DEBUG
 
 // radios
-#define USING_XTEND // comment out to use SRADio
+#define USING_XTEND 	// comment out to use SRADio
+#define TIMING_ITM 		// comment out
+
+#ifdef TIMING_ITM
+#define ITM_Port32(n) (*((volatile unsigned long *) (0xE0000000+4*n)))
+#endif
 
 // buzzer durations
 #define BUZZ_SUCCESS_DURATION	50		// ms
@@ -166,6 +171,7 @@ float prop_poll_pressure_transducer(void);
 float getAltitude(void);
 
 uint8_t xtend_parse_dma_command(void);
+void check_flight_state(uint8_t *state);
 
 /* USER CODE END PFP */
 
@@ -317,8 +323,8 @@ int main(void)
   HAL_Delay(500);
 
   // init FLASH
-  if (!W25qxx_Init()) Error_Handler();
-  buzz_success();
+//  if (!W25qxx_Init()) Error_Handler();
+//  buzz_success();
 
   // init sd card with dynamic filename
   fres = sd_init_dynamic_filename("FC", sd_file_header, filename);
@@ -327,10 +333,10 @@ int main(void)
   }
 
   // check if flash empty and write to sd card if not
-  int save_flash = save_flash_to_sd();
-  if (save_flash) {
-	  buzz_failure();
-  }
+//  int save_flash = save_flash_to_sd();
+//  if (save_flash) {
+//	  buzz_failure();
+//  }
 
   // init Iridium
 //  MRT_Static_Iridium_Setup(huart3);
@@ -367,18 +373,19 @@ int main(void)
   					stimeget.Seconds, stimeget.SubSeconds);
 
   // start timer 3 for radio transmissions
-  HAL_TIM_Base_Start_IT(&htim3);
-
-  // try do this here bc init function seems to be triggering it at higher rate
-  TIM3->ARR = 1000;
-  TIM3->EGR |= TIM_EGR_UG;
-  HAL_UART_Transmit(&huart8, (uint8_t *)"10hz\r\n", 6, HAL_MAX_DELAY);
+//  HAL_TIM_Base_Start_IT(&htim3);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+#ifndef TIMING_ITM
   while (1)
+#else
+  ITM_Port32(31) = 1;
+  for (uint32_t i = 2; i < 2+10; i++)
+#endif
   {
 //	    buzz_success();
 	    HAL_Delay(10);
@@ -404,7 +411,6 @@ int main(void)
 
 		// lps22hh data
 		alt_current = getAltitude(); // calls get_pressure();
-//		get_temperature(dev_ctx_lps, &temperature_degC);
 
 		// rtc data
 		HAL_RTC_GetTime(&hrtc, &stimeget, RTC_FORMAT_BIN);
@@ -416,13 +422,7 @@ int main(void)
 		// gps
 		if (gps_dma_ready) {
 			gps_dma_ready = 0;
-
-			char *gps_parsed = GPS_ParseBuffer(&latitude, &longitude, &time);
-			fres = sd_open_file(filename);
-			sd_write(&fil, "\nNew GPS\n");
-			f_close(&fil);
-
-			HAL_UART_Transmit(&huart8, gps_parsed, strlen(gps_parsed), HAL_MAX_DELAY);
+			GPS_ParseBuffer(&latitude, &longitude, &time);
 
 			// start new DMA request
 			HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
@@ -479,133 +479,22 @@ int main(void)
 //			debug_tx_uart(msg_buffer_pr);
 		#endif
 
-		// logic to change states of flight
-		switch (state) {
-		case FLIGHT_STATE_PAD: // launch pad, waiting. prioritize prop data
-
-			// check current state
-			if (alt_current - alt_ground > LAUNCH_ALT_CHANGE_THRESHOLD) { // launched
-				state = FLIGHT_STATE_PRE_APOGEE;
-
-				fres = sd_open_file(filename);
-				sd_write(&fil, (uint8_t *)"launched\r\n");
-				f_close(&fil);
-
-				HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET);
-
-				// generate software interrupt to change TIM3 update rate
-				__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
-			}
-
-			break;
-
-		case FLIGHT_STATE_PRE_APOGEE: // pre-apogee
-
-			// check current state
-			if (alt_current > alt_apogee) {
-				alt_apogee = alt_current;
-				num_descending_samples = 0;
-			} else {
-				num_descending_samples++;
-
-				if (num_descending_samples > APOGEE_NUM_DESCENDING_SAMPLES) {
-					state = FLIGHT_STATE_PRE_MAIN; // passed apogee
-					num_descending_samples = 0;
-
-					fres = sd_open_file(filename);
-					sd_write(&fil, (uint8_t *)"apogee\r\n");
-					f_close(&fil);
-
-					HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET);
-
-					// generate software interrupt to change TIM3 update rate
-					__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
-				}
-			}
-
-			break;
-
-		case FLIGHT_STATE_PRE_MAIN: // post-apogee
-
-			// check current state
-			if (alt_current < MAIN_DEPLOY_ALTITUDE) {
-				num_descending_samples++;
-
-				if (num_descending_samples > MAIN_NUM_DESCENDING_SAMPLES) {
-					state = FLIGHT_STATE_PRE_LANDED;
-					alt_prev = alt_current; // in next stage we need to know the previous altitude
-					num_descending_samples = 0;
-
-					fres = sd_open_file(filename);
-					sd_write(&fil, (uint8_t *)"main deployed\r\n");
-					f_close(&fil);
-
-					HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
-
-					// generate software interrupt to change TIM3 update rate
-					__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
-				}
-			} else {
-				num_descending_samples = 0;
-			}
-
-			break;
-
-		case FLIGHT_STATE_PRE_LANDED:
-			// post main deploy, want to transmit data fast to maximize possibility of getting good GPS coordinates
-
-			// check current state
-			alt_diff = alt_current - alt_prev;
-			if (alt_diff < 0) {
-				alt_diff *= -1; // absolute value
-			}
-
-			if (alt_diff < LANDING_ALT_CHANGE_THRESHOLD) {
-				num_descending_samples++;
-
-				if (num_descending_samples > LANDING_NUM_DESCENDING_SAMPLES) {
-					state = FLIGHT_STATE_LANDED;
-					num_descending_samples = 0;
-
-					fres = sd_open_file(filename);
-					sd_write(&fil, (uint8_t *)"landed\r\n");
-					f_close(&fil);
-
-					HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
-
-					// generate software interrupt to change TIM3 update rate
-					__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
-				}
-			} else {
-				num_descending_samples = 0;
-			}
-
-			alt_prev = alt_current;
-			break;
-
-		case FLIGHT_STATE_LANDED: // landed
-			__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
-
-			while (1) {
-				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
-				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
-				HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, SET);
-				HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, SET);
-			}
-
-			break;
-
-		default:
-
-			break;
-		}
+		// check which state of flight we are in
+		check_flight_state(&state);
 
 		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET);
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	#ifdef TIMING_ITM
+	  ITM_Port32(31) = i;
+	#endif
   }
+
+#ifdef TIMING_ITM
+  while (1); // prevent hardfault if main() exits
+#endif
   /* USER CODE END 3 */
 }
 
@@ -682,37 +571,37 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		case FLIGHT_STATE_PAD:
 			TIM3->ARR = 1000-1;
 			TIM3->EGR |= TIM_EGR_UG;
-			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
+//			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
 			break;
 
 		case FLIGHT_STATE_PRE_APOGEE:
 			TIM3->ARR = 5000-1;
 			TIM3->EGR |= TIM_EGR_UG;
-			HAL_UART_Transmit(&huart8, "02hz\r\n", 6, HAL_MAX_DELAY);
+//			HAL_UART_Transmit(&huart8, "02hz\r\n", 6, HAL_MAX_DELAY);
 			break;
 
 		case FLIGHT_STATE_PRE_MAIN:
 			TIM3->ARR = 2000-1;
 			TIM3->EGR |= TIM_EGR_UG;
-			HAL_UART_Transmit(&huart8, "05hz\r\n", 6, HAL_MAX_DELAY);
+//			HAL_UART_Transmit(&huart8, "05hz\r\n", 6, HAL_MAX_DELAY);
 			break;
 
 		case FLIGHT_STATE_PRE_LANDED:
 			TIM3->ARR = 1000-1;
 			TIM3->EGR |= TIM_EGR_UG;
-			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
+//			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
 			break;
 
 		case FLIGHT_STATE_LANDED:
 			TIM3->ARR = 20000-1;
 			TIM3->EGR |= TIM_EGR_UG;
-			HAL_UART_Transmit(&huart8, "01hz\r\n", 6, HAL_MAX_DELAY);
+//			HAL_UART_Transmit(&huart8, "01hz\r\n", 6, HAL_MAX_DELAY);
 			break;
 
 		default:
 			TIM3->ARR = 1000-1;
 			TIM3->EGR |= TIM_EGR_UG;
-			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
+//			HAL_UART_Transmit(&huart8, "10hz\r\n", 6, HAL_MAX_DELAY);
 			state = 0;
 			break;
 		}
@@ -778,7 +667,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 				radio_tx(msg_buffer_pr, strlen((char *)msg_buffer_pr));
 				xtend_tx_start_pr = 1;
 			}
-
 			break;
 
 		case FLIGHT_STATE_PRE_APOGEE:
@@ -842,6 +730,139 @@ float prop_poll_pressure_transducer(void) {
 	// TODO
 
 	return voltage;
+}
+
+void check_flight_state(uint8_t *state) {
+	// logic to change states of flight
+	switch (*state) {
+	case FLIGHT_STATE_PAD: // launch pad, waiting. prioritize prop data
+
+		// check current state
+		if (alt_current - alt_ground > LAUNCH_ALT_CHANGE_THRESHOLD) { // launched
+			*state = FLIGHT_STATE_PRE_APOGEE;
+
+			fres = sd_open_file(filename);
+			sd_write(&fil, (uint8_t *)"launched\r\n");
+			f_close(&fil);
+
+			#ifdef DEBUG
+				HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET);
+			#endif
+
+			// generate software interrupt to change TIM3 update rate
+			__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
+		}
+
+		break;
+
+	case FLIGHT_STATE_PRE_APOGEE: // pre-apogee
+
+		// check current state
+		if (alt_current > alt_apogee) {
+			alt_apogee = alt_current;
+			num_descending_samples = 0;
+		} else {
+			num_descending_samples++;
+
+			if (num_descending_samples > APOGEE_NUM_DESCENDING_SAMPLES) {
+				*state = FLIGHT_STATE_PRE_MAIN; // passed apogee
+				num_descending_samples = 0;
+
+				fres = sd_open_file(filename);
+				sd_write(&fil, (uint8_t *)"apogee\r\n");
+				f_close(&fil);
+
+				#ifdef DEBUG
+					HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET);
+				#endif
+
+				// generate software interrupt to change TIM3 update rate
+				__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
+			}
+		}
+
+		break;
+
+	case FLIGHT_STATE_PRE_MAIN: // post-apogee
+
+		// check current state
+		if (alt_current < MAIN_DEPLOY_ALTITUDE) {
+			num_descending_samples++;
+
+			if (num_descending_samples > MAIN_NUM_DESCENDING_SAMPLES) {
+				*state = FLIGHT_STATE_PRE_LANDED;
+				alt_prev = alt_current; // in next stage we need to know the previous altitude
+				num_descending_samples = 0;
+
+				fres = sd_open_file(filename);
+				sd_write(&fil, (uint8_t *)"main deployed\r\n");
+				f_close(&fil);
+
+				#ifdef DEBUG
+					HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
+				#endif
+
+				// generate software interrupt to change TIM3 update rate
+				__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
+			}
+		} else {
+			num_descending_samples = 0;
+		}
+
+		break;
+
+	case FLIGHT_STATE_PRE_LANDED:
+		// post main deploy, want to transmit data fast to maximize possibility of getting good GPS coordinates
+
+		// check current state
+		alt_diff = alt_current - alt_prev;
+		if (alt_diff < 0) {
+			alt_diff *= -1; // absolute value
+		}
+
+		if (alt_diff < LANDING_ALT_CHANGE_THRESHOLD) {
+			num_descending_samples++;
+
+			if (num_descending_samples > LANDING_NUM_DESCENDING_SAMPLES) {
+				*state = FLIGHT_STATE_LANDED;
+				num_descending_samples = 0;
+
+				fres = sd_open_file(filename);
+				sd_write(&fil, (uint8_t *)"landed\r\n");
+				f_close(&fil);
+
+				#ifdef DEBUG
+					HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
+				#endif
+
+				// generate software interrupt to change TIM3 update rate
+				__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
+			}
+		} else {
+			num_descending_samples = 0;
+		}
+
+		alt_prev = alt_current;
+		break;
+
+	case FLIGHT_STATE_LANDED: // landed
+		__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
+
+		#ifdef DEBUG
+			while (1) {
+				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
+				HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, SET);
+				HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, SET);
+			}
+		#endif
+
+		break;
+
+	default:
+
+		break;
+	}
 }
 
 /* USER CODE END 4 */
