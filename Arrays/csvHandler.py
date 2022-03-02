@@ -23,5 +23,5 @@ def read(column_to_be_read):
     df = pd.read_csv(path, encoding= 'utf-8') #static
     df.to_numpy()
     #selecting columns
-    return df[[str(column_to_be_read)]].to_numpy() #position estimate x
+    return df[str(column_to_be_read)].to_numpy() #position estimate x
 
