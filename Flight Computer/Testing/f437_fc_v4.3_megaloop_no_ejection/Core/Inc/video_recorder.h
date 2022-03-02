@@ -8,8 +8,9 @@
 #ifndef INC_VIDEO_RECORDER_H_
 #define INC_VIDEO_RECORDER_H_
 
-void VR_Power_On();
-void VR_Start_Rec();
-void VR_Stop_Rec();
+void VR_Power_On(void);
+void VR_Power_Off(void);
+void VR_Start_Rec(void);
+void VR_Stop_Rec(void);
 
 #endif /* INC_VIDEO_RECORDER_H_ */

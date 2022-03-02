@@ -1,4 +1,5 @@
-Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
+Core/Src/radio_commands.o: ../Core/Src/radio_commands.c \
+ ../Core/Inc/radio_commands.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -33,23 +34,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/adc.h ../Core/Inc/main.h ../Core/Inc/dma.h \
- ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
- ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
- ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
- ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
- ../FATFS/Target/user_diskio_spi.h \
- ../Middlewares/Third_Party/FatFs/src/integer.h \
- ../Middlewares/Third_Party/FatFs/src/diskio.h ../Core/Inc/i2c.h \
- ../Core/Inc/rtc.h ../Core/Inc/spi.h ../Core/Inc/tim.h \
- ../Core/Inc/usart.h ../Core/Inc/gpio.h \
- ../Core/Inc/i2c_sensor_functions.h ../Core/Inc/lsm6dsl_reg.h \
- ../Core/Inc/lps22hh_reg.h ../Core/Inc/gps.h ../Core/Inc/MAX31855.h \
- ../Core/Inc/sd_card.h ../Core/Inc/w25qxx.h ../Core/Inc/sx126x.h \
- ../Core/Inc/sx126x_regs.h ../Core/Inc/video_recorder.h \
- ../Core/Inc/ejection.h ../Core/Inc/radio_commands.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+
+../Core/Inc/radio_commands.h:
 
 ../Core/Inc/main.h:
 
@@ -122,67 +109,3 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
-
-../Core/Inc/adc.h:
-
-../Core/Inc/main.h:
-
-../Core/Inc/dma.h:
-
-../FATFS/App/fatfs.h:
-
-../Middlewares/Third_Party/FatFs/src/ff.h:
-
-../Middlewares/Third_Party/FatFs/src/integer.h:
-
-../FATFS/Target/ffconf.h:
-
-../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
-
-../Middlewares/Third_Party/FatFs/src/diskio.h:
-
-../Middlewares/Third_Party/FatFs/src/ff.h:
-
-../FATFS/Target/user_diskio.h:
-
-../FATFS/Target/user_diskio_spi.h:
-
-../Middlewares/Third_Party/FatFs/src/integer.h:
-
-../Middlewares/Third_Party/FatFs/src/diskio.h:
-
-../Core/Inc/i2c.h:
-
-../Core/Inc/rtc.h:
-
-../Core/Inc/spi.h:
-
-../Core/Inc/tim.h:
-
-../Core/Inc/usart.h:
-
-../Core/Inc/gpio.h:
-
-../Core/Inc/i2c_sensor_functions.h:
-
-../Core/Inc/lsm6dsl_reg.h:
-
-../Core/Inc/lps22hh_reg.h:
-
-../Core/Inc/gps.h:
-
-../Core/Inc/MAX31855.h:
-
-../Core/Inc/sd_card.h:
-
-../Core/Inc/w25qxx.h:
-
-../Core/Inc/sx126x.h:
-
-../Core/Inc/sx126x_regs.h:
-
-../Core/Inc/video_recorder.h:
-
-../Core/Inc/ejection.h:
-
-../Core/Inc/radio_commands.h:

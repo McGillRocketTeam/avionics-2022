@@ -197,13 +197,14 @@ extern UART_HandleTypeDef huart6;
 #define FLIGHT_STATE_LANDED				4		// landed
 
 // loop timing, tune these later
-#define LOOP_DURATION_PAD				100		// 100 ms per loop ==>  10 Hz
+#define LOOP_DURATION_PAD				1		// 100 ms per loop ==>  10 Hz
 #define LOOP_DURATION_PRE_APOGEE		500		// 500 ms per loop ==>   2 Hz
 #define LOOP_DURATION_PRE_MAIN			250		// 250 ms per loop ==>   4 Hz
 #define LOOP_DURATION_PRE_LANDED		100		// 100 ms per loop ==>  10 Hz
 #define LOOP_DURATION_LANDED			1000	// 1 s per loop    ==> 	 1 Hz
 
 #define GPS_RX_DMA_BUF_LEN				175		// characters
+#define XTEND_RX_DMA_CMD_LEN			4		// all commands are 4 characters long
 
 /* USER CODE END Private defines */
 

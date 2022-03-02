@@ -1,0 +1,4 @@
+radio_commands.c:14:15:xtend_parse_dma_command	8	static
+radio_commands.c:41:6:rocket_launch	8	static
+radio_commands.c:50:6:arming_propulsion	8	static
+radio_commands.c:55:6:arming_recovery	8	static

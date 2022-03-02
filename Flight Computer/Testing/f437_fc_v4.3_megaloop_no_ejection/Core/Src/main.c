@@ -51,6 +51,7 @@
 //#include <IridiumSBD_Static_API.h>
 #include "video_recorder.h"
 #include "ejection.h"
+#include "radio_commands.h"
 
 /* USER CODE END Includes */
 
@@ -140,6 +141,10 @@ float alt_diff = 0;
 float alt_apogee = 0;
 uint8_t num_descending_samples = 0; // for crude apogee detection
 
+// bidirectional xtend communication
+volatile char xtend_rx_buf[10];
+volatile uint8_t xtend_rx_dma_ready = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -155,6 +160,8 @@ int flash_write(char *msg_buffer);
 uint8_t get_continuity(void);
 float prop_poll_pressure_transducer(void);
 float getAltitude(void);
+
+uint8_t xtend_parse_dma_command(void);
 
 /* USER CODE END PFP */
 
@@ -262,7 +269,7 @@ int main(void)
   HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, RESET);
 
   // reset recovery pyro pins
-  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, SET);
+  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, RESET);
   HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, RESET);
   HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
 
@@ -344,12 +351,13 @@ int main(void)
   alt_ground /= 100.0;
   alt_current = alt_ground;
 
-  // arming pyro channels
-  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, SET);
-  HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, SET);
-
   // initial DMA request for GPS
   HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
+
+  // initial DMA request for XTend
+  memset(xtend_rx_buf, 0, 10);
+  HAL_UART_Receive_DMA(&huart3, xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
+
 
   /* USER CODE END 2 */
 
@@ -361,8 +369,56 @@ int main(void)
 	    uint32_t end_tick = 0; 	// polled later
 	    uint32_t loop_duration; // end_tick - start_tick
 
-	    buzz_success();
+//	    buzz_success();
+	    HAL_Delay(10);
 		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+
+		// check for launch command -- do not do this in the callback because...reasons?
+		if (xtend_rx_dma_ready) {
+			// go check what the command is
+			radio_command cmd = xtend_parse_dma_command();
+
+			// prep for next command to be sent
+			memset(xtend_rx_buf, 0, 10);
+			HAL_UART_Receive_DMA(&huart3, xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
+			xtend_rx_dma_ready = 0;
+
+			switch (cmd) {
+			case LAUNCH:
+				rocket_launch();
+				HAL_UART_Transmit(&huart8, "launch\r\n", 8, HAL_MAX_DELAY);
+				break;
+
+			case ARM_PROP:
+				arming_propulsion();
+				HAL_UART_Transmit(&huart8, "arm pr\r\n", 8, HAL_MAX_DELAY);
+				break;
+
+			case ARM_RCOV:
+				arming_recovery();
+				HAL_UART_Transmit(&huart8, "arm rc\r\n", 8, HAL_MAX_DELAY);
+				break;
+
+			case VR_POWER_ON:
+				VR_Power_On();
+				break;
+
+			case VR_REC_START:
+				VR_Start_Rec();
+				break;
+
+			case VR_REC_STOP:
+				VR_Stop_Rec();
+				break;
+
+			case VR_POWER_OFF:
+				VR_Power_Off();
+				break;
+
+			default:
+				break;
+			}
+		}
 
 		// -----  GATHER AVIONICS TELEMETRY ----- //
 		// lsm6dsl data
@@ -381,19 +437,19 @@ int main(void)
 		continuity = get_continuity();
 
 		// gps
-		if (gps_dma_ready) {
-			gps_dma_ready = 0;
-
-			char *gps_parsed = GPS_ParseBuffer(&latitude, &longitude, &time);
-			fres = sd_open_file(filename);
-			sd_write(&fil, "\nNew GPS\n");
-			f_close(&fil);
-
-			HAL_UART_Transmit(&huart8, gps_parsed, strlen(gps_parsed), HAL_MAX_DELAY);
-
-			// start new DMA request
-			HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
-		}
+//		if (gps_dma_ready) {
+//			gps_dma_ready = 0;
+//
+//			char *gps_parsed = GPS_ParseBuffer(&latitude, &longitude, &time);
+//			fres = sd_open_file(filename);
+//			sd_write(&fil, "\nNew GPS\n");
+//			f_close(&fil);
+//
+//			HAL_UART_Transmit(&huart8, gps_parsed, strlen(gps_parsed), HAL_MAX_DELAY);
+//
+//			// start new DMA request
+//			HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
+//		}
 
 //		GPS_Poll(&latitude, &longitude, &time);
 
@@ -455,7 +511,6 @@ int main(void)
 			if (alt_current - alt_ground > LAUNCH_ALT_CHANGE_THRESHOLD) { // launched
 				state = FLIGHT_STATE_PRE_APOGEE;
 
-//				HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET);
 				fres = sd_open_file(filename);
 				sd_write(&fil, (uint8_t *)"launched\r\n");
 				f_close(&fil);
@@ -496,8 +551,6 @@ int main(void)
 					state = FLIGHT_STATE_PRE_MAIN; // passed apogee
 					num_descending_samples = 0;
 
-//					HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET);
-
 					fres = sd_open_file(filename);
 					sd_write(&fil, (uint8_t *)"apogee\r\n");
 					f_close(&fil);
@@ -529,7 +582,6 @@ int main(void)
 					alt_prev = alt_current; // in next stage we need to know the previous altitude
 					num_descending_samples = 0;
 
-//					HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
 					fres = sd_open_file(filename);
 					sd_write(&fil, (uint8_t *)"main deployed\r\n");
 					f_close(&fil);
@@ -565,7 +617,6 @@ int main(void)
 					state = FLIGHT_STATE_LANDED;
 					num_descending_samples = 0;
 
-//					HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
 					fres = sd_open_file(filename);
 					sd_write(&fil, (uint8_t *)"landed\r\n");
 					f_close(&fil);
@@ -598,12 +649,8 @@ int main(void)
 				HAL_Delay(LOOP_DURATION_LANDED - loop_duration);
 			} // else just go straight back to top of loop
 
-//			HAL_GPIO_TogglePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin);
-//			HAL_GPIO_TogglePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin);
-//			HAL_GPIO_TogglePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin);
-//			HAL_GPIO_TogglePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin);
-
 			break;
+
 		default:
 			VR_Stop_Rec();
 			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
@@ -693,23 +740,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		// insert null termination and parse buffer (total buffer length is GPS_RX_DMA_BUF_LEN + 1)
 		gps_rx_buf[GPS_RX_DMA_BUF_LEN] = '\0';
 		gps_dma_ready = 1;
-//		HAL_UART_Transmit(&huart8, gps_rx_buf, strlen(gps_rx_buf), HAL_MAX_DELAY);
-
-		// for debugging, save the full buffer
-//		fres = sd_open_file(filename);
-//		sd_write(&fil, (uint8_t *)gps_rx_buf);
-//		f_close(&fil);
-
-		// for debugging, inspect the parsed string
-//		fres = sd_open_file(filename);
-//		sd_write(&fil, (uint8_t *)parsed);
-//		f_close(&fil);
-
-//		HAL_UART_Transmit(&huart8, parsed, strlen(parsed), HAL_MAX_DELAY);
-
 	}
 	else if (huart == &huart3) {
+		xtend_rx_dma_ready = 1;
 
+		// the launch command is time critical, let's not wait until the next loop
+		if (xtend_parse_dma_command() == LAUNCH) {
+			rocket_launch();
+		}
 	}
 }
 
