@@ -69,7 +69,7 @@ stmdev_ctx_t lsm6dsl_init(void){
 	if (whoamI_lsm6dsl != LSM6DSL_ID){
 		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
 		__BKPT();
-//		Error_Handler();
+		Error_Handler();
 	}
 
 	/* Restore default configuration */

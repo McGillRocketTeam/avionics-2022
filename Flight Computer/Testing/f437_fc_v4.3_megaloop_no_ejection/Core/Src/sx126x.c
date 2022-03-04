@@ -253,6 +253,8 @@ static uint8_t cal_hi_freq = 0x75; //470MHz
 // Power Amplifier
 static sx126x_pa_duty_cycle_t pa_duty_cyc = SX126X_PA_DUTY_CYCLE_17dBm;
 static sx126x_pa_hp_max_t pa_hp_max = SX126X_PA_HP_MAX_14dBm;
+//static sx126x_pa_duty_cycle_t pa_duty_cyc = SX126X_PA_DUTY_CYCLE_22dBm;
+//static sx126x_pa_hp_max_t pa_hp_max = SX126X_PA_HP_MAX_22dBm;
 static sx126x_pa_device_sel_t pa_device_sel = SX126X_PA_DEVICE_SEL_1262;
 static uint8_t pa_lut = 0x01;
 
@@ -519,7 +521,7 @@ void TxProtocol(uint8_t data[], uint8_t data_length){
     command_status = sx126x_clear_irq_status(&hspi, dio1_mask);
     command_status = sx126x_write_buffer(&hspi, 0, data, data_length); // 0 is the offset
     command_status = sx126x_set_tx(&hspi, 6000, data_length);
-    HAL_Delay(100);
+//    HAL_Delay(100);
 
     sx126x_irq_mask_t irq;
     do {
@@ -531,7 +533,7 @@ void Rx_setup(){
     //NEED TO ADD COMMAND ERROR HANDLING
     HAL_GPIO_WritePin(NRESET_GPIO, NRESET, GPIO_PIN_SET);
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_RESET);
-    HAL_Delay(50);
+//    HAL_Delay(50);
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_SET);             //make sure chip select is off
 
     //set to standby for setup

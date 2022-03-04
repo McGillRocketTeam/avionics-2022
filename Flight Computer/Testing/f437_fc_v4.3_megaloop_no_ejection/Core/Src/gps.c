@@ -112,7 +112,7 @@ void GPS_Poll(double *latitude, double *longitude, float *time)
  * 				a. if valid gps coordinates are found, stop
  * 				b. else repeat with rest of buffer
  */
-char* GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
+void GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
 
 	#if (GPS_DEBUG == 1)
 	// debugging: print full buffer first
@@ -165,17 +165,6 @@ char* GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
 
 	memset(gps_rx_buf, 0, buf_end);
 
-	// return so we can save the parsed string to sd card without including
-	// sd card in this file
-	if (valid_string_found) {
-		valid_string_found = 0;
-		strcpy(gps_parsed, current_substring);
-		return gps_parsed;
-	}
-	else {
-		strcpy(gps_parsed, "\nno valid GPS parsed\n");
-		return ((char *)"\nno valid GPS parsed\n");
-	}
 }
 
 int GPS_validate(char *nmeastr){
