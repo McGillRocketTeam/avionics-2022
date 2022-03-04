@@ -59,6 +59,7 @@ void setup() {
   device.begin(NSS,BUSY,RESET,DIO1,ANT_SW); // Store pin ports for SX1262 class
   SPI.begin();
   Serial.begin(9600);
+  Serial.println("Receiving");
   
   delay(10);
 

@@ -104,17 +104,17 @@ void setup() {
     Serial.println("setRfFrequency Failed");
   }
   
-  command_status = device.setBufferBaseAddress(tx_address, rx_address);
+  command_status = device.setBufferBaseAddress(0x00, 0x00);
   if (command_status != COMMAND_SUCCESS) {
     Serial.println("setBufferBaseAddress Failed");
   }
   
-  command_status = device.setLoRaModulationParams(LORA_SF9, LORA_BW_062, LORA_CR_4_5, 0x00); // No low data optimization
+  command_status = device.setLoRaModulationParams(LORA_SF5, LORA_BW_500, LORA_CR_4_5, 0x00); // No low data optimization
   if (command_status != COMMAND_SUCCESS) {
     Serial.println("setLoRaModulationParams Failed");
   }
   
-  command_status = device.setLoRaPacketParams(preamble_length, 0, 0xFF, 1, 0); // Set variable length, payload size of 5 bytes,  CRC on, and invert_iq is standard
+  command_status = device.setLoRaPacketParams(12, 0, 0xFF, 1, 0); // Set variable length, payload size of 5 bytes,  CRC on, and invert_iq is standard
   if (command_status != COMMAND_SUCCESS) {
     Serial.println("setLoRaPacketParams Failed");
   }
@@ -174,7 +174,7 @@ void loop() {
           
         } else {
           Serial.println("-----  Read Data ------");
-          Serial.print((char*)received_data);
+          Serial.println((char*)received_data);
         }
      }
   }

@@ -37,7 +37,7 @@ uint16_t value = 1;
 uint16_t irq;
 uint16_t irq_status;
 uint8_t device_status;
-char data_string[] = "123456789-123456789-223456789-323456789-423456789-523456789-623456789-723456789-823456789-923456789-01234567";
+char data_string[] = "123456789-123456789-223456789-323456789-423456789-523456789-623456789-723456789-823456789-923456789-12345678";
 uint8_t string_length = sizeof(data_string);
 
 #define irq_set_mask                                0b1000000001  // Set mask to detect TX/RX timeout and TxDone
@@ -164,7 +164,7 @@ void setup() {
 
 void loop() {
  delay(500);
-// ------------- Simple TX ----------------------------- 
+// ------------- Simple TX ----------------------------- 0011
 
   Serial.println(data_string);
 
