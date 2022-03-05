@@ -18,6 +18,7 @@ However, we only care about:
 
 import numpy as np
 from numpy.linalg import inv
+from scipy.spatial.transform import Rotation as R
 
 class MEKF:
 
@@ -40,44 +41,44 @@ class MEKF:
     
     def __init__(self, dt, Q_init, R_init):
         #predict 
-        self.Cab_k_1 = np.eye(3) # rotation matrix (DCM at k-1)
-        self.Va_k_1 = np.eye(3) # initial speed
-        self.ra_k_1 = np.eye(3) # initial position
-        self.ga = np.array([0, 0, -9.81]) # gravitational constant
+        self.Cab_k_1 = np.eye(3, dtype='f') # rotation matrix (DCM at k-1)
+        self.Va_k_1 = np.eye(3, dtype='f') # initial speed
+        self.ra_k_1 = np.eye(3, dtype='f') # initial position
+        self.ga = np.array([0, 0, -9.81], dtype='f') # gravitational constant
 
             #A and B
-        self.A = np.array([1]) #state transition model (process model)
-        self.T = np.array([dt]) #state transition model (process model) (B = T)
+        self.A = np.array([1], dtype='f') #state transition model (process model)
+        self.T = dt #state transition model (process model) (B = T)
 
             #noise 
-        self.Q = np.eye(3)*Q_init #covariance of process noise (error on prediction)
-        self.R = np.eye(3)*R_init #covariance of obervation noise (sensor noise)
+        self.Q = np.eye(3, dtype='f')*Q_init #covariance of process noise (error on prediction)
+        self.R = np.eye(3, dtype='f')*R_init #covariance of obervation noise (sensor noise)
         # Q : get value when robot is static 
         # R : get value from sensor datasheet 
 
             #sensor intial
-        self.GYRO_input = np.eye(3) *0.1 #initial input (GYRO)
-        self.ACC_input = np.eye(3) *0.1 #initial input (IMU)
+        self.GYRO_input = np.eye(3, dtype='f') *0.1 #initial input (GYRO)
+        self.ACC_input = np.eye(3, dtype='f') *0.1 #initial input (IMU)
 
             #other variables
-        self.Cab_k = np.eye(3)
-        self.Va_k = np.eye(3)
-        self.ra_k = np.eye(3)
-        self.P_k = np.eye(3)
-        self.P_k_1 = np.eye(3)
-        self.L = np.eye(3)
-        self.S1 = np.eye(3)
-        self.S2 = np.eye(3)
+        self.Cab_k = np.eye(3, dtype='f')
+        self.Va_k = np.eye(3, dtype='f')
+        self.ra_k = np.eye(3, dtype='f')
+        self.P_k = np.eye(3, dtype='f')
+        self.P_k_1 = np.eye(3, dtype='f')
+        self.L = np.eye(3, dtype='f')
+        self.S1 = np.eye(3, dtype='f')
+        self.S2 = np.eye(3, dtype='f')
 
         #correct
-        self.correction_term = np.eye(3)
-        self.K_k = np.eye(3)
+        self.correction_term = np.eye(3, dtype='f')
+        self.K_k = np.eye(3, dtype='f')
         
             #sensor 
-        self.GPS_input = np.eye(3)
+        self.GPS_input = np.eye(3, dtype='f')
 
-        self.M_k = np.eye(3)
-        self.C_k = np.eye(3)
+        self.M_k = np.eye(3, dtype='f')
+        self.C_k = np.eye(3, dtype='f')
 
         print("init done")
         
@@ -89,9 +90,10 @@ class MEKF:
         self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.ACC_input + self.T * self.ga
         self.ra_k = self.ra_k_1 + self.Va_k_1 * self.T
 
-        self.A = np.array( [[np.exp(self.T*self.GYRO_input), self.T @ self.Cab_k_1 @ self.ACC_input, 0],
-                             [0, 1, self.T], 
-                             [0, 0, 1] ] )
+        "failure point, array probably [[1, 2, 3], [4, 5, 6]]"
+        self.A = np.array( [[np.exp(self.T * self.GYRO_input), self.T * self.Cab_k_1 @ self.ACC_input, 0],
+                             [0.0, 1.0, self.T], 
+                             [0.0, 0.0, 1.0] ], dtype='f' )
         self.P_k = self.A @ self.P_k_1 @ self.A.T + self.L @ self.Q @ self.L.T
         
         
