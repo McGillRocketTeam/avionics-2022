@@ -26,19 +26,19 @@ print(csvHandler.read( 0, 'acc'))
 def runMEKF():
     
     #A) create fake data
-    mekf = MEKF.MEKF(0.1, 2, 2)
+    mekf = MEKF.MEKF(0.1, 1, 1)
     i = 0
     gyro_real_arr, GYRO_meas_arr = [], []
     acc_real_arr, ACC_meas_arr = [], []
     gps_real_arr, GPS_meas_arr = [], []
     while (i < 100):
         #1. generate random gyro and acc data 
-        gyro_real = round( random.uniform(0, 1), 4)
-        acc_real = round( random.uniform(0, 2), 4)
-        GYRO_input = np.array( [[gyro_real, 0, 0],
+        random_gyro = round( random.uniform(4, 10), 4)
+        random_acc = round( random.uniform(6, 10), 4)
+        GYRO_input = np.array( [[random_gyro, 0, 0],
                                 [0, 0, 0],
                                 [0, 0, 0]], dtype='f')
-        ACC_input = np.array( [[acc_real, 0, 0],
+        ACC_input = np.array( [[random_acc, 0, 0],
                                [0, 0, 0], 
                                [0, 0, 0]], dtype='f')
         
@@ -50,19 +50,19 @@ def runMEKF():
         GPS_meas = mekf.ra_k + random.uniform(0.5, 2) * np.eye(3, dtype='f')
         
         #4. IMU_measured = IMU_real + a bit of noise 
-        GYRO_meas = gyro_real + random.uniform(0.5, 1) * np.eye(3, dtype='f')
-        ACC_meas = acc_real + random.uniform(0.5, 1) * np.eye(3, dtype='f')
+        GYRO_meas = GYRO_input + random.uniform(0.5, 1) * np.eye(3, dtype='f')
+        ACC_meas = ACC_input + random.uniform(0.5, 1) * np.eye(3, dtype='f')
         i += 1
         
         #5. persist IMU and GPS data (real and measured)
-        gyro_real_arr.append(gyro_real)
+        gyro_real_arr.append(GYRO_input)
         GYRO_meas_arr.append(GYRO_meas)
-        acc_real_arr.append(acc_real)
+        acc_real_arr.append(ACC_input)
         ACC_meas_arr.append(ACC_meas)
         gps_real_arr.append(mekf.ra_k)
         GPS_meas_arr.append(GPS_meas)
-    print("gyro_real" + str(gyro_real_arr[0:4]))
-    print("gyro_meas" + str(GYRO_meas_arr[0:4]))
+    print("gyro_real " + str(gyro_real_arr[4]))
+    print("gyro_meas " + str(GYRO_meas_arr[4]))
     """
     #file persistence
     csvHandler.store(gyro_real_arr, 'gyro_real')
@@ -87,7 +87,7 @@ def runMEKF():
         i += 1
     
     #C) plot the results along a single axis
-    print("position prediction" +  str(position_pred[0:5]))
+    print("position prediction " +  str(position_pred[4]))
     #pH.PlotKF(xt, position_pred, "position", "blue")
 
 runMEKF()
