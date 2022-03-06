@@ -42,43 +42,47 @@ class MEKF:
     def __init__(self, dt, Q_init, R_init):
         #predict 
         self.Cab_k_1 = np.eye(3, dtype='f') # rotation matrix (DCM at k-1)
-        self.Va_k_1 = np.eye(3, dtype='f') # initial speed
-        self.ra_k_1 = np.eye(3, dtype='f') # initial position
+        self.Va_k_1 = np.zeros((3, 1), dtype='f') # initial speed
+        self.ra_k_1 = np.zeros((3, 1), dtype='f') # initial position
         self.ga = np.array([0, 0, -9.81], dtype='f') # gravitational constant
 
             #A and B
-        self.A = np.array([1], dtype='f') #state transition model (process model)
+        self.A = np.eye(9, dtype='f') #state transition model (process model)
         self.T = dt #state transition model (process model) (B = T)
 
             #noise 
-        self.Q = np.eye(3, dtype='f')*Q_init #covariance of process noise (error on prediction)
+        self.Q = np.eye(6, dtype='f')*Q_init #covariance of process noise (error on prediction)
         self.R = np.eye(3, dtype='f')*R_init #covariance of obervation noise (sensor noise)
         # Q : get value when robot is static 
         # R : get value from sensor datasheet 
 
             #sensor intial
-        self.GYRO_input = np.eye(3, dtype='f') *0.1 #initial input (GYRO)
-        self.ACC_input = np.eye(3, dtype='f') *0.1 #initial input (IMU)
+        self.GYRO_input = np.zeros((3, 1), dtype='f') #initial input (GYRO)
+        self.ACC_input = np.zeros((3, 1), dtype='f') #initial input (IMU)
 
             #other variables
         self.Cab_k = np.eye(3, dtype='f')
-        self.Va_k = np.eye(3, dtype='f')
-        self.ra_k = np.eye(3, dtype='f')
-        self.P_k = np.eye(3, dtype='f')
-        self.P_k_1 = np.eye(3, dtype='f')
-        self.L = np.eye(3, dtype='f')
-        self.S1 = np.eye(3, dtype='f')
+        self.Va_k = np.zeros((3, 1), dtype='f')
+        self.ra_k = np.zeros((3, 1), dtype='f')
+        self.P_k = np.eye(9, dtype='f')
+        self.P_k_1 = np.eye(9, dtype='f')
+        self.L = np.zeros((9, 6), dtype='f')
+        self.S1 = np.eye(9, dtype='f') 
         self.S2 = np.eye(3, dtype='f')
 
         #correct
-        self.correction_term = np.eye(3, dtype='f')
-        self.K_k = np.eye(3, dtype='f')
+        self.correction_term = np.zeros((9, 1), dtype='f')
+        self.K_k = np.zeros((9, 3), dtype='f')
         
             #sensor 
-        self.GPS_input = np.eye(3, dtype='f')
+        self.GPS_input =  np.zeros((3, 1), dtype='f')
 
         self.M_k = np.eye(3, dtype='f')
-        self.C_k = np.eye(3, dtype='f')
+        self.C_k = np.zeros((3, 9), dtype='f')
+        
+        #dummy variables
+        self.zeros3 = np.zeros((3, 3), dtype='f')
+        self.ones3 = np.eye((3), dtype='f')
 
         print("init done")
         
@@ -91,25 +95,25 @@ class MEKF:
         self.ra_k = self.ra_k_1 + self.Va_k_1 * self.T
 
         "failure point, array probably [[1, 2, 3], [4, 5, 6]]"
-        self.A = np.array( [[np.exp(self.T * self.GYRO_input), self.T * self.Cab_k_1 @ self.ACC_input, 0],
-                             [0.0, 1.0, self.T], 
-                             [0.0, 0.0, 1.0] ], dtype='f' )
-        self.P_k = self.A @ self.P_k_1 @ self.A.T + self.L @ self.Q @ self.L.T
+        self.A = np.block( [[np.exp(self.T * self.GYRO_input),       self.zeros3 , self.zeros3],
+                            [self.T * self.Cab_k_1 @ self.ACC_input, self.ones3,   self.zeros3], 
+                            [self.zeros3,              np.eye(3) *   self.T,       self.ones3]])
+        self.P_k = self.A @ self.P_k_1 @ self.A.T #+ self.L @ self.Q @ self.L.T
         
         
 
     def kf_correct(self, GPS_input):
         self.GPS_input = GPS_input 
 
-        self.S1 = np.eye(3) - self.K_k @ self.C_k #utility
+        self.S1 = np.eye(9) - self.K_k @ self.C_k #utility
         self.S2 = self.M_k @ self.R @ self.M_k #utility 
         self.P_k = self.S1 @ self.P_k @ self.S1.T + self.K_k @ self.S2 @ self.K_k.T
         self.K_k = self.P_k @ self.C_k.T @ inv(self.C_k @ self.P_k @ self.C_k + self.S2)
         self.correction_term = self.K_k @ (self.GPS_input - self.ra_k)
 
-        self.Cab_k = self.Cab_k @ np.exp(-self.correction_term)
-        self.Va_k = self.Va_k +  self.correction_term
-        self.ra_k = self.ra_k + self.correction_term
+        self.Cab_k = self.Cab_k @ np.exp(-self.correction_term[0]) #fa
+        self.Va_k = self.Va_k +  self.correction_term[1]
+        self.ra_k = self.ra_k + self.correction_term[2]
     
 
     

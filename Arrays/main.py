@@ -26,7 +26,7 @@ print(csvHandler.read( 0, 'acc'))
 def runMEKF():
     
     #A) create fake data
-    mekf = MEKF.MEKF(0.1, np.eye(3, dtype='f'), np.eye(3, dtype='f'))
+    mekf = MEKF.MEKF(0.1, 2, 2)
     i = 0
     gyro_real_arr, GYRO_meas_arr = [], []
     acc_real_arr, ACC_meas_arr = [], []
