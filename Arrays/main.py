@@ -61,6 +61,8 @@ def runMEKF():
         ACC_meas_arr.append(ACC_meas)
         gps_real_arr.append(mekf.ra_k)
         GPS_meas_arr.append(GPS_meas)
+    print("gyro_real" + str(gyro_real_arr[0:4]))
+    print("gyro_meas" + str(GYRO_meas_arr[0:4]))
     """
     #file persistence
     csvHandler.store(gyro_real_arr, 'gyro_real')
@@ -85,7 +87,7 @@ def runMEKF():
         i += 1
     
     #C) plot the results along a single axis
-    print(position_pred)
+    print("position prediction" +  str(position_pred[0:5]))
     #pH.PlotKF(xt, position_pred, "position", "blue")
 
 runMEKF()

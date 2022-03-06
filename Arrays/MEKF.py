@@ -87,10 +87,13 @@ class MEKF:
         print("init done")
         
     def kf_predict(self, GYRO_input, ACC_input): 
-        self.GYRO_input = GYRO_input 
-        self.ACC_input = ACC_input 
-
-        self.Cab_k = self.Cab_k_1 @ np.exp(self.T*self.GYRO_input)
+        #convert euler gyro into rotation matrix gyro
+        r = R.from_euler('zyx', GYRO_input, degrees=True)
+        gyro_cross = r.as_matrix()
+        self.GYRO_input = GYRO_input
+        self.ACC_input = ACC_input
+        
+        self.Cab_k = self.Cab_k_1 @ np.exp(self.T*gyro_cross)
         self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.ACC_input + self.T * self.ga
         self.ra_k = self.ra_k_1 + self.Va_k_1 * self.T
 
@@ -108,10 +111,12 @@ class MEKF:
         self.S1 = np.eye(9) - self.K_k @ self.C_k #utility
         self.S2 = self.M_k @ self.R @ self.M_k #utility 
         self.P_k = self.S1 @ self.P_k @ self.S1.T + self.K_k @ self.S2 @ self.K_k.T
-        self.K_k = self.P_k @ self.C_k.T @ inv(self.C_k @ self.P_k @ self.C_k + self.S2)
+        self.K_k = self.P_k @ self.C_k.T @ inv(self.C_k @ self.P_k @ self.C_k.T + self.S2)
         self.correction_term = self.K_k @ (self.GPS_input - self.ra_k)
 
-        self.Cab_k = self.Cab_k @ np.exp(-self.correction_term[0]) #fa
+        r =  R.from_euler('zyx', self.correction_term[0], degrees=True)
+        correct_cross = r.as_matrix()
+        self.Cab_k = self.Cab_k @ np.exp(-correct_cross) #fa
         self.Va_k = self.Va_k +  self.correction_term[1]
         self.ra_k = self.ra_k + self.correction_term[2]
     
