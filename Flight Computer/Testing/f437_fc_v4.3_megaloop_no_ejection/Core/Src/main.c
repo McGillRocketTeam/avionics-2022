@@ -58,7 +58,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-//#define DEBUG
+//#define DEBUG_MODE
 
 // radios
 #define USING_XTEND 	// comment out to use SRADio
@@ -132,8 +132,6 @@ const char sd_file_header[] = "S,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,PRESSURE,LAT,LONG
 
 // external flash
 extern w25qxx_t w25qxx;
-uint8_t flash_write_buffer[256]; // page size is 256 bytes for w25qxx
-uint8_t flash_read_buffer[256];
 static uint32_t flash_write_address = 0;
 
 // state of flight (for changing radio transmission rate)
@@ -178,10 +176,19 @@ void check_flight_state(volatile uint8_t *state);
 void xtend_transmit_telemetry(volatile uint8_t *state);
 void update_radio_timer_params(volatile uint8_t *state);
 
+void telemetry_format_avionics(void);
+void telemetry_format_propulsion(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+#ifdef DEBUG_MODE
+void debug_tx_uart(uint8_t *msg_buffer) {
+	HAL_UART_Transmit(&huart8, msg_buffer, strlen((char *)msg_buffer), HAL_MAX_DELAY);
+}
+#endif
 
 // radio transmission wrapper
 #ifdef USING_XTEND
@@ -190,7 +197,7 @@ void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 //	HAL_UART_Transmit(&huart3, msg_buffer, size, HAL_MAX_DELAY);
 	HAL_UART_Transmit_DMA(&huart3, msg_buffer, size);
 
-	#ifdef DEBUG_DMA
+	#ifdef DEBUG_MODE
 	debug_tx_uart(msg_buffer);
 	#endif
 }
@@ -198,8 +205,8 @@ void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 	TxProtocol(msg_buffer, size);
 
-	#ifdef DEBUG
-//	debug_tx_uart(msg_buffer);
+	#ifdef DEBUG_MODE
+	debug_tx_uart(msg_buffer);
 	#endif
 }
 #endif
@@ -214,14 +221,9 @@ void tone(uint32_t duration, uint32_t repeats) {
 			HAL_Delay(duration);
 	}
 }
-void buzz_success() { tone(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS); };
-void buzz_failure() { tone(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS); };
+void buzz_success(void) { tone(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS); };
+void buzz_failure(void) { tone(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS); };
 
-//#ifdef DEBUG
-//void debug_tx_uart(uint8_t *msg_buffer) {
-//	HAL_UART_Transmit(&huart8, msg_buffer, strlen((char *)msg_buffer), HAL_MAX_DELAY);
-//}
-//#endif
 /* USER CODE END 0 */
 
 /**
@@ -343,14 +345,6 @@ int main(void)
 //	  buzz_failure();
 //  }
 
-  // init Iridium
-//  MRT_Static_Iridium_Setup(huart3);
-//  MRT_Static_Iridium_getIMEI();
-
-  // send message with Iridium
-//  MRT_Static_Iridium_sendMessage("message");
-//  MRT_Static_Iridium_Shutdown();
-
   // get ground altitude
   for (uint8_t i = 0; i < 100; i++) {
 	  alt_ground += getAltitude();
@@ -358,31 +352,20 @@ int main(void)
   alt_ground /= 100.0;
   alt_current = alt_ground;
 
-  // initial DMA request for GPS
-  HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
-
-  // initial DMA request for XTend
+  // initial DMA requests:
+  HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN); // GPS
   memset(xtend_rx_buf, 0, 10);
-  HAL_UART_Receive_DMA(&huart3, (uint8_t *)xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
-
-  // initial DMA request for ADC (propulsion tank pressure transducer)
-
+  HAL_UART_Receive_DMA(&huart3, (uint8_t *)xtend_rx_buf, XTEND_RX_DMA_CMD_LEN); // XTend
+//  HAL_ADC_Start_DMA(&hadc1, tank_pressure_buf, PROP_TANK_PRESSURE_ADC_BUF_LEN); // ADC for propulsion
 
   // initialize avionics and propulsion xtend buffers with *something* so DMA can happen without zero length error
-  sprintf((char*) msg_buffer_av,
-    				"S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
-    				acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
-    				angular_rate_mdps[0], angular_rate_mdps[1],
-    				angular_rate_mdps[2], pressure_hPa, latitude, longitude,
-    				stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
-    				continuity, state);
-  sprintf((char*) msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
-  					tank_pressure, tank_temperature, valve_state, stimeget.Minutes,
-  					stimeget.Seconds, stimeget.SubSeconds);
+  telemetry_format_avionics();
+  telemetry_format_propulsion();
 
-  // start timer 3 for radio transmissions
-  HAL_TIM_Base_Start_IT(&htim3);
-//  HAL_TIM_Base_Start_IT(&htim8);
+  // start timers:
+  HAL_TIM_Base_Start_IT(&htim3);	// drives XTend DMA
+//  HAL_TIM_Base_Start_IT(&htim8);	// drives ADC DMA
+
 
   // tx power test
 //  while (1) {
@@ -390,8 +373,6 @@ int main(void)
 //	  radio_tx(msg_buffer_av, strlen(msg_buffer_av));
 //	  HAL_Delay(10);
 //  }
-
-//  HAL_ADC_Start_DMA(&hadc1, tank_pressure_buf, PROP_TANK_PRESSURE_ADC_BUF_LEN);
 
   /* USER CODE END 2 */
 
@@ -406,10 +387,9 @@ int main(void)
 #endif
   {
 //	    buzz_success();
-//	    HAL_Delay(10);
-		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 
-		// check for launch command -- do not do this in the callback because...reasons?
+		// check for launch command -- do not do this in the callback because VR commands require HAL_Delay
 		if (xtend_rx_dma_ready) {
 			// go check what the command is
 			radio_command cmd = xtend_parse_dma_command();
@@ -422,19 +402,14 @@ int main(void)
 			execute_parsed_command(cmd);
 		}
 
-		// -----  GATHER AVIONICS TELEMETRY ----- //
-		// lsm6dsl data
+		// -----  GATHER TELEMETRY ----- //
 		get_acceleration(dev_ctx_lsm, acceleration_mg);
 		get_angvelocity(dev_ctx_lsm, angular_rate_mdps);
-
-		// lps22hh data
 		alt_current = getAltitude(); // calls get_pressure();
 
-		// rtc data
 		HAL_RTC_GetTime(&hrtc, &stimeget, RTC_FORMAT_BIN);
 		HAL_RTC_GetDate(&hrtc, &sdateget, RTC_FORMAT_BIN); // have to call GetDate for the time to be correct
 
-		// continuity on pyro channels
 		continuity = get_continuity();
 
 		// gps
@@ -444,19 +419,6 @@ int main(void)
 
 			// start new DMA request
 			HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN);
-		}
-
-		// debugging state of GPS coordinates during testing, remove later
-		if (latitude != 0) {
-			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
-		} else {
-			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
-		}
-
-		if (longitude != 0) {
-			HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, SET);
-		} else {
-			HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, RESET);
 		}
 
 		// propulsion data (not needed after apogee)
@@ -475,9 +437,7 @@ int main(void)
 				ITM_Port32(31) = 300; // start of pr sprintf
 			#endif
 
-			sprintf((char*) msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
-					tank_pressure, tank_temperature, valve_state, stimeget.Minutes,
-					stimeget.Seconds, stimeget.SubSeconds);
+			telemetry_format_propulsion();
 
 			#ifdef TIMING_ITM
 				ITM_Port32(31) = 301; // end of pr sprintf
@@ -491,13 +451,7 @@ int main(void)
 			ITM_Port32(31) = 400; // start of av sprintf
 		#endif
 
-		sprintf((char*) msg_buffer_av,
-				"S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
-				acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
-				angular_rate_mdps[0], angular_rate_mdps[1],
-				angular_rate_mdps[2], pressure_hPa, latitude, longitude,
-				stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
-				continuity, state);
+		telemetry_format_avionics();
 
 		#ifdef TIMING_ITM
 			ITM_Port32(31) = 401; // end of av sprintf
@@ -518,18 +472,13 @@ int main(void)
 //		flash_write((char *)msg_buffer_av);
 //		flash_write((char *)msg_buffer_pr);
 
-	  	#ifdef DEBUG
-//			debug_tx_uart(msg_buffer_av);
-//			debug_tx_uart(msg_buffer_pr);
+	  	#ifdef DEBUG_MODE
+			debug_tx_uart(msg_buffer_av);
+			debug_tx_uart(msg_buffer_pr);
 		#endif
 
 		// check which state of flight we are in
-//		check_flight_state(&state);
-
-//		radio_tx(msg_buffer_pr, strlen(msg_buffer_pr));
-//		HAL_Delay(200);
-//		radio_tx(msg_buffer_av, strlen(msg_buffer_av));
-		HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET);
+		check_flight_state(&state);
 
     /* USER CODE END WHILE */
 
@@ -615,16 +564,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart == &huart6) { // gps
-
-		// received data from GPS into buffer.
-		// insert null termination and parse buffer (total buffer length is GPS_RX_DMA_BUF_LEN + 1)
+		// insert null termination and indicate buffer is ready to parse
+		// (total buffer length is GPS_RX_DMA_BUF_LEN + 1)
 		gps_rx_buf[GPS_RX_DMA_BUF_LEN] = '\0';
 		gps_dma_ready = 1;
 	}
 	else if (huart == &huart3) { // xtend radio
 		xtend_rx_dma_ready = 1;
-		// the launch command is time critical, let's not wait until the next loop
-		// arming is kinda critical too
+		// the launch and arming commands are time critical, let's not wait until the next loop
 		radio_command cmd = xtend_parse_dma_command();
 		if (cmd == LAUNCH) {
 			rocket_launch();
@@ -699,6 +646,7 @@ int flash_write(char *msg_buffer) {
 
 	W25qxx_WriteBlock(msg_buffer, block_address, block_offset, strlen((const char *)msg_buffer));
 	flash_write_address += strlen((const char *)msg_buffer);
+	return flash_write_address;
 }
 
 uint8_t get_continuity(void) {
@@ -708,11 +656,11 @@ uint8_t get_continuity(void) {
 	GPIO_PinState prop_1 = HAL_GPIO_ReadPin(Prop_Cont_1_GPIO_Port, Prop_Cont_1_Pin);
 	GPIO_PinState prop_2 = HAL_GPIO_ReadPin(Prop_Cont_2_GPIO_Port, Prop_Cont_2_Pin);
 
-	// assign one-hot encoded result (apparently you can multiply enums?)
 	uint8_t continuity = (drogue) + (main * 2) + (prop_1 * 4) + (prop_2 * 8);
 	return continuity;
 }
 
+// polling ADC for pressure transducer voltage
 float prop_poll_pressure_transducer(void) {
 	// reading adc
 	HAL_ADC_Start(&hadc1);
@@ -728,6 +676,10 @@ float prop_poll_pressure_transducer(void) {
 	return voltage;
 }
 
+// supposed to be used for ADC DMA callback to average
+// the values in the buffer and convert to pressure.
+// could consider sending a raw voltage because transfer functions
+// can get screwed up in code but raw voltage won't?
 float convert_prop_tank_pressure(void) {
 	// average values in the buffer
 	uint32_t avg = 0;
@@ -744,8 +696,8 @@ float convert_prop_tank_pressure(void) {
 	return pressure;
 }
 
+// logic to change states of flight
 void check_flight_state(volatile uint8_t *state) {
-	// logic to change states of flight
 	switch (*state) {
 	case FLIGHT_STATE_PAD: // launch pad, waiting. prioritize prop data
 
@@ -757,7 +709,7 @@ void check_flight_state(volatile uint8_t *state) {
 			sd_write(&fil, (uint8_t *)"launched\r\n");
 			f_close(&fil);
 
-			#ifdef DEBUG
+			#ifdef DEBUG_MODE
 				HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET);
 			#endif
 
@@ -784,7 +736,7 @@ void check_flight_state(volatile uint8_t *state) {
 				sd_write(&fil, (uint8_t *)"apogee\r\n");
 				f_close(&fil);
 
-				#ifdef DEBUG
+				#ifdef DEBUG_MODE
 					HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET);
 				#endif
 
@@ -810,7 +762,7 @@ void check_flight_state(volatile uint8_t *state) {
 				sd_write(&fil, (uint8_t *)"main deployed\r\n");
 				f_close(&fil);
 
-				#ifdef DEBUG
+				#ifdef DEBUG_MODE
 					HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
 				#endif
 
@@ -843,7 +795,7 @@ void check_flight_state(volatile uint8_t *state) {
 				sd_write(&fil, (uint8_t *)"landed\r\n");
 				f_close(&fil);
 
-				#ifdef DEBUG
+				#ifdef DEBUG_MODE
 					HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
 				#endif
 
@@ -860,7 +812,7 @@ void check_flight_state(volatile uint8_t *state) {
 	case FLIGHT_STATE_LANDED: // landed
 		__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 
-		#ifdef DEBUG
+		#ifdef DEBUG_MODE
 			while (1) {
 				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
 				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
@@ -877,6 +829,7 @@ void check_flight_state(volatile uint8_t *state) {
 	}
 }
 
+// sends an avionics or propulsion string depending on the situation
 void xtend_transmit_telemetry(volatile uint8_t *state) {
 	switch (*state) {
 	case FLIGHT_STATE_PAD:
@@ -912,10 +865,11 @@ void xtend_transmit_telemetry(volatile uint8_t *state) {
 	}
 }
 
+// updates settings for TIM3 depending on the state of the flight.
+// TIM3 controls the rate of XTend radio transmission
 void update_radio_timer_params(volatile uint8_t *state) {
 	switch (*state) {
-	// assuming clock freq = 36 MHz, PSC = 3600-1, use ARR to get desired counter freq
-	// idk why tf PSC needs to be 7200-1...maybe TIM3 uses APB2 not APB1?
+	// assuming clock freq = 72 MHz, PSC = 7200-1, use ARR to get desired counter freq
 	// 		10 Hz -> ARR = 1000
 	// 		 5 Hz -> ARR = 2000
 	// 		 2 Hz -> ARR = 5000
@@ -958,6 +912,24 @@ void update_radio_timer_params(volatile uint8_t *state) {
 		state = 0;
 		break;
 	}
+}
+
+// formats avionics telemetry string using sprintf
+void telemetry_format_avionics(void) {
+	sprintf((char*) msg_buffer_av,
+			"S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
+			acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+			angular_rate_mdps[0], angular_rate_mdps[1],
+			angular_rate_mdps[2], pressure_hPa, latitude, longitude,
+			stimeget.Minutes, stimeget.Seconds, stimeget.SubSeconds,
+			continuity, state);
+}
+
+// formats propulsion telemetry string using sprintf
+void telemetry_format_propulsion(void) {
+	sprintf((char*) msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
+			tank_pressure, tank_temperature, valve_state, stimeget.Minutes,
+			stimeget.Seconds, stimeget.SubSeconds);
 }
 
 /* USER CODE END 4 */
