@@ -103,13 +103,6 @@ const osThreadAttr_t Sensors3_attributes = {
   .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for Propulsion4 */
-osThreadId_t Propulsion4Handle;
-const osThreadAttr_t Propulsion4_attributes = {
-  .name = "Propulsion4",
-  .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
-};
 /* Definitions for Printing */
 osThreadId_t PrintingHandle;
 const osThreadAttr_t Printing_attributes = {
@@ -121,7 +114,7 @@ const osThreadAttr_t Printing_attributes = {
 osThreadId_t WatchDogHandle;
 const osThreadAttr_t WatchDog_attributes = {
   .name = "WatchDog",
-  .stack_size = 256 * 4,
+  .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh1,
 };
 /* USER CODE BEGIN PV */
@@ -209,7 +202,6 @@ void StartMemory0(void *argument);
 void StartEjection1(void *argument);
 void StartTelemetry2(void *argument);
 void StartSensors3(void *argument);
-void StartPropulsion4(void *argument);
 void StartPrinting(void *argument);
 void StartWatchDog(void *argument);
 
@@ -483,9 +475,6 @@ int main(void)
 
   /* creation of Sensors3 */
   Sensors3Handle = osThreadNew(StartSensors3, NULL, &Sensors3_attributes);
-
-  /* creation of Propulsion4 */
-  Propulsion4Handle = osThreadNew(StartPropulsion4, NULL, &Propulsion4_attributes);
 
   /* creation of Printing */
   PrintingHandle = osThreadNew(StartPrinting, NULL, &Printing_attributes);
@@ -1517,6 +1506,10 @@ void StartTelemetry2(void *argument)
 	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 
 
+	  if (prop){
+		  //Send propulsion data
+	  }
+
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
 
@@ -1564,12 +1557,20 @@ void StartSensors3(void *argument)
   	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
 	  MRT_LPS22HH_getTemperature(lps_ctx,&lps_temperature_degC);
 
-
 	  //TODO Pressure tank (just use an analog sensor if you don't have it)
 
 
 	  //Thermocouple
 	  Max31855_Read_Temp();
+
+
+	  if (prop){
+		  //Poll propulsion data
+	  }
+
+
+	  HAL_IWDG_Refresh(&hiwdg); //TODO REMOVE AND PUT INSIDE WATCH DOG THREAD
+
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
 
@@ -1585,42 +1586,6 @@ void StartSensors3(void *argument)
 
 
   /* USER CODE END StartSensors3 */
-}
-
-/* USER CODE BEGIN Header_StartPropulsion4 */
-/**
-* @brief Function implementing the Propulsion4 thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartPropulsion4 */
-void StartPropulsion4(void *argument)
-{
-  /* USER CODE BEGIN StartPropulsion4 */
-
-	osThreadExit();
-
-		//Add thread id to the list
-		threadID[4]=osThreadGetId();
-
-		if (wu_flag) osThreadExit();
-
-	  for(;;)
-	  {
-
-		  //Poll sensor data (burnout level)
-
-
-		  //Write to SD and SEND
-
-	    osDelay(1);
-	  }
-
-	  //In case it leaves the infinite loop
-	  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 4\r\n",36,HAL_MAX_DELAY);
-	  osThreadExit();
-
-  /* USER CODE END StartPropulsion4 */
 }
 
 /* USER CODE BEGIN Header_StartPrinting */
