@@ -145,7 +145,9 @@ public:
          char* IMEI;
 
       //TODO define the right I2C bus using the "Wire"
+		//#define MRT_IRIDIUM_I2C Wire //I2C1
 		#define MRT_IRIDIUM_I2C Wire1 //I2C2
+        //#define MRT_IRIDIUM_I2C Wire2 //I2C3
 
 
    /* Not using this constructor

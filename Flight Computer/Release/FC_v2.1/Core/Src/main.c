@@ -322,7 +322,7 @@ int main(void)
    *-Include the path to all includes folders of the drivers (for C and C++ linkers)
    */
 
-  HAL_UART_Transmit(&DEBUG_USART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUG_UART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
 
   /*
    * For RTOS
@@ -337,15 +337,15 @@ int main(void)
    * You can access the flag of both alarm A and B with the variables flagA and flagB
    */
   MRT_setRTC(0x0,0x0,0x0);
-  MRT_setAlarmA(0x0,0x0,WHEN_SLEEP_TIME);
-  MRT_SetupRTOS(DEBUG_USART,SLEEP_TIME);
+  MRT_setAlarmA(WHEN_SLEEP_TIME_HOURS,WHEN_SLEEP_TIME_MIN,WHEN_SLEEP_TIME_SEC);
+  MRT_SetupRTOS(DEBUG_UART,SLEEP_TIME);
 
 
   /*
    * For external FLASH memory
    *
    */
-	MRT_externalFlashSetup(&DEBUG_USART);
+	MRT_externalFlashSetup(&DEBUG_UART);
 
 
    //checkForI2CDevices(huart8,hi2c1);
@@ -364,29 +364,29 @@ int main(void)
    * -Set the project as c++
    */
 	HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-   uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_USART);
+   uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
 
   /*
    * For LSM6DSR
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
-  lsm_ctx = MRT_LSM6DSR_Setup(&hi2c3,&DEBUG_USART);
+  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUG_UART);
 
 
    /*
     * For LPS22HH
     *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
     */
-  lps_ctx = MRT_LPS22HH_Setup(&hi2c3,&DEBUG_USART);
+  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUG_UART);
 
 
    /*
     * For the GPS:
     * -huart6 on v4.3
-    * -Set its uart to 9600)
+    * -Set its uart to 9600
     *
     */
-   GPS_init(&huart6, &DEBUG_USART);
+   GPS_init(&GPS_UART, &DEBUG_UART);
 
 
    /*
@@ -445,8 +445,6 @@ int main(void)
    *the beginning using the callback function (defined in MRT_Helpers.c)
    */
   MX_IWDG_Init();
-
-
 
 
 
@@ -1279,7 +1277,7 @@ static void MX_GPIO_Init(void)
  * @param  Msg : char array (range 1-800)
  */
 static void XTend_Transmit(char* Msg){
-	HAL_UART_Transmit(&XTEND_USART, Msg, strlen(Msg), HAL_Delay);
+	HAL_UART_Transmit(&XTEND_UART, Msg, strlen(Msg), HAL_Delay);
 }
 
 /* USER CODE END 4 */
@@ -1326,7 +1324,7 @@ void StartMemory0(void *argument)
 	  }
 
 	  //In case it leaves the infinite loop
-	  HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread 0\r\n",36,HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 0\r\n",36,HAL_MAX_DELAY);
 	  osThreadExit();
 
   /* USER CODE END 5 */
@@ -1356,9 +1354,9 @@ void StartEjection1(void *argument)
 
 	char* Start = "Starting XTend\r\n";
 	XTend_Transmit("Starting XTend\r\n"); // Transmit to XTend
-	HAL_UART_Transmit(&DEBUG_USART,Start, 16, HAL_MAX_DELAY); // Transmit to Serial Monitor
+	HAL_UART_Transmit(&DEBUG_UART,Start, 16, HAL_MAX_DELAY); // Transmit to Serial Monitor
 	// Wait for Launch
-	HAL_UART_Receive(&XTEND_USART, xtend_rx_buffer, 8, HAL_MAX_DELAY);
+	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, 8, HAL_MAX_DELAY);
 	// Code Continues after receiving 8 characters (launch command)
 
 	  /* Infinite loop */
@@ -1371,7 +1369,7 @@ void StartEjection1(void *argument)
 
 		  if (MIN_APOGEE <= pressure_hPa && MAX_APOGEE > pressure_hPa){
 
-			  HAL_UART_Transmit(&DEBUG_USART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
+			  HAL_UART_Transmit(&DEBUG_UART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
 
 			  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
 				  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
@@ -1395,7 +1393,7 @@ void StartEjection1(void *argument)
 
 					  //vPortFree(buffer);
 
-					  HAL_UART_Transmit(&DEBUG_USART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
+					  HAL_UART_Transmit(&DEBUG_UART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
 
 					  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
 						  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
@@ -1427,7 +1425,7 @@ void StartEjection1(void *argument)
 	  }
 
 	  //In case it leaves the infinite loop
-	  HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread 1\r\n",36,HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 1\r\n",36,HAL_MAX_DELAY);
 	  osThreadExit();
 
   /* USER CODE END StartEjection1 */
@@ -1521,11 +1519,11 @@ void StartTelemetry2(void *argument)
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
 
-    osDelay(1000/SEND_FREQ);
+      osDelay(1000/SEND_FREQ);
   }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread 2\r\n",36,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 2\r\n",36,HAL_MAX_DELAY);
   osThreadExit();
 
   /* USER CODE END StartTelemetry2 */
@@ -1555,6 +1553,7 @@ void StartSensors3(void *argument)
 
 	  //GPS
 	  GPS_Poll(&latitude, &longitude, &time);
+
   	  //LSM6DSR
   	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
   	  MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
@@ -1575,12 +1574,12 @@ void StartSensors3(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
 
-	  osDelay(1000);
+	  osDelay(1000/POLL_FREQ);
 
 }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread 3\r\n",36,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 3\r\n",36,HAL_MAX_DELAY);
 
   osThreadExit();
 
@@ -1619,7 +1618,7 @@ void StartPropulsion4(void *argument)
 	  }
 
 	  //In case it leaves the infinite loop
-	  HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread 4\r\n",36,HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 4\r\n",36,HAL_MAX_DELAY);
 	  osThreadExit();
 
   /* USER CODE END StartPropulsion4 */
@@ -1651,39 +1650,39 @@ void StartPrinting(void *argument)
   	   */
 	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
 	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",latitude, longitude, time);
-	  HAL_UART_Transmit(&DEBUG_USART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
 
   	  //LSM6DSR
   	  memset(buffer, 0, TX_BUF_DIM);
   	  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
-  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+  	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
   	  /*
   	   * TODO NEEDS FILTERING BUT WORKS (maybe acceleration needs filtering too)
   	   */
   	  memset(buffer, 0, TX_BUF_DIM);
   	  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
-  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+  	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lsm_temperature_degC);
-	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  //LPS22HH
   	  memset(buffer, 0, TX_BUF_DIM);
   	  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",pressure_hPa);
-  	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+  	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lps_temperature_degC);
-	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  //Thermocouple
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Thermocouple temperature [degC]: %6.2f\r\n", THERMO_TEMP);
-	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  //Iridium
@@ -1695,7 +1694,7 @@ void StartPrinting(void *argument)
 }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&DEBUG_USART,"Something went wrong with thread p\r\n",36,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread p\r\n",36,HAL_MAX_DELAY);
   osThreadExit();
   /* USER CODE END StartPrinting */
 }
@@ -1723,8 +1722,8 @@ void StartWatchDog(void *argument)
 
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n", sTime.Hours,sTime.Minutes,sTime.Seconds);
-	  HAL_UART_Transmit(&DEBUG_USART, buffer, strlen(buffer), HAL_MAX_DELAY);
-	  HAL_UART_Transmit(&DEBUG_USART, "YO\r\n", 4, HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUG_UART, "YO\r\n", 4, HAL_MAX_DELAY);
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
     osDelay(200);
   }

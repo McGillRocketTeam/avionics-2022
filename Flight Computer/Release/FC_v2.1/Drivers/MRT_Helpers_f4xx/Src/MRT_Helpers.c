@@ -213,7 +213,6 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 
 		  //Disable alarm A only
 		  MRT_setAlarmA(0,0,0);
-		  MRT_ClearFlags();
 
 		  HAL_Delay(1000);
 
@@ -249,6 +248,12 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 }
 
 
+/*
+ * Checks the continuity of the gates
+ *
+ * returns a binary number in its decimal form. Each bit is the state of a gate.
+ * bit3 bit2 bit1 bit0 = drogue1 drogue2 prop1 prop2
+ */
 uint8_t MRT_getContinuity(void){
 	uint8_t drogue1 = HAL_GPIO_ReadPin(IN_EJ_Drogue_Cont_GPIO_Port, IN_EJ_Drogue_Cont_Pin);
 	uint8_t drogue2 = HAL_GPIO_ReadPin(IN_EJ_Main_Cont_GPIO_Port, IN_EJ_Main_Cont_Pin);

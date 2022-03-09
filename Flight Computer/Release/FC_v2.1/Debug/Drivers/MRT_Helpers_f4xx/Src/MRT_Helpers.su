@@ -6,4 +6,4 @@ MRT_Helpers.c:127:6:MRT_resetFromStart	8	static
 MRT_Helpers.c:143:6:MRT_updateExternalFlashBuffer	16	static
 MRT_Helpers.c:150:6:MRT_getFlags	16	static
 MRT_Helpers.c:197:6:MRT_resetInfo	80	static
-MRT_Helpers.c:252:9:MRT_getContinuity	16	static
+MRT_Helpers.c:257:9:MRT_getContinuity	16	static

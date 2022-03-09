@@ -174,12 +174,15 @@ void Error_Handler(void);
 
 //TODO
 
-#define DEBUG_USART huart8
+#define DEBUG_UART huart8
 
 
 //RTOS
 #define SLEEP_TIME 30 //In seconds
-#define WHEN_SLEEP_TIME 0x15  //In seconds
+#define WHEN_SLEEP_TIME_SEC 0x15  //In seconds
+#define WHEN_SLEEP_TIME_MIN 0x0  //In minutes
+#define WHEN_SLEEP_TIME_HOURS 0x0  //In hours
+
 
 //Telemetry
 #define DATA_FREQ 1 //Times per second that you want to save data
@@ -189,13 +192,24 @@ void Error_Handler(void);
 #define SRADIO_SPI hspi2
 
 //XTend
-#define XTEND_USART huart3
+#define XTEND_UART huart3
 #define XTEND_BUFFER_SIZE 256
 
 //Iridium
 //#define IRIDIUM_I2C I2C2 //TODO defined in the IridiumSBD.h
 
 
+//Sensors
+#define POLL_FREQ 1 //Times per second that you want to poll data
+
+//GPS
+#define GPS_UART huart6 //TODO cannot call it GPS_USART because already defined in gps.c
+
+//LSM6DSR
+#define LSM_I2C hi2c3
+
+//LPS22HH
+#define LPS_I2C hi2c3
 
 
 /* USER CODE END Private defines */
