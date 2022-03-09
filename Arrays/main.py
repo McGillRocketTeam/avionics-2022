@@ -31,10 +31,10 @@ def runMEKF():
     gyro_real_arr, GYRO_meas_arr = [], []
     acc_real_arr, ACC_meas_arr = [], []
     gps_real_arr, GPS_meas_arr = [], []
-    while (i < 100):
+    while (i < 10):
         #1. generate random gyro and acc data 
-        random_gyro = round( random.uniform(4, 10), 4)
-        random_acc = round( random.uniform(6, 10), 4)
+        random_gyro = round( random.uniform(-10, 10), 4)
+        random_acc = round( random.uniform(-10, 10), 4)
         GYRO_input = np.array( [[random_gyro, 0, 0],
                                 [0, 0, 0],
                                 [0, 0, 0]], dtype='f')
@@ -44,14 +44,14 @@ def runMEKF():
         
         #2. feed through process model to create gps data
         mekf.kf_predict(GYRO_input, ACC_input)
-        
+        mekf.kf_update()
 
         #3. GPS_measured = GPS_real + lots of noise
-        GPS_meas = mekf.ra_k + random.uniform(0.5, 2) * np.eye(3, dtype='f')
+        GPS_meas = mekf.ra_k + random.uniform(-2, 2) * np.eye(3, dtype='f')
         
         #4. IMU_measured = IMU_real + a bit of noise 
-        GYRO_meas = GYRO_input + random.uniform(0.5, 1) * np.eye(3, dtype='f')
-        ACC_meas = ACC_input + random.uniform(0.5, 1) * np.eye(3, dtype='f')
+        GYRO_meas = GYRO_input + random.uniform(-1, 1) * np.eye(3, dtype='f')
+        ACC_meas = ACC_input + random.uniform(-1, 1) * np.eye(3, dtype='f')
         i += 1
         
         #5. persist IMU and GPS data (real and measured)
@@ -61,8 +61,9 @@ def runMEKF():
         ACC_meas_arr.append(ACC_meas)
         gps_real_arr.append(mekf.ra_k)
         GPS_meas_arr.append(GPS_meas)
-    print("gyro_real " + str(gyro_real_arr[4]))
-    print("gyro_meas " + str(GYRO_meas_arr[4]))
+    #print("gyro_real " + str(gyro_real_arr[4]))
+    #print("gyro_meas " + str(GYRO_meas_arr[4]))
+    #print("gps_real" + str(gps_real_arr[4]))
     """
     #file persistence
     csvHandler.store(gyro_real_arr, 'gyro_real')
@@ -78,17 +79,21 @@ def runMEKF():
     position_corr = [] #corrected position
     xt = []
     i = 0
-    while (i < 100):
+    while (i < 10):
         mekf.kf_predict(GYRO_meas_arr[i], ACC_meas_arr[i])
         position_pred.append(mekf.ra_k)
         mekf.kf_correct(GPS_meas_arr[i])
         position_corr.append(mekf.ra_k)
+        mekf.kf_update()
         xt.append(i)
         i += 1
     
     #C) plot the results along a single axis
     print("position prediction " +  str(position_pred[4]))
-    #pH.PlotKF(xt, position_pred, "position", "blue")
+    print("position corrected " + str(position_corr[4]))
+    print(len(xt))
+    print(len(position_pred))
+    pH.PlotKF(xt[0:9], position_corr[0:9], "position", "blue")
 
 runMEKF()
 

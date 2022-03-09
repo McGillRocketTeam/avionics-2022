@@ -89,17 +89,21 @@ class MEKF:
     def kf_predict(self, GYRO_input, ACC_input): 
         #convert euler gyro into rotation matrix gyro
         r = R.from_euler('zyx', GYRO_input, degrees=True)
-        gyro_cross = r.as_matrix()
-        self.GYRO_input = GYRO_input
+        self.GYRO_input = r.as_matrix()[0]
+        
+        c = R.from_euler('zyx', ACC_input, degrees=True)
+        acc_cross = c.as_matrix()[0]
         self.ACC_input = ACC_input
         
-        self.Cab_k = self.Cab_k_1 @ np.exp(self.T*gyro_cross)
+        self.Cab_k = self.Cab_k_1 @ np.exp(self.T*self.GYRO_input)
         self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.ACC_input + self.T * self.ga
+        #print(self.Va_k)
         self.ra_k = self.ra_k_1 + self.Va_k_1 * self.T
-
+        #print("gyro_cross" + str(self.GYRO_input))
+        #print("acc_cross" + str(acc_cross))
         "failure point, array probably [[1, 2, 3], [4, 5, 6]]"
         self.A = np.block( [[np.exp(self.T * self.GYRO_input),       self.zeros3 , self.zeros3],
-                            [self.T * self.Cab_k_1 @ self.ACC_input, self.ones3,   self.zeros3], 
+                            [self.T * self.Cab_k_1 @ acc_cross, self.ones3,   self.zeros3], 
                             [self.zeros3,              np.eye(3) *   self.T,       self.ones3]])
         self.P_k = self.A @ self.P_k_1 @ self.A.T #+ self.L @ self.Q @ self.L.T
         
@@ -120,8 +124,13 @@ class MEKF:
         self.Va_k = self.Va_k +  self.correction_term[1]
         self.ra_k = self.ra_k + self.correction_term[2]
     
-
-    
+    #shuffles all k to k-1. ex: x[k-1] = x[k]
+    def kf_update(self):
+        self.Cab_k_1 = self.Cab_k
+        self.Va_k_1 = self.Va_k
+        self.ra_k_1 = self.ra_k
+        self.P_k_1 = self.P_k
+        
 
 
 
