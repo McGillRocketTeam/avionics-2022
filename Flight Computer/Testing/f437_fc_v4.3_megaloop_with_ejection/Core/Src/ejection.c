@@ -24,14 +24,16 @@ float runAltitudeMeasurements(uint32_t currTick, uint16_t currAlt){
 
   prevTick = currTick;
   float alt_meas = currAlt - alt_ground; // Measures AGL altitude in feet
-  alt_filtered = filterAltitude(alt_meas);
+//  alt_filtered = filterAltitude(alt_meas);
+  float alt_filtered = alt_meas; // disable filtering for now
   storeAltitude(alt_filtered, currTick);
   return alt_filtered;
 }
 
 // -- Private function implementation --
 
-// Low-pass filter - rocket at high speeds pressure fluctuates and affects altitude reading, usually at a high frequency, so low pass filter filters those high freuqency changes out
+// Low-pass filter - rocket at high speeds pressure fluctuates and affects altitude reading,
+// usually at a high frequency, so low pass filter filters those high frequency changes out
 // and keeps just the overall, low frequency changes (caused by altitude change)
 float filterAltitude(float altitude) {
 	SmoothData -= LPF_Beta * (SmoothData - altitude);

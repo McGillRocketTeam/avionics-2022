@@ -200,7 +200,7 @@ extern UART_HandleTypeDef huart6;
 #define FLIGHT_STATE_LANDED				4		// landed
 
 #define GPS_RX_DMA_BUF_LEN				175		// characters
-#define XTEND_RX_DMA_CMD_LEN			4		// all commands have this length (in chars)
+#define XTEND_RX_DMA_CMD_LEN			2		// all commands have this length (in chars)
 
 /* USER CODE END Private defines */
 

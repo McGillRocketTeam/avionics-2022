@@ -1,4 +1,4 @@
 ejection.c:22:7:runAltitudeMeasurements	24	static
-ejection.c:36:7:filterAltitude	16	static
-ejection.c:41:6:storeAltitude	16	static
-ejection.c:56:7:LSLinRegression	32	static
+ejection.c:38:7:filterAltitude	16	static
+ejection.c:43:6:storeAltitude	16	static
+ejection.c:58:7:LSLinRegression	32	static

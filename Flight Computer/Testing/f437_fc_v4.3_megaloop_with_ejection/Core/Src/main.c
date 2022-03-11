@@ -144,6 +144,7 @@ float alt_current = 0;
 float alt_prev = 0;
 float alt_diff = 0;
 float alt_apogee = 0;
+float fitted_slope = 0;
 uint8_t num_descending_samples = 0; // for crude apogee detection
 
 // bidirectional xtend communication
@@ -362,19 +363,9 @@ int main(void)
   telemetry_format_avionics();
   telemetry_format_propulsion();
 
-  HAL_UART_Transmit(&huart8, "start!\r\n", 8, 100);
-
   // start timers:
 //  HAL_TIM_Base_Start_IT(&htim3);	// drives XTend DMA
 //  HAL_TIM_Base_Start_IT(&htim8);	// drives ADC DMA
-
-
-  // tx power test
-//  while (1) {
-//	  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-//	  radio_tx(msg_buffer_av, strlen(msg_buffer_av));
-//	  HAL_Delay(10);
-//  }
 
   /* USER CODE END 2 */
 
@@ -391,23 +382,10 @@ int main(void)
 //	    buzz_success();
 		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 
-		// check for launch command -- do not do this in the callback because VR commands require HAL_Delay
-		if (xtend_rx_dma_ready) {
-			// go check what the command is
-			radio_command cmd = xtend_parse_dma_command();
-
-			// prep for next command to be sent
-			memset(xtend_rx_buf, 0, 10);
-			HAL_UART_Receive_DMA(&huart3, xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
-			xtend_rx_dma_ready = 0;
-
-			execute_parsed_command(cmd);
-		}
-
 		// -----  GATHER TELEMETRY ----- //
 		get_acceleration(dev_ctx_lsm, acceleration_mg);
 		get_angvelocity(dev_ctx_lsm, angular_rate_mdps);
-		alt_current = getAltitude(); // calls get_pressure();
+		alt_current = runAltitudeMeasurements(HAL_GetTick(), getAltitude());
 
 		HAL_RTC_GetTime(&hrtc, &stimeget, RTC_FORMAT_BIN);
 		HAL_RTC_GetDate(&hrtc, &sdateget, RTC_FORMAT_BIN); // have to call GetDate for the time to be correct
@@ -578,20 +556,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		gps_dma_ready = 1;
 	}
 	else if (huart == &huart3) { // xtend radio
-		xtend_rx_dma_ready = 1;
-		// the launch and arming commands are time critical, let's not wait until the next loop
+		// go check what the command is
 		radio_command cmd = xtend_parse_dma_command();
-		if (cmd == LAUNCH) {
-			rocket_launch();
-		}
-		else if (cmd == ARM_PROP) {
-			arming_propulsion();
-		}
-		else if (cmd == ARM_RCOV) {
-			arming_recovery();
-		}
+		execute_parsed_command(cmd); // ASSUMING VR IS CONTROLLED BY ATTINY AND VR COMMANDS ARE NON BLOCKING
 
-		// main loop will clear the buffer and start new DMA request
+		// prep for next command to be sent
+		memset(xtend_rx_buf, 0, 10);
+		HAL_UART_Receive_DMA(&huart3, xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
+		xtend_rx_dma_ready = 0;
+
 	}
 }
 
@@ -710,7 +683,7 @@ void check_flight_state(volatile uint8_t *state) {
 	case FLIGHT_STATE_PAD: // launch pad, waiting. prioritize prop data
 
 		// check current state
-		if (alt_current - alt_ground > LAUNCH_ALT_CHANGE_THRESHOLD) { // launched
+		if (alt_current > LAUNCH_ALT_CHANGE_THRESHOLD) { // launched
 			*state = FLIGHT_STATE_PRE_APOGEE;
 
 			fres = sd_open_file(filename);
@@ -727,16 +700,20 @@ void check_flight_state(volatile uint8_t *state) {
 
 		break;
 
-	case FLIGHT_STATE_PRE_APOGEE: // pre-apogee
+	case FLIGHT_STATE_PRE_APOGEE: // pre-apogee, waiting for ejection and drogue deployment
 
-		// check current state
-		if (alt_current > alt_apogee) {
-			alt_apogee = alt_current;
-			num_descending_samples = 0;
-		} else {
-			num_descending_samples++;
+		fitted_slope = LSLinRegression();
+		if (fitted_slope < 0) {
+			num_descending_samples += 1;
 
 			if (num_descending_samples > APOGEE_NUM_DESCENDING_SAMPLES) {
+				// *** EJECTION AND DROGUE DEPLOYMENT *** //
+				HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, SET); // can't hurt right? in case arming failed on the pad
+				HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
+				HAL_Delay(DROGUE_DELAY);
+				HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, RESET);
+				// *** ------------------------------ *** //
+
 				*state = FLIGHT_STATE_PRE_MAIN; // passed apogee
 				num_descending_samples = 0;
 
@@ -752,16 +729,26 @@ void check_flight_state(volatile uint8_t *state) {
 				__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 			}
 		}
+		else {
+			num_descending_samples = 0;
+		}
 
 		break;
 
-	case FLIGHT_STATE_PRE_MAIN: // post-apogee
+	case FLIGHT_STATE_PRE_MAIN: // post-apogee, waiting for main parachute deployment
 
 		// check current state
 		if (alt_current < MAIN_DEPLOY_ALTITUDE) {
 			num_descending_samples++;
 
 			if (num_descending_samples > MAIN_NUM_DESCENDING_SAMPLES) {
+				// *** DEPLOYING MAIN PARACHUTE *** //
+				HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, SET); // can't hurt right? in case arming failed on the pad
+				HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
+				HAL_Delay(MAIN_DELAY);
+				HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
+				// *** ------------------------ *** //
+
 				*state = FLIGHT_STATE_PRE_LANDED;
 				alt_prev = alt_current; // in next stage we need to know the previous altitude
 				num_descending_samples = 0;
@@ -818,7 +805,7 @@ void check_flight_state(volatile uint8_t *state) {
 		break;
 
 	case FLIGHT_STATE_LANDED: // landed
-		__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
+//		__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 
 		#ifdef DEBUG_MODE
 			while (1) {

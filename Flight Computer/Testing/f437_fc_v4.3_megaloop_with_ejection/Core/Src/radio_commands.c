@@ -68,26 +68,32 @@ void execute_parsed_command(radio_command cmd) {
 
 	case DISARM_PROP:
 		disarm_propulsion();
+		HAL_UART_Transmit(&huart8, "disarm pr\r\n", 11, HAL_MAX_DELAY);
 		break;
 
 	case DISARM_RCOV:
 		disarm_recovery();
+		HAL_UART_Transmit(&huart8, "disarm rc\r\n", 11, HAL_MAX_DELAY);
 		break;
 
-	case VR_POWER_ON:	// TODO: figure out how to make non-blocking
+	case VR_POWER_ON:
 		VR_Power_On();
+		HAL_UART_Transmit(&huart8, "vr on\r\n", 7, HAL_MAX_DELAY);
 		break;
 
-	case VR_REC_START:	// TODO: figure out how to make non-blocking
+	case VR_REC_START:
 		VR_Start_Rec();
+		HAL_UART_Transmit(&huart8, "vr start\r\n", 10, HAL_MAX_DELAY);
 		break;
 
-	case VR_REC_STOP:	// TODO: figure out how to make non-blocking
+	case VR_REC_STOP:
 		VR_Stop_Rec();
+		HAL_UART_Transmit(&huart8, "vr stop\r\n", 9, HAL_MAX_DELAY);
 		break;
 
 	case VR_POWER_OFF:
 		VR_Power_Off();
+		HAL_UART_Transmit(&huart8, "vr off\r\n", 8, HAL_MAX_DELAY);
 		break;
 
 	default:

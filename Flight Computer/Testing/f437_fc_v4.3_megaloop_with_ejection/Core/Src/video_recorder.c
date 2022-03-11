@@ -21,20 +21,23 @@ void VR_Power_Off(void) {
 
 void VR_Start_Rec(void) {
 
-	// specific sequence of SET/RESET to start recording
-	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET);
-	HAL_Delay(400);
-	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
-	HAL_Delay(400);
-	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET);
-	HAL_Delay(400);
-	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
+	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET); // HIGH = start record
+
+	// using ATtiny to start recording instead so these are not needed
+//	HAL_Delay(400);
+//	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
+//	HAL_Delay(400);
+//	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET);
+//	HAL_Delay(400);
+//	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
 
 }
 
 void VR_Stop_Rec(void) {
 
-	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET);
-	HAL_Delay(1000);
-	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
+	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET); // LOW = stop recording
+
+	// using ATtiny to start recording instead so these are not needed
+//	HAL_Delay(1000);
+//	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
 }

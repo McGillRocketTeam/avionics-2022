@@ -121,7 +121,6 @@ void GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
 
 	// limits on the DMA buffer
 	uint16_t buf_end = GPS_RX_DMA_BUF_LEN + 1; // +1 for null terminator
-	uint8_t valid_string_found = 0;
 
 	// for extracting substrings to be parsed
 	char current_substring[200]; // max size of valid NMEA string is 75 for the validate function
@@ -152,7 +151,6 @@ void GPS_ParseBuffer(double *latitude, double *longitude, float *time) {
 				*latitude = GPS.dec_latitude;
 				*longitude = GPS.dec_longitude;
 				*time = GPS.utc_time;
-				valid_string_found = 1;
 
 				break; // got valid coordinates, stop parsing
 			}
