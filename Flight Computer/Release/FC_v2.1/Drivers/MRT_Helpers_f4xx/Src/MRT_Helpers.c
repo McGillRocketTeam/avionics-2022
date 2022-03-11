@@ -8,11 +8,9 @@
 #include <MRT_RTOS.h>
 //#include <IridiumSBD_Static_API.h> TODO why should we include this??
 
+/*Flags*/
 uint8_t reset_flag = 0; //In external memory
 uint8_t iwdg_flag = 0; //In external memory
-
-//Offset of flags in external flash sector 1 (can go and change NB_OF_FLAGS as needed)
-uint16_t VirtAddVarTab[NB_OF_FLAGS];
 
 //Flags read/write buffer
 uint8_t flash_flags_buffer[NB_OF_FLAGS];
@@ -20,8 +18,34 @@ uint8_t flash_flags_buffer[NB_OF_FLAGS];
 //TODO Reference array to each flag
 uint8_t* flash_flags[NB_OF_FLAGS] = {&reset_flag, &wu_flag, &iwdg_flag};
 
+/*
+//Offset of flags in external flash sector 1 (can go and change NB_OF_FLAGS as needed)
+uint16_t VirtAddVarTab[NB_OF_FLAGS];
+*/
+
 //Null buffer values for when clearing flags
-uint8_t NULL_BUFFER[NB_OF_FLAGS];
+uint8_t FLAGS_NULL_BUFFER[NB_OF_FLAGS];
+
+
+
+/*RTC time*/
+//Time constants (determined at each reset)
+uint8_t prev_hours = 0; //Last recorded hours
+uint8_t prev_min = 0; //Last recorded minutes
+uint8_t prev_sec = 0; //Last recorded seconds
+
+//Time read/write buffer
+uint8_t flash_time_buffer[3];
+
+//Reference list to each time component
+uint8_t* flash_time[3] = {&prev_hours, &prev_min, &prev_sec};
+
+//Null buffer values for when clearing time
+uint8_t RTC_TIME_NULL_BUFFER = {0,0,0};
+
+
+
+
 
 /*
  * User functions
@@ -29,7 +53,7 @@ uint8_t NULL_BUFFER[NB_OF_FLAGS];
 void MRT_externalFlashSetup(UART_HandleTypeDef* uart){
 
 	for (int i = 0; i < NB_OF_FLAGS; i++){
-		NULL_BUFFER[i] = 0; //Setup the null buffer for the correct number of values
+		FLAGS_NULL_BUFFER[i] = 0; //Setup the flags null buffer for the correct number of values
 	}
 
 	if (!W25qxx_Init()) {
@@ -125,12 +149,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 
 void MRT_resetFromStart(void){
+	//Clear wakeup and reset flags
+	W25qxx_EraseSector(1);
+	W25qxx_WriteSector(FLAGS_NULL_BUFFER, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+
 	//Clear all saved data of stages
 	//TODO
 
-	//Clear wakeup and reset flags
-	W25qxx_EraseSector(1);
-	W25qxx_WriteSector(NULL_BUFFER, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+	//Clear RTC time (last recorded)
+	//TODO
 
 	//Shutdown Iridium
 	MRT_Static_Iridium_Shutdown();
@@ -140,9 +167,12 @@ void MRT_resetFromStart(void){
 }
 
 
-void MRT_updateExternalFlashBuffer(void){
+void MRT_updateExternalFlashBuffers(void){
 	for (int i = 0; i < NB_OF_FLAGS; i++){
 		flash_flags_buffer[i] = *flash_flags[i];
+	}
+	for (int i = 0; i < 3; i++){
+		flash_time_buffer[i] = *flash_time[i];
 	}
 }
 
@@ -151,6 +181,9 @@ void MRT_getFlags(void){
 
 	//Retrieve flags
 	W25qxx_ReadSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+
+	//Retrieve RTC time (last recorded)
+	W25qxx_ReadSector(flash_time_buffer, 2, RTC_TIME_OFFSET, 3);
 
 	//If RTC detected a wake up, update the flash memory
 	if (wu_flag == 1){
@@ -163,10 +196,12 @@ void MRT_getFlags(void){
 	for (int i = 0; i < NB_OF_FLAGS; i++){
 		*flash_flags[i] = flash_flags_buffer[i];
 	}
+	for (int i = 0; i < 3; i++){
+		*flash_time[i] = flash_time_buffer[i];
+	}
 
 
 	//Check flags values
-
 	//Reset flag
 	if (reset_flag != 0 && reset_flag !=1){ //If random value (none was written)
 		reset_flag = 0;
@@ -183,7 +218,6 @@ void MRT_getFlags(void){
 		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
 
-
 	//IWDG flag
 	if (iwdg_flag != 0 && iwdg_flag !=1){ //If random value (none was written)
 		iwdg_flag = 0;
@@ -191,13 +225,39 @@ void MRT_getFlags(void){
 		W25qxx_EraseSector(1);
 		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
+
+
+	//Check RTC time values
+	//Hours
+	if (!(prev_hours > 0) && !(prev_hours < 24)){ //If random value (none was written)
+		prev_hours = 0;
+		flash_time_buffer[RTC_HOURS_OFFSET] = prev_hours;
+		W25qxx_EraseSector(2);
+		W25qxx_WriteSector(flash_time_buffer, 2, RTC_TIME_OFFSET, 3);
+	}
+
+	//Minutes
+	if (!(prev_min > 0) && !(prev_min < 60)){ //If random value (none was written)
+		prev_min = 0;
+		flash_time_buffer[RTC_MIN_OFFSET] = prev_min;
+		W25qxx_EraseSector(2);
+		W25qxx_WriteSector(flash_time_buffer, 2, RTC_TIME_OFFSET, 3);
+	}
+
+	//Seconds
+	if (!(prev_sec > 0) && !(prev_sec < 60)){ //If random value (none was written)
+		prev_sec = 0;
+		flash_time_buffer[RTC_SEC_OFFSET] = prev_sec;
+		W25qxx_EraseSector(2);
+		W25qxx_WriteSector(flash_time_buffer, 2, RTC_TIME_OFFSET, 3);
+	}
 }
 
 
 void MRT_resetInfo(UART_HandleTypeDef* uart){
 
-	  char buffer[50];
-	  sprintf(buffer,"Reset: %i,  WU: %i,  IWDG: %i\r\n",reset_flag, wu_flag, iwdg_flag);
+	  char buffer[100];
+	  sprintf(buffer,"Reset: %i,  WU: %i,  IWDG: %i\r\nPrevious RTC time: %i:%i:%i",reset_flag, wu_flag, iwdg_flag, prev_hours, prev_min, prev_sec);
 	  HAL_UART_Transmit(uart, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  //Check if IWDG is being deactivated
@@ -245,6 +305,18 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 		  W25qxx_EraseSector(1);
 		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 	  }
+}
+
+
+/*
+ * Update and save the RTC time in external flash memory
+ */
+void MRT_saveRTCTime(void){
+	MRT_updateExternalFlashBuffers();
+
+	//Write new RTC time to flash memory
+	W25qxx_EraseSector(2);
+	W25qxx_WriteSector(flash_time_buffer, 2, RTC_TIME_OFFSET, 3);
 }
 
 

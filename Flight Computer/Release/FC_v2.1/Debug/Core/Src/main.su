@@ -23,5 +23,5 @@ main.c:1539:6:StartSensors3	16	static
 main.c:1596:6:StartPropulsion4	16	static
 main.c:1632:6:StartPrinting	304	static
 main.c:1707:6:StartWatchDog	280	static
-main.c:1741:6:HAL_TIM_PeriodElapsedCallback	16	static
-main.c:1758:6:Error_Handler	4	static
+main.c:1745:6:HAL_TIM_PeriodElapsedCallback	16	static
+main.c:1762:6:Error_Handler	4	static

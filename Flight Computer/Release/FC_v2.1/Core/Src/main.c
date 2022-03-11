@@ -1723,6 +1723,10 @@ void StartWatchDog(void *argument)
 	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n", sTime.Hours,sTime.Minutes,sTime.Seconds);
 	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
+
+	  //Save the time
+	  MRT_saveRTCTime();
+
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
 
 	  osDelay(1000/WD_FREQ);
