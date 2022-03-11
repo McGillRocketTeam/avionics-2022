@@ -17,31 +17,31 @@ extern volatile char xtend_rx_buf[10]; // dma buffer
 
 radio_command xtend_parse_dma_command(void) {
 
-	if (strcmp(xtend_rx_buf, "lnch") == 0) { // launch command
+	if (strcmp(xtend_rx_buf, "lr") == 0) { // launch command
 		return LAUNCH;
 	}
-	else if (strcmp(xtend_rx_buf, "arpr") == 0) { // arm propulsion
+	else if (strcmp(xtend_rx_buf, "ap") == 0) { // arm propulsion
 		return ARM_PROP;
 	}
-	else if (strcmp(xtend_rx_buf, "arrc") == 0) { // arm recovery
+	else if (strcmp(xtend_rx_buf, "ar") == 0) { // arm recovery
 		return ARM_RCOV;
 	}
-	else if (strcmp(xtend_rx_buf, "dapr") == 0) { // disarm propulsion
+	else if (strcmp(xtend_rx_buf, "dp") == 0) { // disarm propulsion
 		return DISARM_PROP;
 	}
-	else if (strcmp(xtend_rx_buf, "darc") == 0) {
+	else if (strcmp(xtend_rx_buf, "dr") == 0) { // disarm recovery
 		return DISARM_RCOV;
 	}
-	else if (strcmp(xtend_rx_buf, "vron") == 0) { // vr power on
+	else if (strcmp(xtend_rx_buf, "v1") == 0) { // vr power on
 		return VR_POWER_ON;
 	}
-	else if (strcmp(xtend_rx_buf, "vrs1") == 0) { // s1 = start
+	else if (strcmp(xtend_rx_buf, "v2") == 0) { // vr start
 		return VR_REC_START;
 	}
-	else if (strcmp(xtend_rx_buf, "vrs2") == 0) { // s2 = stop
+	else if (strcmp(xtend_rx_buf, "v3") == 0) { // vr stop
 		return VR_REC_STOP;
 	}
-	else if (strcmp(xtend_rx_buf, "vrof") == 0) { // vr power off
+	else if (strcmp(xtend_rx_buf, "v4") == 0) { // vr power off
 		return VR_POWER_OFF;
 	}
 

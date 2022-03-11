@@ -81,6 +81,7 @@ FRESULT sd_init_dynamic_filename(char *prefix, char *header_text, char* return_f
 	FRESULT fres = f_mount(&FatFs, "", 1);
 	if (fres != FR_OK) {
 		myprintf("f_mount error (%i)\r\n", fres);
+		__BKPT();
 		return fres;
 	}
 
@@ -100,6 +101,7 @@ FRESULT sd_init_dynamic_filename(char *prefix, char *header_text, char* return_f
 		myprintf("I was able to open filename.txt for writing\r\n");
 	} else {
 		myprintf("f_open error (%i)\r\n", fres);
+		__BKPT();
 		return fres;
 	}
 	// set pointer to end of file to append

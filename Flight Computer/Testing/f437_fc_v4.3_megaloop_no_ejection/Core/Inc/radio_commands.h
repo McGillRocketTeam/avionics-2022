@@ -31,5 +31,4 @@ void arming_recovery(void);
 void disarm_propulsion(void);
 void disarm_recovery(void);
 
-
 #endif /* INC_RADIO_COMMANDS_H_ */

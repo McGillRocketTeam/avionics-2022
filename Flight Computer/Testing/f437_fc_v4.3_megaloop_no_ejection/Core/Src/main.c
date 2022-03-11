@@ -353,7 +353,7 @@ int main(void)
   alt_current = alt_ground;
 
   // initial DMA requests:
-  HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN); // GPS
+//  HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN); // GPS
   memset(xtend_rx_buf, 0, 10);
   HAL_UART_Receive_DMA(&huart3, (uint8_t *)xtend_rx_buf, XTEND_RX_DMA_CMD_LEN); // XTend
 //  HAL_ADC_Start_DMA(&hadc1, tank_pressure_buf, PROP_TANK_PRESSURE_ADC_BUF_LEN); // ADC for propulsion
@@ -362,8 +362,10 @@ int main(void)
   telemetry_format_avionics();
   telemetry_format_propulsion();
 
+  HAL_UART_Transmit(&huart8, "start!\r\n", 8, 100);
+
   // start timers:
-  HAL_TIM_Base_Start_IT(&htim3);	// drives XTend DMA
+//  HAL_TIM_Base_Start_IT(&htim3);	// drives XTend DMA
 //  HAL_TIM_Base_Start_IT(&htim8);	// drives ADC DMA
 
 
@@ -509,7 +511,7 @@ void SystemClock_Config(void)
   /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -519,10 +521,16 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 72;
+  RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Activate the Over-Drive mode
+  */
+  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
@@ -532,10 +540,10 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
     Error_Handler();
   }
@@ -869,7 +877,7 @@ void xtend_transmit_telemetry(volatile uint8_t *state) {
 // TIM3 controls the rate of XTend radio transmission
 void update_radio_timer_params(volatile uint8_t *state) {
 	switch (*state) {
-	// assuming clock freq = 72 MHz, PSC = 7200-1, use ARR to get desired counter freq
+	// assuming clock freq = 90 MHz, PSC = 9000-1, use ARR to get desired counter freq
 	// 		10 Hz -> ARR = 1000
 	// 		 5 Hz -> ARR = 2000
 	// 		 2 Hz -> ARR = 5000
