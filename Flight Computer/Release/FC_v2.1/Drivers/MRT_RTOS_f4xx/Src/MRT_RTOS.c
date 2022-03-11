@@ -12,9 +12,9 @@ RTC_HandleTypeDef hrtc;
 struct MRT_RTOS rtos;
 
 
-uint8_t flagA = 0;
-uint8_t flagB = 0;
-uint8_t wu_flag = 0;
+uint8_t flagA = 0; //Dynamic
+uint8_t flagB = 0; //Dynamic
+uint8_t wu_flag = 0; //In external memory
 
 RTC_TimeTypeDef sTime = {0};
 RTC_DateTypeDef sDate = {0};

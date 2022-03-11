@@ -12,18 +12,28 @@
 #include "w25qxx.h"
 #include "main.h"
 
-#define NB_OF_FLAGS 3 //TODO Number of flags used
-#define FLAGS_OFFSET 0 //TODO Flags offset in sector 1
+/*FLAGS*/
+#define NB_OF_FLAGS 3 //Number of flags used
+#define FLAGS_OFFSET 0 //Flags offset in sector 1
+//Map every variable to their offset in sector 1
+#define RESET_FLAG_OFFSET 0
+#define WU_FLAG_OFFSET 1
+#define IWDG_FLAG_OFFSET 2
 
 //Flags
 uint8_t reset_flag; //if 0 -> start from beginning, if 1 -> random watchdog reset (if 2-> reset after wakeup??)
 //wu_flag defined in MRT_RTOS.c
 uint8_t iwdg_flag; //if 0 -> normal, if 1 -> try to go into standbymode
 
-//TODO Map every variable to their offset in sector 1
-#define RESET_FLAG_OFFSET 0
-#define WU_FLAG_OFFSET 1
-#define IWDG_FLAG_OFFSET 2
+
+/*RTC time*/
+#define RTC_TIME_OFFSET 3 //RTC time offset in sector 1
+//Map hours, minutes and seconds to their offsets
+#define RTC_HOURS_OFFSET 0
+#define RTC_MIN_OFFSET 1
+#define RTC_SEC_OFFSET 2
+
+
 
 //Flags read/write buffer
 uint8_t flash_flags_buffer[NB_OF_FLAGS];

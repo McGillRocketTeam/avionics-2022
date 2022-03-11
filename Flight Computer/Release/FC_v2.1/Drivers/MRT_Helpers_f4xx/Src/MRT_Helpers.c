@@ -6,10 +6,10 @@
  */
 #include <stm32f4xx_hal.h>
 #include <MRT_RTOS.h>
-#include <IridiumSBD_Static_API.h>
+//#include <IridiumSBD_Static_API.h> TODO why should we include this??
 
-uint8_t reset_flag = 0;
-uint8_t iwdg_flag = 0;
+uint8_t reset_flag = 0; //In external memory
+uint8_t iwdg_flag = 0; //In external memory
 
 //Offset of flags in external flash sector 1 (can go and change NB_OF_FLAGS as needed)
 uint16_t VirtAddVarTab[NB_OF_FLAGS];

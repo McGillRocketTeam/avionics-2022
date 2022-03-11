@@ -20,8 +20,8 @@ main.c:1292:6:StartMemory0	16	static
 main.c:1340:6:StartEjection1	272	static
 main.c:1441:6:StartTelemetry2	16	static
 main.c:1539:6:StartSensors3	16	static
-main.c:1598:6:StartPropulsion4	16	static
-main.c:1634:6:StartPrinting	304	static
-main.c:1709:6:StartWatchDog	80	static
+main.c:1596:6:StartPropulsion4	16	static
+main.c:1632:6:StartPrinting	304	static
+main.c:1707:6:StartWatchDog	280	static
 main.c:1741:6:HAL_TIM_PeriodElapsedCallback	16	static
 main.c:1758:6:Error_Handler	4	static

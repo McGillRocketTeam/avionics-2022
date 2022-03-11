@@ -183,6 +183,9 @@ void Error_Handler(void);
 #define WHEN_SLEEP_TIME_MIN 0x0  //In minutes
 #define WHEN_SLEEP_TIME_HOURS 0x0  //In hours
 
+//WatchDog Thread
+#define WD_FREQ 1 //Times per second that you want to check threads
+
 
 //Telemetry
 #define DATA_FREQ 1 //Times per second that you want to save data

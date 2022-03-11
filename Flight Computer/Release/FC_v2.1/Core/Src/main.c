@@ -80,7 +80,7 @@ osThreadId_t Memory0Handle;
 const osThreadAttr_t Memory0_attributes = {
   .name = "Memory0",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+  .priority = (osPriority_t) osPriorityHigh3,
 };
 /* Definitions for Ejection1 */
 osThreadId_t Ejection1Handle;
@@ -94,7 +94,7 @@ osThreadId_t Telemetry2Handle;
 const osThreadAttr_t Telemetry2_attributes = {
   .name = "Telemetry2",
   .stack_size = 1024 * 4,
-  .priority = (osPriority_t) osPriorityHigh2,
+  .priority = (osPriority_t) osPriorityHigh1,
 };
 /* Definitions for Sensors3 */
 osThreadId_t Sensors3Handle;
@@ -108,7 +108,7 @@ osThreadId_t Propulsion4Handle;
 const osThreadAttr_t Propulsion4_attributes = {
   .name = "Propulsion4",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+  .priority = (osPriority_t) osPriorityHigh2,
 };
 /* Definitions for Printing */
 osThreadId_t PrintingHandle;
@@ -121,8 +121,8 @@ const osThreadAttr_t Printing_attributes = {
 osThreadId_t WatchDogHandle;
 const osThreadAttr_t WatchDog_attributes = {
   .name = "WatchDog",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityHigh1,
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* USER CODE BEGIN PV */
 
@@ -1497,7 +1497,6 @@ void StartTelemetry2(void *argument)
 	  sprintf(&SUBSEC,"%.0f",SUBSEC);
 
 
-
 	  //TODO maybe add variable for GPS time and both temperature values?
 
   	  memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
@@ -1512,7 +1511,7 @@ void StartTelemetry2(void *argument)
 
 
 	  //Iridium send
-	  HAL_IWDG_Refresh(&hiwdg); //Iridium can take some time so reset the IWDG
+	  //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
 	  MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
 	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 
@@ -1685,11 +1684,11 @@ void StartPrinting(void *argument)
 
 
 	  //Iridium
-	  MRT_Static_Iridium_getTime();
+	  MRT_Static_Iridium_getTime(); //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
-	  osDelay(1000/DATA_FREQ);
+	  osDelay(1000/SEND_FREQ);
 }
 
   //In case it leaves the infinite loop
@@ -1709,22 +1708,24 @@ void StartWatchDog(void *argument)
 {
   /* USER CODE BEGIN StartWatchDog */
 
-	char buffer[50];
+	char buffer[TX_BUF_DIM];
   /* Infinite loop */
   for(;;)
   {
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-	 //HAL_IWDG_Refresh(&hiwdg);
+	 HAL_IWDG_Refresh(&hiwdg);
 
 	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
+
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n", sTime.Hours,sTime.Minutes,sTime.Seconds);
 	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
-	  HAL_UART_Transmit(&DEBUG_UART, "YO\r\n", 4, HAL_MAX_DELAY);
+
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
-    osDelay(200);
+
+	  osDelay(1000/WD_FREQ);
   }
   /* USER CODE END StartWatchDog */
 }
