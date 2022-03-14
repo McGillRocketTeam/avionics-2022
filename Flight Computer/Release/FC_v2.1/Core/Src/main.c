@@ -25,6 +25,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "fatfs.h"
+#include "usb_device.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -154,8 +157,8 @@ float GYROx;
 float GYROy;
 float GYROz;
 float PRESSURE;
-float LAT;
-float LONG;
+float LATITUDE;
+float LONGITUDE;
 float MIN;
 float SEC;
 float SUBSEC;
@@ -172,8 +175,6 @@ volatile uint8_t timer_actuated_vent_valve = 0;
 float altitude_m = 0;
 
 // GPS data
-float latitude;
-float longitude;
 float time;
 static uint8_t gps_fix_lat = 0;
 static uint8_t gps_fix_long = 0; // beep when we get fix
@@ -184,13 +185,14 @@ char gps_data[GPS_DATA_BUF_DIM];
 stmdev_ctx_t lsm_ctx;
 stmdev_ctx_t lps_ctx;
 
-/*
+
 // sd card
 FATFS FatFs; 	//Fatfs handle
 FIL fil; 		//File handle
 FRESULT fres; //Result after operations
-static uint8_t msg_buffer[1000];
-*/
+char filename[13];
+uint8_t writeBuf[1000];
+
 
 
 /* USER CODE END PV */
@@ -274,6 +276,7 @@ int main(void)
   MX_USART6_UART_Init();
   MX_RTC_Init();
   //MX_IWDG_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
 
@@ -421,6 +424,11 @@ int main(void)
 	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
 	Tx_setup();
 
+	/*
+	* For the SD card
+	*
+	*/
+	sd_init_dynamic_filename("FC", "", filename);
 
 	/*
 	 * For the thermocouple
@@ -548,7 +556,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 72;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -1149,7 +1162,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, EN_12V_Buck_Pin|OUT_Prop_ActuatedVent_Gate_Pin|SPI4_CS_Thermocouple_Pin|Iridium_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, SPI5_SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOF, SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, OUT_LED1_Pin|OUT_LED2_Pin|OUT_LED3_Pin|SX_AMPLIFIER_Pin, GPIO_PIN_RESET);
@@ -1176,8 +1189,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SPI5_SD_CS_Pin OUT_PyroValve_Gate_2_Pin OUT_PyroValve_Gate_1_Pin */
-  GPIO_InitStruct.Pin = SPI5_SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin;
+  /*Configure GPIO pins : SD_CS_Pin OUT_PyroValve_Gate_2_Pin OUT_PyroValve_Gate_1_Pin */
+  GPIO_InitStruct.Pin = SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1303,6 +1316,8 @@ static void XTend_Transmit(char* Msg){
 /* USER CODE END Header_StartMemory0 */
 void StartMemory0(void *argument)
 {
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
 
 	//osThreadExit();
@@ -1316,7 +1331,10 @@ void StartMemory0(void *argument)
 	  {
 
 		  //Write data to sd and flash
-
+		  sd_open_file(&filename);
+		  sprintf((char*)writeBuf, "Data: %f, %f, %f, %f\r\n", PRESSURE, MIN, SEC, SUBSEC);
+		  sd_write(&fil, writeBuf);
+		  f_close(&fil);
 
 		  //Check if it's sleep time
 		//if (flagA==1 && wu_flag !=1){
@@ -1329,10 +1347,10 @@ void StartMemory0(void *argument)
 
 			//Reset to deactivate IWDG
 			NVIC_SystemReset();
-		}
+		  }
 
 		  //osDelay(1000/DATA_FREQ);
-		osDelay(3000);
+		  osDelay(1000/DATA_FREQ);
 	  }
 
 	  //In case it leaves the infinite loop
@@ -1461,8 +1479,6 @@ void StartTelemetry2(void *argument)
   	  GYROy = angular_rate_mdps[1];
   	  GYROz = angular_rate_mdps[2];
   	  PRESSURE = pressure_hPa;
-  	  LAT = latitude;
-  	  LONG = longitude;
 
 	  //From the GPS time value
 	  MIN = ((uint8_t) time % 3600) / 60.0;
@@ -1485,7 +1501,7 @@ void StartTelemetry2(void *argument)
 
   	  memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
   	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.7f,%.7f,%.1f,%.1f,%.1f,%.2f,%i,E",
-  			  	  	  	  	  	  ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
+  			  	  	  	  	  	  ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LATITUDE,LONGITUDE,MIN,SEC,SUBSEC,STATE,CONT);
 
 	  //Xtend send
 	  XTend_Transmit(xtend_tx_buffer);
@@ -1536,7 +1552,7 @@ void StartSensors3(void *argument)
 
 
 	  //GPS
-	  GPS_Poll(&latitude, &longitude, &time);
+	  GPS_Poll(&LATITUDE, &LONGITUDE, &time);
 
   	  //LSM6DSR
   	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
@@ -1631,7 +1647,7 @@ void StartPrinting(void *argument)
   	   * TODO HOW DO WE RESET THE TIME
   	   */
 	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
-	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",latitude, longitude, time);
+	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",LATITUDE, LONGITUDE, time);
 	  HAL_UART_Transmit(&DEBUG_UART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
 
   	  //LSM6DSR

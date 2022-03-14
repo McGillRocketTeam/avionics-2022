@@ -64,8 +64,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define EN_12V_Buck_Pin GPIO_PIN_2
 #define EN_12V_Buck_GPIO_Port GPIOE
-#define SPI5_SD_CS_Pin GPIO_PIN_10
-#define SPI5_SD_CS_GPIO_Port GPIOF
+#define SD_CS_Pin GPIO_PIN_10
+#define SD_CS_GPIO_Port GPIOF
 #define IN_Button_Pin GPIO_PIN_0
 #define IN_Button_GPIO_Port GPIOC
 #define IN_Button_EXTI_IRQn EXTI0_IRQn
@@ -173,8 +173,9 @@ void Error_Handler(void);
 
 
 //TODO
-
+UART_HandleTypeDef huart8;
 #define DEBUG_UART huart8
+#define SD_SPI_HANDLE hspi5
 
 #define SEA_LEVEL_TEMPERATURE 25+273.15 //Sea level temperature kelvin
 #define SEA_LEVEL_PRESSURE 1014 //Sea level pressure hPa
