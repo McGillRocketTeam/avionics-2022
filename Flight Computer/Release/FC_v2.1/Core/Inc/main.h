@@ -196,7 +196,7 @@ void Error_Handler(void);
 
 //Telemetry
 #define DATA_FREQ 1 //Times per second that you want to save data
-#define SEND_FREQ 10 //Times per second that you want to transmit data
+#define SEND_FREQ 1000 //Times per second that you want to transmit data
 
 //SRadio
 #define SRADIO_SPI hspi2
@@ -210,7 +210,7 @@ void Error_Handler(void);
 
 
 //Sensors
-#define POLL_FREQ 1 //Times per second that you want to poll data
+#define POLL_FREQ 1000 //Times per second that you want to poll data
 
 //GPS
 #define GPS_UART huart6 //TODO cannot call it GPS_USART because already defined in gps.c

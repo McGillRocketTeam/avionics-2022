@@ -16,6 +16,11 @@
   *
   ******************************************************************************
   */
+
+
+//TODO uncomment watchdog dog and iridium code
+
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -268,7 +273,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
   MX_RTC_Init();
-  //MX_IWDG_Init(); TODO remove
+  //MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
 
@@ -372,7 +377,7 @@ int main(void)
    * -Set the project as c++
    */
 	HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-   uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
+   //uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
 
   /*
    * For LSM6DSR
@@ -452,7 +457,7 @@ int main(void)
    *Solution : We use the external IN_Button has an external reset that resets the board from
    *the beginning using the callback function (defined in MRT_Helpers.c)
    */
-  MX_IWDG_Init();
+  //MX_IWDG_Init();
 
 
 
@@ -1153,9 +1158,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, OUT_PyroValve_Arming_Pin|SX_RST_Pin|SX_BUSY_Pin|SX_DIO_Pin
-                          |SX_RF_SW_Pin|OUT_VR_PWR_Pin|OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin
-                          |OUT_EJ_Arming_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, OUT_PyroValve_Arming_Pin|SX_RST_Pin|SX_RF_SW_Pin|OUT_VR_PWR_Pin
+                          |OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin|OUT_EJ_Arming_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin, GPIO_PIN_RESET);
@@ -1217,18 +1221,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IN_PyroValve_Cont_2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : IN_PyroValve_Cont_1_Pin IN_EJ_Main_Cont_Pin IN_EJ_Drogue_Cont_Pin */
-  GPIO_InitStruct.Pin = IN_PyroValve_Cont_1_Pin|IN_EJ_Main_Cont_Pin|IN_EJ_Drogue_Cont_Pin;
+  /*Configure GPIO pins : IN_PyroValve_Cont_1_Pin SX_BUSY_Pin SX_DIO_Pin IN_EJ_Main_Cont_Pin
+                           IN_EJ_Drogue_Cont_Pin */
+  GPIO_InitStruct.Pin = IN_PyroValve_Cont_1_Pin|SX_BUSY_Pin|SX_DIO_Pin|IN_EJ_Main_Cont_Pin
+                          |IN_EJ_Drogue_Cont_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OUT_PyroValve_Arming_Pin SX_RST_Pin SX_BUSY_Pin SX_DIO_Pin
-                           SX_RF_SW_Pin OUT_VR_PWR_Pin OUT_EJ_Main_Gate_Pin OUT_EJ_Drogue_Gate_Pin
-                           OUT_EJ_Arming_Pin */
-  GPIO_InitStruct.Pin = OUT_PyroValve_Arming_Pin|SX_RST_Pin|SX_BUSY_Pin|SX_DIO_Pin
-                          |SX_RF_SW_Pin|OUT_VR_PWR_Pin|OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin
-                          |OUT_EJ_Arming_Pin;
+  /*Configure GPIO pins : OUT_PyroValve_Arming_Pin SX_RST_Pin SX_RF_SW_Pin OUT_VR_PWR_Pin
+                           OUT_EJ_Main_Gate_Pin OUT_EJ_Drogue_Gate_Pin OUT_EJ_Arming_Pin */
+  GPIO_InitStruct.Pin = OUT_PyroValve_Arming_Pin|SX_RST_Pin|SX_RF_SW_Pin|OUT_VR_PWR_Pin
+                          |OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin|OUT_EJ_Arming_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1429,8 +1433,6 @@ void StartTelemetry2(void *argument)
 {
   /* USER CODE BEGIN StartTelemetry2 */
 
-	osThreadExit();
-
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
@@ -1489,12 +1491,12 @@ void StartTelemetry2(void *argument)
 	  XTend_Transmit(xtend_tx_buffer);
 
 	  //SRadio send
-	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer));
+	  TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer));
 
 
 	  //Iridium send
 	  //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
-	  MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
+	  //MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
 	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 
 
@@ -1666,7 +1668,7 @@ void StartPrinting(void *argument)
 
 
 	  //Iridium
-	  MRT_Static_Iridium_getTime(); //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
+	  //MRT_Static_Iridium_getTime(); //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
@@ -1695,7 +1697,7 @@ void StartWatchDog(void *argument)
   for(;;)
   {
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-	 HAL_IWDG_Refresh(&hiwdg);
+	 //HAL_IWDG_Refresh(&hiwdg);
 
 	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
