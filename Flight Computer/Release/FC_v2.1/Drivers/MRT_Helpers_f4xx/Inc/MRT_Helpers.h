@@ -58,5 +58,6 @@ void MRT_getFlags(void);
 void MRT_resetInfo(UART_HandleTypeDef* uart);
 void MRT_saveRTCTime(void);
 uint8_t MRT_getContinuity(void);
+float MRT_getAltitude(float pressure);
 
 //void tone(uint32_t duration, uint32_t repeats, TIM_HandleTypeDef htim);

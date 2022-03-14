@@ -32,6 +32,7 @@
 #include <sx126x.h>
 #include <MAX31855.h>
 
+#include <math.h>
 //#include <usbd_cdc_if.h>
 
 /* USER CODE END Includes */
@@ -325,10 +326,19 @@ int main(void)
   HAL_UART_Transmit(&DEBUG_UART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
 
   /*
+   * For external FLASH memory
+   *-Put before RTOS setup because you need the external flash in its setup
+   */
+    MRT_SetupRTOS(DEBUG_UART,SLEEP_TIME); //Put here so we can pass the uart value to the setup
+	MRT_externalFlashSetup(&DEBUG_UART);
+
+
+  /*
    * For RTOS
    * -Activate RTC, calendar and internal alarm A (don't forget to enable NVIC EXTI)
    * -Define what you want in the alarms callback functions (check the MRT_RTOS_f4xx .h file)
    * -Need to be before the IWDG setup
+   * -Need to be after the external flash setup
    * -Because of IWDG, deactivate the alarm A when reset to deactivate the IWDG or it will cause an interrupt
    * when being in standByMode (check MRT_helper.c)
    * -(Optional) Use MCU APB1 freeze register to freeze the WD in StandByMode instead of resetting the FC
@@ -336,16 +346,14 @@ int main(void)
    * The rest have been taken care of
    * You can access the flag of both alarm A and B with the variables flagA and flagB
    */
-  MRT_setRTC(0x0,0x0,0x0);
-  MRT_setAlarmA(WHEN_SLEEP_TIME_HOURS,WHEN_SLEEP_TIME_MIN,WHEN_SLEEP_TIME_SEC);
-  MRT_SetupRTOS(DEBUG_UART,SLEEP_TIME);
 
+//TODO doesn't work on wakeup (in the thread it seems)
+  char tmp_buffer[20];
+  sprintf(tmp_buffer,"Prev_Sec %i\r\n",prev_sec);
+  HAL_UART_Transmit(&DEBUG_UART,tmp_buffer,strlen(tmp_buffer),HAL_MAX_DELAY);
+  MRT_setRTC(prev_hours,prev_min,prev_sec);
+  MRT_setAlarmA(WHEN_SLEEP_TIME_HOURS, WHEN_SLEEP_TIME_MIN, WHEN_SLEEP_TIME_SEC);
 
-  /*
-   * For external FLASH memory
-   *
-   */
-	MRT_externalFlashSetup(&DEBUG_UART);
 
 
    //checkForI2CDevices(huart8,hi2c1);
@@ -1343,6 +1351,7 @@ void StartEjection1(void *argument)
 
 	osThreadExit();
 
+	//TODO add flag for when we are done with the thread
 	if (altitude_m < GROUND_LEVEL)  osThreadExit();
 	if (wu_flag) osThreadExit(); //WHEN WAKING UP
 
@@ -1352,22 +1361,11 @@ void StartEjection1(void *argument)
 
 	char buffer[TX_BUF_DIM];
 
-	char* Start = "Starting XTend\r\n";
-	XTend_Transmit("Starting XTend\r\n"); // Transmit to XTend
-	HAL_UART_Transmit(&DEBUG_UART,Start, 16, HAL_MAX_DELAY); // Transmit to Serial Monitor
-	// Wait for Launch
-	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, 8, HAL_MAX_DELAY);
-	// Code Continues after receiving 8 characters (launch command)
-
 	  /* Infinite loop */
 	  for(;;)
 	  {
 
-		  //Poll altitude (poll pressure)
-		  //pressure_hPa =
-
-
-		  if (MIN_APOGEE <= pressure_hPa && MAX_APOGEE > pressure_hPa){
+		  if (MIN_APOGEE <= altitude_m && MAX_APOGEE < altitude_m){
 
 			  HAL_UART_Transmit(&DEBUG_UART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
 
@@ -1383,15 +1381,8 @@ void StartEjection1(void *argument)
 
 			  for(;;){
 
-
-				  //Poll altitude (pressure and acceleration?)
-				  //pressure_hPa =
-				  //altitude_m =
-
 				  //We reached main deployment altitude
 				  if (altitude_m>DEPLOY_ALT_MIN && altitude_m<DEPLOY_ALT_MAX){
-
-					  //vPortFree(buffer);
 
 					  HAL_UART_Transmit(&DEBUG_UART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
 
@@ -1406,10 +1397,6 @@ void StartEjection1(void *argument)
 					  }
 
 					  for(;;){
-
-
-						  //Poll altitude (pressure and acceleration)
-						  //altitude_m =
 
 						  if (altitude_m < GROUND_LEVEL)  osThreadExit();
 
@@ -1474,10 +1461,16 @@ void StartTelemetry2(void *argument)
   	  PRESSURE = pressure_hPa;
   	  LAT = latitude;
   	  LONG = longitude;
-  	  MIN = 0.0;
-  	  SEC = 0.0;
-  	  SUBSEC = 0.0;
-  	  STATE = THERMO_TEMP;
+
+	  //From the GPS time value
+	  MIN = ((uint8_t) time % 3600) / 60.0;
+	  sprintf(&MIN, "%.0f",MIN);
+	  SEC = (uint8_t) time % 60;
+	  sprintf(&SEC,"%.0f",SEC);
+	  SUBSEC = time / 3600.0;
+	  sprintf(&SUBSEC,"%.0f",SUBSEC);
+
+  	  STATE = THERMO_TEMP; //TODO not the right value
   	  CONT = MRT_getContinuity();
 
 
@@ -1487,17 +1480,6 @@ void StartTelemetry2(void *argument)
 	  MIN = t.tm_min;
 	  SEC = t.tm_sec;
 	  */
-	  //From the GPS time value
-
-	  MIN = ((uint8_t) time % 3600) / 60.0;
-	  sprintf(&MIN, "%.0f",MIN);
-	  SEC = (uint8_t) time % 60;
-	  sprintf(&SEC,"%.0f",SEC);
-	  SUBSEC = time / 3600.0;
-	  sprintf(&SUBSEC,"%.0f",SUBSEC);
-
-
-	  //TODO maybe add variable for GPS time and both temperature values?
 
   	  memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
   	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.7f,%.7f,%.1f,%.1f,%.1f,%.2f,%i,E",
@@ -1562,7 +1544,7 @@ void StartSensors3(void *argument)
 	  //LPS22HH
   	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
 	  MRT_LPS22HH_getTemperature(lps_ctx,&lps_temperature_degC);
-
+	  altitude_m = MRT_getAltitude(pressure_hPa); //Update altitude
 
 	  //TODO Pressure tank (just use an analog sensor if you don't have it)
 
@@ -1633,7 +1615,7 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	//osThreadExit();
+	osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 
@@ -1718,9 +1700,14 @@ void StartWatchDog(void *argument)
 	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
+	 prev_hours = sTime.Hours;
+	 prev_min = sTime.Minutes;
+	 prev_sec = sTime.Seconds;
+
+
 
 	  memset(buffer, 0, TX_BUF_DIM);
-	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n", sTime.Hours,sTime.Minutes,sTime.Seconds);
+	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n %f\r\n", prev_hours,prev_min,prev_sec, altitude_m);
 	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 

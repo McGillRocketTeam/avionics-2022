@@ -41,7 +41,6 @@ void MRT_SetupRTOS(UART_HandleTypeDef uart,uint8_t sleepT){
 	rtos.huart = uart;
 	rtos.sleepTime = sleepT;
 	HAL_UART_Transmit(&(rtos.huart),"Setting up RTOS\r\n", 17, HAL_MAX_DELAY);
-	MRT_WUProcedure();
 }
 
 
@@ -218,6 +217,8 @@ void MRT_setAlarmA(uint8_t h, uint8_t m, uint8_t s){
 void MRT_setRTC(uint8_t h, uint8_t m, uint8_t s){
 	  /** Initialize RTC and set the Time and Date
 	  */
+	  RTC_TimeTypeDef sTime;
+
 	  sTime.Hours = h;
 	  sTime.Minutes = m;
 	  sTime.Seconds = s;

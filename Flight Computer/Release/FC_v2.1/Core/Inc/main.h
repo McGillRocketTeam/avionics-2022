@@ -176,6 +176,13 @@ void Error_Handler(void);
 
 #define DEBUG_UART huart8
 
+#define SEA_LEVEL_TEMPERATURE 25+273.15 //Sea level temperature kelvin
+#define SEA_LEVEL_PRESSURE 1014 //Sea level pressure hPa
+#define  BASE_HEIGHT 100 //In meters
+#define M 0.0289644 //Molar mass of earth's air in kg/mol
+#define go 9.80665 //Gravitational acceleration constant in m/s^2
+#define R 8.31432 //Universal gas constant Nm / mol K
+
 
 //RTOS
 #define SLEEP_TIME 30 //In seconds

@@ -6,6 +6,7 @@
  */
 #include <stm32f4xx_hal.h>
 #include <MRT_RTOS.h>
+#include <math.h>
 //#include <IridiumSBD_Static_API.h> TODO why should we include this??
 
 /*Flags*/
@@ -41,7 +42,7 @@ uint8_t flash_time_buffer[3];
 uint8_t* flash_time[3] = {&prev_hours, &prev_min, &prev_sec};
 
 //Null buffer values for when clearing time
-uint8_t RTC_TIME_NULL_BUFFER = {0,0,0};
+uint8_t RTC_TIME_NULL_BUFFER[3] = {0,0,0};
 
 
 
@@ -59,6 +60,7 @@ void MRT_externalFlashSetup(UART_HandleTypeDef* uart){
 	if (!W25qxx_Init()) {
 		Error_Handler(); // hangs and blinks LEDF
 	}
+	MRT_WUProcedure(); //Needs to be called before getFlags() and after the W25xx_Init()
 	MRT_getFlags();
 	MRT_resetInfo(uart);
 }
@@ -141,7 +143,7 @@ void tone(uint32_t duration, uint32_t repeats, TIM_HandleTypeDef htim)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	if (GPIO_Pin == IN_Button_Pin){
-		//Manual reset
+		//Manual reset from external button
 		MRT_resetFromStart();
 	}
 
@@ -153,10 +155,11 @@ void MRT_resetFromStart(void){
 	W25qxx_EraseSector(1);
 	W25qxx_WriteSector(FLAGS_NULL_BUFFER, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 
-	//Clear all saved data of stages
-	//TODO
-
 	//Clear RTC time (last recorded)
+	W25qxx_EraseSector(2);
+	W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
+
+	//Clear all saved data of stages
 	//TODO
 
 	//Shutdown Iridium
@@ -229,7 +232,7 @@ void MRT_getFlags(void){
 
 	//Check RTC time values
 	//Hours
-	if (!(prev_hours > 0) && !(prev_hours < 24)){ //If random value (none was written)
+	if (!(prev_hours >= 0 && prev_hours < 24)){ //If random value (none was written)
 		prev_hours = 0;
 		flash_time_buffer[RTC_HOURS_OFFSET] = prev_hours;
 		W25qxx_EraseSector(2);
@@ -237,7 +240,7 @@ void MRT_getFlags(void){
 	}
 
 	//Minutes
-	if (!(prev_min > 0) && !(prev_min < 60)){ //If random value (none was written)
+	if (!(prev_min >= 0 && prev_min < 60)){ //If random value (none was written)
 		prev_min = 0;
 		flash_time_buffer[RTC_MIN_OFFSET] = prev_min;
 		W25qxx_EraseSector(2);
@@ -245,7 +248,7 @@ void MRT_getFlags(void){
 	}
 
 	//Seconds
-	if (!(prev_sec > 0) && !(prev_sec < 60)){ //If random value (none was written)
+	if (!(prev_sec >= 0 && prev_sec < 60)){ //If random value (none was written)
 		prev_sec = 0;
 		flash_time_buffer[RTC_SEC_OFFSET] = prev_sec;
 		W25qxx_EraseSector(2);
@@ -257,7 +260,7 @@ void MRT_getFlags(void){
 void MRT_resetInfo(UART_HandleTypeDef* uart){
 
 	  char buffer[100];
-	  sprintf(buffer,"Reset: %i,  WU: %i,  IWDG: %i\r\nPrevious RTC time: %i:%i:%i",reset_flag, wu_flag, iwdg_flag, prev_hours, prev_min, prev_sec);
+	  sprintf(buffer,"Reset: %i,  WU: %i,  IWDG: %i\r\nPrevious RTC time: %i:%i:%i\r\n",reset_flag, wu_flag, iwdg_flag, prev_hours, prev_min, prev_sec);
 	  HAL_UART_Transmit(uart, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  //Check if IWDG is being deactivated
@@ -272,12 +275,9 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 
 		  //Disable alarm A only
-		  MRT_setAlarmA(0,0,0);
+		  //MRT_setAlarmA(0,0,0); TODO can be removed?
 
 		  HAL_Delay(1000);
-
-
-		  //MRT_Static_Iridium_Shutdown(); TODO
 
 		  //Go to sleep
 		  MRT_StandByMode(SLEEP_TIME);
@@ -337,3 +337,11 @@ uint8_t MRT_getContinuity(void){
 
 
 
+
+/*
+ * Gets the altitude using temperature, pressure and sea-level pressure
+ *https://www.mide.com/air-pressure-at-altitude-calculator
+ */
+float MRT_getAltitude(float pressure){
+	return BASE_HEIGHT+(SEA_LEVEL_TEMPERATURE/-0.0065)*(pow(pressure/SEA_LEVEL_PRESSURE,(-R*-0.0065/(go*M)))-1);
+}
