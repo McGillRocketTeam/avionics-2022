@@ -275,7 +275,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
   MX_RTC_Init();
-  //MX_IWDG_Init();
+  //MX_IWDG_Init(); //TODO remove
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
@@ -1337,7 +1337,6 @@ void StartMemory0(void *argument)
 		  f_close(&fil);
 
 		  //Check if it's sleep time
-		//if (flagA==1 && wu_flag !=1){
 		  if (flagA==1){
 			//Update iwdg_flag
 			iwdg_flag = 1;
@@ -1349,7 +1348,6 @@ void StartMemory0(void *argument)
 			NVIC_SystemReset();
 		  }
 
-		  //osDelay(1000/DATA_FREQ);
 		  osDelay(1000/DATA_FREQ);
 	  }
 

@@ -159,7 +159,7 @@ void MRT_resetFromStart(void){
 	W25qxx_EraseSector(2);
 	W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
 
-	//Clear all saved data of stages
+	//Clear all saved data of ejection stages
 	//TODO
 
 	//Shutdown Iridium
@@ -190,7 +190,8 @@ void MRT_getFlags(void){
 
 	//If RTC detected a wake up, update the flash memory
 	if (wu_flag == 1){
-		flash_flags_buffer[WU_FLAG_OFFSET] = wu_flag;
+		//Write the new number of wake up to external flash
+		flash_flags_buffer[WU_FLAG_OFFSET] = flash_flags_buffer[WU_FLAG_OFFSET] + 1; //Update number of wake up
 		W25qxx_EraseSector(1);
 		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
@@ -214,7 +215,7 @@ void MRT_getFlags(void){
 	}
 
 	//Wake up flag
-	if (wu_flag != 0 && wu_flag !=1){ //If random value (none was written)
+	if (wu_flag != 0 && wu_flag !=1 && wu_flag !=2){ //If random value (none was written)
 		wu_flag = 0;
 		flash_flags_buffer[WU_FLAG_OFFSET] = wu_flag;
 		W25qxx_EraseSector(1);
@@ -274,9 +275,6 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 		  W25qxx_EraseSector(1);
 		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 
-		  //Disable alarm A only
-		  //MRT_setAlarmA(0,0,0); TODO can be removed?
-
 		  HAL_Delay(1000);
 
 		  //Go to sleep
@@ -284,13 +282,11 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 	  }
 
 
-	  //Check if we are after waking up
-	  if (wu_flag==1){
-		  HAL_UART_Transmit(uart, "FC wake up\r\n", 12, HAL_MAX_DELAY);
-
-		  //Deactivate alarm interrupts
-		  HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
-		  __HAL_RTC_ALARM_EXTI_DISABLE_IT();
+	  //Check if we are after waking up (and at which wake up we are at)
+	  if (wu_flag>0){
+		  char buf[20];
+		  sprintf(buf, "FC wake up %i\r\n", wu_flag);
+		  HAL_UART_Transmit(uart, buf, strlen(buf), HAL_MAX_DELAY);
 	  }
 
 
