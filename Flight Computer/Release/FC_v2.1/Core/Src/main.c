@@ -341,6 +341,34 @@ int main(void)
 	MRT_externalFlashSetup(&DEBUG_UART);
 
 
+	  /*
+	   * Watch dog
+	   * -Remove the MX_IWDG_Init() that is auto-generated and add it just before the osKernelStart
+	   * -Need to be put after RTOS setup
+	   *
+	   * IF THE WATCH DOG IS NOT REFRESH BEFORE THE X SECONDS TIMEOUT IT WILL RESET THE BOARD
+	   * It doesn't garantie that if a thread stops running it's going to be detected
+	   *
+	   *
+	   * Potential solutions:
+	   * 	-A watch dog thread where the refresh function is called:
+	   * 		This thread will be responsible for making sure that every other thread is running correctly
+	   * 		If this specific thread stops running, restart the whole thing when the timeout occurs.
+	   *
+	   * 	-A global interrupts that acts as a watchdog:
+	   * 		If the interrupts fails, we are doomed
+	   *
+	   *
+	   *Since the WD reset the board at random times, we need to know at which stage of ejection we were and we
+	   *need to keep track of other things. The solution to this is to save the data that we want to use after these
+	   *random resets. Now the problem is how do we start the FC from the beginning if we have a random
+	   *amount of resets?
+	   *Solution : We use the external IN_Button has an external reset that resets the board from
+	   *the beginning using the callback function (defined in MRT_Helpers.c)
+	   */
+	  MX_IWDG_Init();
+
+
   /*
    * For RTOS
    * -Activate RTC, calendar and internal alarm A (don't forget to enable NVIC EXTI)
@@ -359,7 +387,6 @@ int main(void)
   MRT_setAlarmA(WHEN_SLEEP_TIME_HOURS, WHEN_SLEEP_TIME_MIN, WHEN_SLEEP_TIME_SEC);
 
 
-
    //checkForI2CDevices(huart8,hi2c1);
    //checkForI2CDevices(huart8,hi2c2);
    //checkForI2CDevices(huart8,hi2c3);
@@ -375,6 +402,7 @@ int main(void)
    * For Iridium:
    * -Set the project as c++
    */
+    HAL_IWDG_Refresh(&hiwdg);
 	HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
     uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
 
@@ -382,6 +410,7 @@ int main(void)
    * For LSM6DSR
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
+  HAL_IWDG_Refresh(&hiwdg);
   lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUG_UART);
 
 
@@ -389,6 +418,7 @@ int main(void)
     * For LPS22HH
     *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
     */
+  HAL_IWDG_Refresh(&hiwdg);
   lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUG_UART);
 
 
@@ -398,7 +428,8 @@ int main(void)
     * -Set its uart to 9600
     *
     */
-   GPS_init(&GPS_UART, &DEBUG_UART);
+  HAL_IWDG_Refresh(&hiwdg);
+  GPS_init(&GPS_UART, &DEBUG_UART);
 
 
    /*
@@ -413,19 +444,21 @@ int main(void)
     * For the SRadio
     * -SPI2 on v4.3
     */
-	set_hspi(SRADIO_SPI);
-	// SPI2_SX_CS_GPIO_Port
-	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
-	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
-	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
-	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-	//Tx_setup(); TODO
+  HAL_IWDG_Refresh(&hiwdg);
+  set_hspi(SRADIO_SPI);
+  // SPI2_SX_CS_GPIO_Port
+  set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
+  set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+  set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+  set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+  //Tx_setup(); TODO
 
 	/*
 	* For the SD card
 	*
 	*/
-	sd_init_dynamic_filename("FC", "", filename);
+    HAL_IWDG_Refresh(&hiwdg);
+    sd_init_dynamic_filename("FC", "", filename);
 
 	/*
 	 * For the thermocouple
@@ -433,34 +466,6 @@ int main(void)
 	 * -No setup needed (just activate SPI4, the work is done by a MAX31855)
 	 */
 
-
-
-  /*
-   * Watch dog
-   * -Remove the MX_IWDG_Init() that is auto-generated and add it just before the osKernelStart
-   * -Need to be put after RTOS setup
-   *
-   * IF THE WATCH DOG IS NOT REFRESH BEFORE THE X SECONDS TIMEOUT IT WILL RESET THE BOARD
-   * It doesn't garantie that if a thread stops running it's going to be detected
-   *
-   *
-   * Potential solutions:
-   * 	-A watch dog thread where the refresh function is called:
-   * 		This thread will be responsible for making sure that every other thread is running correctly
-   * 		If this specific thread stops running, restart the whole thing when the timeout occurs.
-   *
-   * 	-A global interrupts that acts as a watchdog:
-   * 		If the interrupts fails, we are doomed
-   *
-   *
-   *Since the WD reset the board at random times, we need to know at which stage of ejection we were and we
-   *need to keep track of other things. The solution to this is to save the data that we want to use after these
-   *random resets. Now the problem is how do we start the FC from the beginning if we have a random
-   *amount of resets?
-   *Solution : We use the external IN_Button has an external reset that resets the board from
-   *the beginning using the callback function (defined in MRT_Helpers.c)
-   */
-  MX_IWDG_Init();
 
 //TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED (or find other way to completely reset the board)
 
