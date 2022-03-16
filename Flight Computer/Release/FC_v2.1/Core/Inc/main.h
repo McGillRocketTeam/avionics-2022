@@ -186,18 +186,18 @@ UART_HandleTypeDef huart8;
 
 
 //RTOS
-#define SLEEP_TIME 30 //In seconds
-#define WHEN_SLEEP_TIME_SEC 0x15  //In seconds
-#define WHEN_SLEEP_TIME_MIN 0x0  //In minutes
-#define WHEN_SLEEP_TIME_HOURS 0x0  //In hours
+#define SLEEP_TIME 5 //In seconds
+#define WHEN_SLEEP_TIME_SEC 15  //In seconds
+#define WHEN_SLEEP_TIME_MIN 0  //In minutes
+#define WHEN_SLEEP_TIME_HOURS 0  //In hours
 
 //WatchDog Thread
 #define WD_FREQ 1 //Times per second that you want to check threads
 
 
 //Telemetry
-#define DATA_FREQ 1 //Times per second that you want to save data
-#define SEND_FREQ 1000 //Times per second that you want to transmit data
+#define DATA_FREQ 10 //Times per second that you want to save data
+#define SEND_FREQ 20 //Times per second that you want to transmit data
 
 //SRadio
 #define SRADIO_SPI hspi2
@@ -211,7 +211,7 @@ UART_HandleTypeDef huart8;
 
 
 //Sensors
-#define POLL_FREQ 1000 //Times per second that you want to poll data
+#define POLL_FREQ 20 //Times per second that you want to poll data
 
 //GPS
 #define GPS_UART huart6 //TODO cannot call it GPS_USART because already defined in gps.c

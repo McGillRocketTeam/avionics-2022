@@ -65,28 +65,6 @@ void MRT_externalFlashSetup(UART_HandleTypeDef* uart){
 	MRT_resetInfo(uart);
 }
 
-/*
-void MRT_freezeWatchDog(void){
-	 FLASH_OBProgramInitTypeDef pOBInit;
-
-	 HAL_FLASH_Unlock();
-	 //__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR); // Clear the FLASH's pending flags.
-	 __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPERR); // Clear the FLASH's pending flags.
-	 HAL_FLASH_OB_Unlock();
-
-	 HAL_FLASHEx_OBGetConfig(&pOBInit); // Get the Option bytes configuration.
-
-	 pOBInit.OptionType = OPTIONBYTE_USER;
-	 //pOBInit.USERType = OB_USER_IWDG_STOP;
-	 pOBInit.USERConfig = OB_IWDG_STOP_FREEZE;
-	 pOBInit.USERConfig = IWDG_STOP_FREEZE;
-	 HAL_FLASHEx_OBProgram(&pOBInit);
-
-	 HAL_FLASH_OB_Lock();
-	 HAL_FLASH_Lock();
-}
-*/
-
 
 
 void checkForI2CDevices(UART_HandleTypeDef uart, I2C_HandleTypeDef I2C ){
@@ -132,8 +110,6 @@ void tone(uint32_t duration, uint32_t repeats, TIM_HandleTypeDef htim)
 	}
 }
 */
-
-
 
 
 
@@ -287,6 +263,19 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 		  char buf[20];
 		  sprintf(buf, "FC wake up %i\r\n", wu_flag);
 		  HAL_UART_Transmit(uart, buf, strlen(buf), HAL_MAX_DELAY);
+
+		  HAL_UART_Transmit(uart, "Resetting RTC time\r\n", 20, HAL_MAX_DELAY);
+
+
+		  //Clear RTC time (last recorded)
+		  W25qxx_EraseSector(2);
+		  W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
+
+		  //Update variables (to 0)
+		  for (int i = 0; i < 3; i++){
+			  *flash_time[i] = 0x0;
+		  }
+
 	  }
 
 

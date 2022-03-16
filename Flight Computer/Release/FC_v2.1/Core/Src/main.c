@@ -337,7 +337,7 @@ int main(void)
    * For external FLASH memory
    *-Put before RTOS setup because you need the external flash in its setup
    */
-    MRT_SetupRTOS(DEBUG_UART,SLEEP_TIME); //Put here so we can pass the uart value to the setup
+    MRT_SetupRTOS(&hrtc, DEBUG_UART,SLEEP_TIME); //Put here so we can pass the uart value to the setup
 	MRT_externalFlashSetup(&DEBUG_UART);
 
 
@@ -354,12 +354,8 @@ int main(void)
    * The rest have been taken care of
    * You can access the flag of both alarm A and B with the variables flagA and flagB
    */
-
-//TODO doesn't work on wakeup (in the thread it seems)
-  char tmp_buffer[20];
-  sprintf(tmp_buffer,"Prev_Sec %i\r\n",prev_sec);
-  HAL_UART_Transmit(&DEBUG_UART,tmp_buffer,strlen(tmp_buffer),HAL_MAX_DELAY);
   MRT_setRTC(prev_hours,prev_min,prev_sec);
+  HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
   MRT_setAlarmA(WHEN_SLEEP_TIME_HOURS, WHEN_SLEEP_TIME_MIN, WHEN_SLEEP_TIME_SEC);
 
 
@@ -380,7 +376,7 @@ int main(void)
    * -Set the project as c++
    */
 	HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-   //uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
+    uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
 
   /*
    * For LSM6DSR
@@ -412,6 +408,7 @@ int main(void)
    HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET); //TODO is it necessary?
 
 
+
    /*
     * For the SRadio
     * -SPI2 on v4.3
@@ -422,7 +419,7 @@ int main(void)
 	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
 	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
 	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-	Tx_setup();
+	//Tx_setup(); TODO
 
 	/*
 	* For the SD card
@@ -446,8 +443,6 @@ int main(void)
    * IF THE WATCH DOG IS NOT REFRESH BEFORE THE X SECONDS TIMEOUT IT WILL RESET THE BOARD
    * It doesn't garantie that if a thread stops running it's going to be detected
    *
-   * DONT FORGET ABOUT ALARM A GETTING RESET RANDOMLY BUT SHOULDNT (keep track of the time)
-   *
    *
    * Potential solutions:
    * 	-A watch dog thread where the refresh function is called:
@@ -465,11 +460,9 @@ int main(void)
    *Solution : We use the external IN_Button has an external reset that resets the board from
    *the beginning using the callback function (defined in MRT_Helpers.c)
    */
-  //MX_IWDG_Init();
+  MX_IWDG_Init();
 
-
-
-//TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED
+//TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED (or find other way to completely reset the board)
 
   /* USER CODE END 2 */
 
@@ -1330,23 +1323,13 @@ void StartMemory0(void *argument)
 	  for(;;)
 	  {
 
+		  /*
 		  //Write data to sd and flash
 		  sd_open_file(&filename);
 		  sprintf((char*)writeBuf, "Data: %f, %f, %f, %f\r\n", PRESSURE, MIN, SEC, SUBSEC);
 		  sd_write(&fil, writeBuf);
 		  f_close(&fil);
-
-		  //Check if it's sleep time
-		  if (flagA==1){
-			//Update iwdg_flag
-			iwdg_flag = 1;
-			flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
-			W25qxx_EraseSector(1);
-			W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
-
-			//Reset to deactivate IWDG
-			NVIC_SystemReset();
-		  }
+		  */
 
 		  osDelay(1000/DATA_FREQ);
 	  }
@@ -1452,9 +1435,9 @@ void StartTelemetry2(void *argument)
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
-	osDelay(1000);
+	osThreadExit();
 
-	//Make the thread joinable?
+	osDelay(1000);
 
   /* Infinite loop */
   for(;;)
@@ -1710,8 +1693,8 @@ void StartWatchDog(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-	 //HAL_IWDG_Refresh(&hiwdg);
+	 HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
+	 HAL_IWDG_Refresh(&hiwdg);
 
 	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
@@ -1720,15 +1703,31 @@ void StartWatchDog(void *argument)
 	 prev_min = sTime.Minutes;
 	 prev_sec = sTime.Seconds;
 
-
-
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n %f\r\n", prev_hours,prev_min,prev_sec, altitude_m);
 	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
+	  /*
+	   * TODO Watch OUT: when writing to the external flash, don't have an interrupt that
+	   * does it at the same time or it's a hardfault crash
+	   *
+	   * Moved the other code where we write to external flash to this thread (when going to sleep)
+	   */
 	  //Save the time
 	  MRT_saveRTCTime();
+
+	  //Check if it's sleep time
+	  if (flagA==1){
+		//Update iwdg_flag
+		iwdg_flag = 1;
+		flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
+		W25qxx_EraseSector(1);
+		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+
+		//Reset to deactivate IWDG
+		NVIC_SystemReset();
+	  }
 
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
 
