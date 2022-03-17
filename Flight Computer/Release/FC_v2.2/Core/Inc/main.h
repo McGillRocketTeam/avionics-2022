@@ -10,10 +10,10 @@
   * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
   *
   ******************************************************************************
   */
@@ -43,6 +43,8 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 
+
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -62,8 +64,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define EN_12V_Buck_Pin GPIO_PIN_2
 #define EN_12V_Buck_GPIO_Port GPIOE
-#define SPI5_SD_CS_Pin GPIO_PIN_10
-#define SPI5_SD_CS_GPIO_Port GPIOF
+#define SD_CS_Pin GPIO_PIN_10
+#define SD_CS_GPIO_Port GPIOF
 #define IN_Button_Pin GPIO_PIN_0
 #define IN_Button_GPIO_Port GPIOC
 #define IN_Button_EXTI_IRQn EXTI0_IRQn
@@ -171,20 +173,31 @@ void Error_Handler(void);
 
 
 //TODO
-
+UART_HandleTypeDef huart8;
 #define DEBUG_UART huart8
+#define SD_SPI_HANDLE hspi5
+
+#define SEA_LEVEL_TEMPERATURE 25+273.15 //Sea level temperature kelvin
+#define SEA_LEVEL_PRESSURE 1014 //Sea level pressure hPa
+#define  BASE_HEIGHT 100 //In meters
+#define M 0.0289644 //Molar mass of earth's air in kg/mol
+#define go 9.80665 //Gravitational acceleration constant in m/s^2
+#define R 8.31432 //Universal gas constant Nm / mol K
 
 
 //RTOS
-#define SLEEP_TIME 30 //In seconds
-#define WHEN_SLEEP_TIME_SEC 0x15  //In seconds
-#define WHEN_SLEEP_TIME_MIN 0x0  //In minutes
-#define WHEN_SLEEP_TIME_HOURS 0x0  //In hours
+#define SLEEP_TIME 5 //In seconds
+#define WHEN_SLEEP_TIME_SEC 0  //In seconds
+#define WHEN_SLEEP_TIME_MIN 2  //In minutes
+#define WHEN_SLEEP_TIME_HOURS 0  //In hours
+
+//WatchDog Thread
+#define WD_FREQ 1 //Times per second that you want to check threads
 
 
 //Telemetry
-#define DATA_FREQ 1 //Times per second that you want to save data
-#define SEND_FREQ 10 //Times per second that you want to transmit data
+#define DATA_FREQ 10 //Times per second that you want to save data
+#define SEND_FREQ 20 //Times per second that you want to transmit data
 
 //SRadio
 #define SRADIO_SPI hspi2
@@ -198,7 +211,7 @@ void Error_Handler(void);
 
 
 //Sensors
-#define POLL_FREQ 1 //Times per second that you want to poll data
+#define POLL_FREQ 20 //Times per second that you want to poll data
 
 //GPS
 #define GPS_UART huart6 //TODO cannot call it GPS_USART because already defined in gps.c

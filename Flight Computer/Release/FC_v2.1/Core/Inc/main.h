@@ -187,8 +187,8 @@ UART_HandleTypeDef huart8;
 
 //RTOS
 #define SLEEP_TIME 5 //In seconds
-#define WHEN_SLEEP_TIME_SEC 15  //In seconds
-#define WHEN_SLEEP_TIME_MIN 0  //In minutes
+#define WHEN_SLEEP_TIME_SEC 0  //In seconds
+#define WHEN_SLEEP_TIME_MIN 2  //In minutes
 #define WHEN_SLEEP_TIME_HOURS 0  //In hours
 
 //WatchDog Thread

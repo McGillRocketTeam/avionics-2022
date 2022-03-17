@@ -1328,13 +1328,12 @@ void StartMemory0(void *argument)
 	  for(;;)
 	  {
 
-		  /*
+
 		  //Write data to sd and flash
 		  sd_open_file(&filename);
 		  sprintf((char*)writeBuf, "Data: %f, %f, %f, %f\r\n", PRESSURE, MIN, SEC, SUBSEC);
 		  sd_write(&fil, writeBuf);
 		  f_close(&fil);
-		  */
 
 		  osDelay(1000/DATA_FREQ);
 	  }
@@ -1493,7 +1492,7 @@ void StartTelemetry2(void *argument)
 	  XTend_Transmit(xtend_tx_buffer);
 
 	  //SRadio send
-	  TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer));
+	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer)); TODO
 
 
 	  //Iridium send
@@ -1619,7 +1618,7 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	osThreadExit();
+	//osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 

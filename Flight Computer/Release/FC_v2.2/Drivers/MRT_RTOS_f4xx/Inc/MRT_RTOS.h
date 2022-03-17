@@ -38,10 +38,9 @@ extern uint8_t wu_flag;
 
 
 //For RTC
-extern RTC_HandleTypeDef hrtc;
-extern RTC_TimeTypeDef sTime;
-extern RTC_DateTypeDef sDate;
-extern RTC_AlarmTypeDef sAlarm;
+RTC_TimeTypeDef sTime;
+RTC_DateTypeDef sDate;
+RTC_AlarmTypeDef sAlarm;
 
 
 //Helper functions
@@ -51,10 +50,8 @@ void MRT_DefaultRTC(void);
 
 
 //User functions
-void MRT_SetupRTOS(UART_HandleTypeDef uart,uint8_t sleepT);
+void MRT_SetupRTOS(RTC_HandleTypeDef* hrtc, UART_HandleTypeDef uart,uint8_t sleepT);
 void MRT_SetSleepTime(uint8_t sleepT);
 void MRT_StandByMode(uint32_t seconds);
 void MRT_setAlarmA(uint8_t h, uint8_t m, uint8_t s);
 void MRT_setRTC(uint8_t h, uint8_t m, uint8_t s);
-
-void MRT_CustomRTC(int values[]); //Only used if not set in .ioc or default alarm not chosen in MRT_SetupRTOS

@@ -16,10 +16,18 @@
   *
   ******************************************************************************
   */
+
+
+//TODO uncomment watchdog dog and iridium code
+
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "fatfs.h"
+#include "usb_device.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -32,6 +40,7 @@
 #include <sx126x.h>
 #include <MAX31855.h>
 
+#include <math.h>
 //#include <usbd_cdc_if.h>
 
 /* USER CODE END Includes */
@@ -80,7 +89,7 @@ osThreadId_t Memory0Handle;
 const osThreadAttr_t Memory0_attributes = {
   .name = "Memory0",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
+  .priority = (osPriority_t) osPriorityHigh3,
 };
 /* Definitions for Ejection1 */
 osThreadId_t Ejection1Handle;
@@ -94,7 +103,7 @@ osThreadId_t Telemetry2Handle;
 const osThreadAttr_t Telemetry2_attributes = {
   .name = "Telemetry2",
   .stack_size = 1024 * 4,
-  .priority = (osPriority_t) osPriorityHigh2,
+  .priority = (osPriority_t) osPriorityHigh1,
 };
 /* Definitions for Sensors3 */
 osThreadId_t Sensors3Handle;
@@ -114,8 +123,8 @@ const osThreadAttr_t Printing_attributes = {
 osThreadId_t WatchDogHandle;
 const osThreadAttr_t WatchDog_attributes = {
   .name = "WatchDog",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityHigh1,
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* USER CODE BEGIN PV */
 
@@ -141,8 +150,8 @@ float GYROx;
 float GYROy;
 float GYROz;
 float PRESSURE;
-float LAT;
-float LONG;
+float LATITUDE;
+float LONGITUDE;
 float MIN;
 float SEC;
 float SUBSEC;
@@ -159,8 +168,6 @@ volatile uint8_t timer_actuated_vent_valve = 0;
 float altitude_m = 0;
 
 // GPS data
-float latitude;
-float longitude;
 float time;
 static uint8_t gps_fix_lat = 0;
 static uint8_t gps_fix_long = 0; // beep when we get fix
@@ -171,13 +178,14 @@ char gps_data[GPS_DATA_BUF_DIM];
 stmdev_ctx_t lsm_ctx;
 stmdev_ctx_t lps_ctx;
 
-/*
+
 // sd card
 FATFS FatFs; 	//Fatfs handle
 FIL fil; 		//File handle
 FRESULT fres; //Result after operations
-static uint8_t msg_buffer[1000];
-*/
+char filename[13];
+uint8_t writeBuf[1000];
+
 
 
 /* USER CODE END PV */
@@ -260,6 +268,7 @@ int main(void)
   MX_USART6_UART_Init();
   MX_RTC_Init();
   //MX_IWDG_Init(); TODO remove
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
 
@@ -317,10 +326,47 @@ int main(void)
   HAL_UART_Transmit(&DEBUG_UART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
 
   /*
+   * For external FLASH memory
+   *-Put before RTOS setup because you need the external flash in its setup
+   */
+    MRT_SetupRTOS(&hrtc, DEBUG_UART,SLEEP_TIME); //Put here so we can pass the uart value to the setup
+	MRT_externalFlashSetup(&DEBUG_UART);
+
+
+	  /*
+	   * Watch dog
+	   * -Remove the MX_IWDG_Init() that is auto-generated and add it just before the osKernelStart
+	   * -Need to be put after RTOS setup
+	   *
+	   * IF THE WATCH DOG IS NOT REFRESH BEFORE THE X SECONDS TIMEOUT IT WILL RESET THE BOARD
+	   * It doesn't garantie that if a thread stops running it's going to be detected
+	   *
+	   *
+	   * Potential solutions:
+	   * 	-A watch dog thread where the refresh function is called:
+	   * 		This thread will be responsible for making sure that every other thread is running correctly
+	   * 		If this specific thread stops running, restart the whole thing when the timeout occurs.
+	   *
+	   * 	-A global interrupts that acts as a watchdog:
+	   * 		If the interrupts fails, we are doomed
+	   *
+	   *
+	   *Since the WD reset the board at random times, we need to know at which stage of ejection we were and we
+	   *need to keep track of other things. The solution to this is to save the data that we want to use after these
+	   *random resets. Now the problem is how do we start the FC from the beginning if we have a random
+	   *amount of resets?
+	   *Solution : We use the external IN_Button has an external reset that resets the board from
+	   *the beginning using the callback function (defined in MRT_Helpers.c)
+	   */
+	  MX_IWDG_Init();
+
+
+  /*
    * For RTOS
    * -Activate RTC, calendar and internal alarm A (don't forget to enable NVIC EXTI)
    * -Define what you want in the alarms callback functions (check the MRT_RTOS_f4xx .h file)
    * -Need to be before the IWDG setup
+   * -Need to be after the external flash setup
    * -Because of IWDG, deactivate the alarm A when reset to deactivate the IWDG or it will cause an interrupt
    * when being in standByMode (check MRT_helper.c)
    * -(Optional) Use MCU APB1 freeze register to freeze the WD in StandByMode instead of resetting the FC
@@ -328,16 +374,9 @@ int main(void)
    * The rest have been taken care of
    * You can access the flag of both alarm A and B with the variables flagA and flagB
    */
-  MRT_setRTC(0x0,0x0,0x0);
-  MRT_setAlarmA(WHEN_SLEEP_TIME_HOURS,WHEN_SLEEP_TIME_MIN,WHEN_SLEEP_TIME_SEC);
-  MRT_SetupRTOS(DEBUG_UART,SLEEP_TIME);
-
-
-  /*
-   * For external FLASH memory
-   *
-   */
-	MRT_externalFlashSetup(&DEBUG_UART);
+  MRT_setRTC(prev_hours,prev_min,prev_sec);
+  HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
+  MRT_setAlarmA(WHEN_SLEEP_TIME_HOURS, WHEN_SLEEP_TIME_MIN, WHEN_SLEEP_TIME_SEC);
 
 
    //checkForI2CDevices(huart8,hi2c1);
@@ -355,13 +394,15 @@ int main(void)
    * For Iridium:
    * -Set the project as c++
    */
+    HAL_IWDG_Refresh(&hiwdg);
 	HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-   uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
+    uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
 
   /*
    * For LSM6DSR
    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
    */
+  HAL_IWDG_Refresh(&hiwdg);
   lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUG_UART);
 
 
@@ -369,6 +410,7 @@ int main(void)
     * For LPS22HH
     *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
     */
+  HAL_IWDG_Refresh(&hiwdg);
   lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUG_UART);
 
 
@@ -378,7 +420,8 @@ int main(void)
     * -Set its uart to 9600
     *
     */
-   GPS_init(&GPS_UART, &DEBUG_UART);
+  HAL_IWDG_Refresh(&hiwdg);
+  GPS_init(&GPS_UART, &DEBUG_UART);
 
 
    /*
@@ -388,18 +431,26 @@ int main(void)
    HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET); //TODO is it necessary?
 
 
+
    /*
     * For the SRadio
     * -SPI2 on v4.3
     */
-	set_hspi(SRADIO_SPI);
-	// SPI2_SX_CS_GPIO_Port
-	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
-	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
-	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
-	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-	Tx_setup();
+  HAL_IWDG_Refresh(&hiwdg);
+  set_hspi(SRADIO_SPI);
+  // SPI2_SX_CS_GPIO_Port
+  set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
+  set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+  set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+  set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+  //Tx_setup(); TODO
 
+	/*
+	* For the SD card
+	*
+	*/
+    HAL_IWDG_Refresh(&hiwdg);
+    sd_init_dynamic_filename("FC", "", filename);
 
 	/*
 	 * For the thermocouple
@@ -408,39 +459,7 @@ int main(void)
 	 */
 
 
-
-  /*
-   * Watch dog
-   * -Remove the MX_IWDG_Init() that is auto-generated and add it just before the osKernelStart
-   * -Need to be put after RTOS setup
-   *
-   * IF THE WATCH DOG IS NOT REFRESH BEFORE THE X SECONDS TIMEOUT IT WILL RESET THE BOARD
-   * It doesn't garantie that if a thread stops running it's going to be detected
-   *
-   * DONT FORGET ABOUT ALARM A GETTING RESET RANDOMLY BUT SHOULDNT (keep track of the time)
-   *
-   *
-   * Potential solutions:
-   * 	-A watch dog thread where the refresh function is called:
-   * 		This thread will be responsible for making sure that every other thread is running correctly
-   * 		If this specific thread stops running, restart the whole thing when the timeout occurs.
-   *
-   * 	-A global interrupts that acts as a watchdog:
-   * 		If the interrupts fails, we are doomed
-   *
-   *
-   *Since the WD reset the board at random times, we need to know at which stage of ejection we were and we
-   *need to keep track of other things. The solution to this is to save the data that we want to use after these
-   *random resets. Now the problem is how do we start the FC from the beginning if we have a random
-   *amount of resets?
-   *Solution : We use the external IN_Button has an external reset that resets the board from
-   *the beginning using the callback function (defined in MRT_Helpers.c)
-   */
-  MX_IWDG_Init();
-
-
-
-//TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED
+//TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED (or find other way to completely reset the board)
 
   /* USER CODE END 2 */
 
@@ -524,7 +543,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 72;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -1125,7 +1149,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, EN_12V_Buck_Pin|OUT_Prop_ActuatedVent_Gate_Pin|SPI4_CS_Thermocouple_Pin|Iridium_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, SPI5_SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOF, SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, OUT_LED1_Pin|OUT_LED2_Pin|OUT_LED3_Pin|SX_AMPLIFIER_Pin, GPIO_PIN_RESET);
@@ -1134,9 +1158,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, OUT_PyroValve_Arming_Pin|SX_RST_Pin|SX_BUSY_Pin|SX_DIO_Pin
-                          |SX_RF_SW_Pin|OUT_VR_PWR_Pin|OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin
-                          |OUT_EJ_Arming_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, OUT_PyroValve_Arming_Pin|SX_RST_Pin|SX_RF_SW_Pin|OUT_VR_PWR_Pin
+                          |OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin|OUT_EJ_Arming_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin, GPIO_PIN_RESET);
@@ -1153,8 +1176,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SPI5_SD_CS_Pin OUT_PyroValve_Gate_2_Pin OUT_PyroValve_Gate_1_Pin */
-  GPIO_InitStruct.Pin = SPI5_SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin;
+  /*Configure GPIO pins : SD_CS_Pin OUT_PyroValve_Gate_2_Pin OUT_PyroValve_Gate_1_Pin */
+  GPIO_InitStruct.Pin = SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1198,18 +1221,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IN_PyroValve_Cont_2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : IN_PyroValve_Cont_1_Pin IN_EJ_Main_Cont_Pin IN_EJ_Drogue_Cont_Pin */
-  GPIO_InitStruct.Pin = IN_PyroValve_Cont_1_Pin|IN_EJ_Main_Cont_Pin|IN_EJ_Drogue_Cont_Pin;
+  /*Configure GPIO pins : IN_PyroValve_Cont_1_Pin SX_BUSY_Pin SX_DIO_Pin IN_EJ_Main_Cont_Pin
+                           IN_EJ_Drogue_Cont_Pin */
+  GPIO_InitStruct.Pin = IN_PyroValve_Cont_1_Pin|SX_BUSY_Pin|SX_DIO_Pin|IN_EJ_Main_Cont_Pin
+                          |IN_EJ_Drogue_Cont_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : OUT_PyroValve_Arming_Pin SX_RST_Pin SX_BUSY_Pin SX_DIO_Pin
-                           SX_RF_SW_Pin OUT_VR_PWR_Pin OUT_EJ_Main_Gate_Pin OUT_EJ_Drogue_Gate_Pin
-                           OUT_EJ_Arming_Pin */
-  GPIO_InitStruct.Pin = OUT_PyroValve_Arming_Pin|SX_RST_Pin|SX_BUSY_Pin|SX_DIO_Pin
-                          |SX_RF_SW_Pin|OUT_VR_PWR_Pin|OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin
-                          |OUT_EJ_Arming_Pin;
+  /*Configure GPIO pins : OUT_PyroValve_Arming_Pin SX_RST_Pin SX_RF_SW_Pin OUT_VR_PWR_Pin
+                           OUT_EJ_Main_Gate_Pin OUT_EJ_Drogue_Gate_Pin OUT_EJ_Arming_Pin */
+  GPIO_InitStruct.Pin = OUT_PyroValve_Arming_Pin|SX_RST_Pin|SX_RF_SW_Pin|OUT_VR_PWR_Pin
+                          |OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin|OUT_EJ_Arming_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1280,6 +1303,8 @@ static void XTend_Transmit(char* Msg){
 /* USER CODE END Header_StartMemory0 */
 void StartMemory0(void *argument)
 {
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
 
 	//osThreadExit();
@@ -1292,24 +1317,14 @@ void StartMemory0(void *argument)
 	  for(;;)
 	  {
 
+
 		  //Write data to sd and flash
+		  sd_open_file(&filename);
+		  sprintf((char*)writeBuf, "Data: %f, %f, %f, %f\r\n", PRESSURE, MIN, SEC, SUBSEC);
+		  sd_write(&fil, writeBuf);
+		  f_close(&fil);
 
-
-		  //Check if it's sleep time
-		//if (flagA==1 && wu_flag !=1){
-		  if (flagA==1){
-			//Update iwdg_flag
-			iwdg_flag = 1;
-			flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
-			W25qxx_EraseSector(1);
-			W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
-
-			//Reset to deactivate IWDG
-			NVIC_SystemReset();
-		}
-
-		  //osDelay(1000/DATA_FREQ);
-		osDelay(3000);
+		  osDelay(1000/DATA_FREQ);
 	  }
 
 	  //In case it leaves the infinite loop
@@ -1332,6 +1347,7 @@ void StartEjection1(void *argument)
 
 	osThreadExit();
 
+	//TODO add flag for when we are done with the thread
 	if (altitude_m < GROUND_LEVEL)  osThreadExit();
 	if (wu_flag) osThreadExit(); //WHEN WAKING UP
 
@@ -1341,22 +1357,11 @@ void StartEjection1(void *argument)
 
 	char buffer[TX_BUF_DIM];
 
-	char* Start = "Starting XTend\r\n";
-	XTend_Transmit("Starting XTend\r\n"); // Transmit to XTend
-	HAL_UART_Transmit(&DEBUG_UART,Start, 16, HAL_MAX_DELAY); // Transmit to Serial Monitor
-	// Wait for Launch
-	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, 8, HAL_MAX_DELAY);
-	// Code Continues after receiving 8 characters (launch command)
-
 	  /* Infinite loop */
 	  for(;;)
 	  {
 
-		  //Poll altitude (poll pressure)
-		  //pressure_hPa =
-
-
-		  if (MIN_APOGEE <= pressure_hPa && MAX_APOGEE > pressure_hPa){
+		  if (MIN_APOGEE <= altitude_m && MAX_APOGEE < altitude_m){
 
 			  HAL_UART_Transmit(&DEBUG_UART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
 
@@ -1372,15 +1377,8 @@ void StartEjection1(void *argument)
 
 			  for(;;){
 
-
-				  //Poll altitude (pressure and acceleration?)
-				  //pressure_hPa =
-				  //altitude_m =
-
 				  //We reached main deployment altitude
 				  if (altitude_m>DEPLOY_ALT_MIN && altitude_m<DEPLOY_ALT_MAX){
-
-					  //vPortFree(buffer);
 
 					  HAL_UART_Transmit(&DEBUG_UART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
 
@@ -1395,10 +1393,6 @@ void StartEjection1(void *argument)
 					  }
 
 					  for(;;){
-
-
-						  //Poll altitude (pressure and acceleration)
-						  //altitude_m =
 
 						  if (altitude_m < GROUND_LEVEL)  osThreadExit();
 
@@ -1431,14 +1425,12 @@ void StartTelemetry2(void *argument)
 {
   /* USER CODE BEGIN StartTelemetry2 */
 
-	osThreadExit();
-
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
-	osDelay(1000);
+	osThreadExit();
 
-	//Make the thread joinable?
+	osDelay(1000);
 
   /* Infinite loop */
   for(;;)
@@ -1461,12 +1453,16 @@ void StartTelemetry2(void *argument)
   	  GYROy = angular_rate_mdps[1];
   	  GYROz = angular_rate_mdps[2];
   	  PRESSURE = pressure_hPa;
-  	  LAT = latitude;
-  	  LONG = longitude;
-  	  MIN = 0.0;
-  	  SEC = 0.0;
-  	  SUBSEC = 0.0;
-  	  STATE = THERMO_TEMP;
+
+	  //From the GPS time value
+	  MIN = ((uint8_t) time % 3600) / 60.0;
+	  sprintf(&MIN, "%.0f",MIN);
+	  SEC = (uint8_t) time % 60;
+	  sprintf(&SEC,"%.0f",SEC);
+	  SUBSEC = time / 3600.0;
+	  sprintf(&SUBSEC,"%.0f",SUBSEC);
+
+  	  STATE = THERMO_TEMP; //TODO not the right value
   	  CONT = MRT_getContinuity();
 
 
@@ -1476,39 +1472,23 @@ void StartTelemetry2(void *argument)
 	  MIN = t.tm_min;
 	  SEC = t.tm_sec;
 	  */
-	  //From the GPS time value
-
-	  MIN = ((uint8_t) time % 3600) / 60.0;
-	  sprintf(&MIN, "%.0f",MIN);
-	  SEC = (uint8_t) time % 60;
-	  sprintf(&SEC,"%.0f",SEC);
-	  SUBSEC = time / 3600.0;
-	  sprintf(&SUBSEC,"%.0f",SUBSEC);
-
-
-
-	  //TODO maybe add variable for GPS time and both temperature values?
 
   	  memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
   	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.7f,%.7f,%.1f,%.1f,%.1f,%.2f,%i,E",
-  			  	  	  	  	  	  ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
+  			  	  	  	  	  	  ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LATITUDE,LONGITUDE,MIN,SEC,SUBSEC,STATE,CONT);
 
 	  //Xtend send
 	  XTend_Transmit(xtend_tx_buffer);
 
 	  //SRadio send
-	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer));
+	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer)); TODO
 
 
 	  //Iridium send
-	  HAL_IWDG_Refresh(&hiwdg); //Iridium can take some time so reset the IWDG
-	  MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
+	  //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
+	  //MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
 	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 
-
-	  if (prop){
-		  //Send propulsion data
-	  }
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
@@ -1534,6 +1514,8 @@ void StartSensors3(void *argument)
 {
   /* USER CODE BEGIN StartSensors3 */
 
+	uint8_t counter = 0;
+
 	//osThreadExit();
 
 	//Add thread id to the list
@@ -1544,32 +1526,30 @@ void StartSensors3(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, SET);
 
+	  if (counter == 10){
+		  counter=0;
 
-	  //GPS
-	  GPS_Poll(&latitude, &longitude, &time);
+		  //GPS
+		  GPS_Poll(&LATITUDE, &LONGITUDE, &time);
 
-  	  //LSM6DSR
-  	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
-  	  MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
-	  MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
+	  	  //LSM6DSR
+	  	  MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
+	  	  MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
+		  MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
 
-	  //LPS22HH
-  	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
-	  MRT_LPS22HH_getTemperature(lps_ctx,&lps_temperature_degC);
+		  //LPS22HH
+	  	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
+		  MRT_LPS22HH_getTemperature(lps_ctx,&lps_temperature_degC);
+		  altitude_m = MRT_getAltitude(pressure_hPa); //Update altitude
 
-	  //TODO Pressure tank (just use an analog sensor if you don't have it)
+		  //TODO Pressure tank (just use an analog sensor if you don't have it)
 
-
-	  //Thermocouple
-	  Max31855_Read_Temp();
-
-
-	  if (prop){
-		  //Poll propulsion data
+		  //Thermocouple
+		  Max31855_Read_Temp();
 	  }
+	  counter++;
 
-
-	  HAL_IWDG_Refresh(&hiwdg); //TODO REMOVE AND PUT INSIDE WATCH DOG THREAD
+	  //TODO Poll propulsion sensor
 
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
@@ -1613,7 +1593,7 @@ void StartPrinting(void *argument)
   	   * TODO HOW DO WE RESET THE TIME
   	   */
 	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
-	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",latitude, longitude, time);
+	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",LATITUDE, LONGITUDE, time);
 	  HAL_UART_Transmit(&DEBUG_UART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
 
   	  //LSM6DSR
@@ -1650,11 +1630,11 @@ void StartPrinting(void *argument)
 
 
 	  //Iridium
-	  MRT_Static_Iridium_getTime();
+	  //MRT_Static_Iridium_getTime(); //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
-	  osDelay(1000/DATA_FREQ);
+	  osDelay(1000/SEND_FREQ);
 }
 
   //In case it leaves the infinite loop
@@ -1674,22 +1654,49 @@ void StartWatchDog(void *argument)
 {
   /* USER CODE BEGIN StartWatchDog */
 
-	char buffer[50];
+	char buffer[TX_BUF_DIM];
   /* Infinite loop */
   for(;;)
   {
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-	 //HAL_IWDG_Refresh(&hiwdg);
+	 HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
+	 HAL_IWDG_Refresh(&hiwdg);
 
 	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
+	 prev_hours = sTime.Hours;
+	 prev_min = sTime.Minutes;
+	 prev_sec = sTime.Seconds;
+
 	  memset(buffer, 0, TX_BUF_DIM);
-	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n", sTime.Hours,sTime.Minutes,sTime.Seconds);
+	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n %f\r\n", prev_hours,prev_min,prev_sec, altitude_m);
 	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
-	  HAL_UART_Transmit(&DEBUG_UART, "YO\r\n", 4, HAL_MAX_DELAY);
+
+
+	  /*
+	   * TODO Watch OUT: when writing to the external flash, don't have an interrupt that
+	   * does it at the same time or it's a hardfault crash
+	   *
+	   * Moved the other code where we write to external flash to this thread (when going to sleep)
+	   */
+	  //Save the time
+	  MRT_saveRTCTime();
+
+	  //Check if it's sleep time
+	  if (flagA==1){
+		//Update iwdg_flag
+		iwdg_flag = 1;
+		flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
+		W25qxx_EraseSector(1);
+		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+
+		//Reset to deactivate IWDG
+		NVIC_SystemReset();
+	  }
+
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
-    osDelay(200);
+
+	  osDelay(1000/WD_FREQ);
   }
   /* USER CODE END StartWatchDog */
 }

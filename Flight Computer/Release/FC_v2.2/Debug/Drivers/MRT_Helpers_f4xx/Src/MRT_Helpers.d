@@ -37,6 +37,9 @@ Drivers/MRT_Helpers_f4xx/Src/MRT_Helpers.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
  ../Drivers/MRT_RTOS_f4xx/Inc/MRT_RTOS.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
@@ -50,8 +53,7 @@ Drivers/MRT_Helpers_f4xx/Src/MRT_Helpers.o: \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h \
- ../Drivers/MRT_Helpers_f4xx/Inc/w25qxx.h ../Core/Inc/main.h \
- ../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h
+ ../Drivers/MRT_Helpers_f4xx/Inc/w25qxx.h ../Core/Inc/main.h
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -127,6 +129,12 @@ Drivers/MRT_Helpers_f4xx/Src/MRT_Helpers.o: \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h:
+
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
+
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
+
 ../Drivers/MRT_RTOS_f4xx/Inc/MRT_RTOS.h:
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
@@ -156,5 +164,3 @@ Drivers/MRT_Helpers_f4xx/Src/MRT_Helpers.o: \
 ../Drivers/MRT_Helpers_f4xx/Inc/w25qxx.h:
 
 ../Core/Inc/main.h:
-
-../Drivers/MRT_Iridium_f4xx/Inc/IridiumSBD_Static_API.h:
