@@ -1544,12 +1544,17 @@ void StartSensors3(void *argument)
 
 		  //TODO Pressure tank (just use an analog sensor if you don't have it)
 
-		  //Thermocouple
-		  Max31855_Read_Temp();
 	  }
 	  counter++;
 
-	  //TODO Poll propulsion sensor
+
+	  //Poll propulsion sensors
+
+	  //Thermocouple
+	  Max31855_Read_Temp();
+
+	  //Pressure tank
+	  float temporary = MRT_prop_poll_pressure_transducer(&hadc1); //TODO have a global variable
 
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);

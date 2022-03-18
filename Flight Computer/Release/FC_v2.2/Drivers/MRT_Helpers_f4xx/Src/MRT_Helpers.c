@@ -321,6 +321,23 @@ uint8_t MRT_getContinuity(void){
 }
 
 
+/*
+ * Get the pressure transducer voltage (poll ADC)
+ */
+float MRT_prop_poll_pressure_transducer(ADC_HandleTypeDef* hadc) {
+	// reading adc
+	HAL_ADC_Start(hadc);
+	HAL_ADC_PollForConversion(hadc, 1000);
+	uint32_t pressure_sensor_raw = HAL_ADC_GetValue(hadc);
+	HAL_ADC_Stop(hadc);
+
+	float voltage = (float) (pressure_sensor_raw / 4095.0) * 3.3; // assuming 12 bits
+
+	// convert using transfer function
+	// TODO
+
+	return voltage;
+}
 
 
 /*

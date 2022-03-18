@@ -57,7 +57,12 @@ void MRT_freezeWatchDog(void);
 void MRT_getFlags(void);
 void MRT_resetInfo(UART_HandleTypeDef* uart);
 void MRT_saveRTCTime(void);
+
+//Propulsion
 uint8_t MRT_getContinuity(void);
+float MRT_prop_poll_pressure_transducer(ADC_HandleTypeDef* hadc);
+
+//Ejection
 float MRT_getAltitude(float pressure);
 
 //void tone(uint32_t duration, uint32_t repeats, TIM_HandleTypeDef htim);
