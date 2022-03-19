@@ -111,9 +111,7 @@ class MEKF:
         self.L = np.block([[np.eye(3)*self.T, self.zeros3],
                           [self.zeros3, -self.T*self.Cab_k_1],
                           [self.zeros3, self.zeros3]])
-        
         self.P_k = self.A @ self.P_k_1 @ self.A.T + self.L @ self.Q @ self.L.T
-        print(self.ra_k)
 
     def kf_correct(self, GPS_input):
         self.GPS_input = GPS_input 

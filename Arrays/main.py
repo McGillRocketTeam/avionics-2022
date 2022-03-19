@@ -61,7 +61,7 @@ def runMEKF():
         GYRO_meas_arr.append(GYRO_meas)
         acc_real_arr.append(ACC_input)
         ACC_meas_arr.append(ACC_meas)
-        gps_real_arr.append(mekf.ra_k)
+        gps_real_arr.append(mekf.ra_k[0][0])
         GPS_meas_arr.append(GPS_meas)
     #print("gyro_real " + str(gyro_real_arr[4]))
     #print("gyro_meas " + str(GYRO_meas_arr[4]))
@@ -95,24 +95,30 @@ def runMEKF():
     #B) feed data into MEKF
     position_pred = [] #predicted position
     position_corr = [] #corrected position
-    xt = []
+    xt, cov1, cov2 = [], [], []
     i = 0
-    while (i < 100):
+    axis = 2
+    N = 100 #nb samples
+    while (i < N):
         mekf.kf_predict(GYRO_meas_arr[i], ACC_meas_arr[i])
-        position_pred.append(mekf.ra_k[0][0])
+        position_pred.append(mekf.ra_k[0][axis])
+        cov1.append(mekf.ra_k[0][0] + mekf.P_k[0][0])
+        cov2.append(mekf.ra_k[0][0] - mekf.P_k[0][0])
+        #print(mekf.P_k[0][axis])
         #mekf.kf_correct(GPS_meas_arr[i])
         #position_corr.append(mekf.ra_k[0][0])
         mekf.kf_update()
         xt.append(i)
         i += 1
-    
-    #C) plot the results along a single axis
-    #print("position prediction " +  str(position_pred[0:3] ))
-    #print("position corrected " + str(position_corr[0:9]))
-    #print(xt[0:9])
-    #print(position_pred[0:9][0])
-    pH.PlotKF(xt[0:1], position_pred[0:1], "predicted position x-axis", "blue")
-    pH.PlotKF(xt[0:1], gps_real_arr[0:1], "real position", "red")
-    
+
+    pH.PlotKF(xt[0:N], position_pred[0:N], "predicted position x-axis", "blue")
+    pH.PlotKF(xt[0:N], gps_real_arr[0:N], "real position", "red")
+    plt.fill_between(xt[0:N], cov1[0:N], cov2[0:N], alpha=.5, linewidth=0)
 runMEKF()
+
+
+
+
+
+
 
