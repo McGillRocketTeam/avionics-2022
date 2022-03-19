@@ -19,6 +19,7 @@ However, we only care about:
 import numpy as np
 from numpy.linalg import inv
 from scipy.spatial.transform import Rotation as R
+from scipy.linalg import expm, sinm, cosm
 
 class MEKF:
 
@@ -41,13 +42,14 @@ class MEKF:
     
     def __init__(self, dt, Q_init, R_init):
         #predict 
-        self.Cab_k_1 = np.eye(3, dtype='f') # rotation matrix (DCM at k-1)
-        self.Va_k_1 = np.zeros((3, 1), dtype='f') # initial speed
-        self.ra_k_1 = np.zeros((3, 1), dtype='f') # initial position
-        self.ga = np.array([0, 0, -9.81], dtype='f') # gravitational constant
+        euler_Cab = np.array([0, 0, 0])
+        self.Cab_k_1 = R.from_euler('zyx', euler_Cab, degrees=False).as_matrix() # rotation matrix (DCM at k-1)
+        self.Va_k_1 = np.zeros((3, 1), dtype='f').T # initial speed
+        self.ra_k_1 = np.zeros((3, 1), dtype='f').T # initial position
+        self.ga = np.array([0, 0, -9.81], dtype='f').T # gravitational constant
 
             #A and B
-        self.A = np.eye(9, dtype='f') #state transition model (process model)
+        self.A = np.zeros((9, 9), dtype='f') #state transition model (process model)
         self.T = dt #state transition model (process model) (B = T)
 
             #noise 
@@ -88,41 +90,50 @@ class MEKF:
         
     def kf_predict(self, GYRO_input, ACC_input): 
         #convert euler gyro into rotation matrix gyro
-        r = R.from_euler('zyx', GYRO_input, degrees=True)
-        self.GYRO_input = r.as_matrix()[0]
+        c = GYRO_input.T
+        gyro_cross = np.array([[0, -c[2], c[1]],
+                             [c[2], 0, -c[0]],
+                             [-c[1], c[0], 0]])
+        c = ACC_input.T
+        acc_cross = np.array([[0, -c[2], c[1]],
+                             [c[2], 0, -c[0]],
+                             [-c[1], c[0], 0]])
+        self.ACC_input = c
         
-        c = R.from_euler('zyx', ACC_input, degrees=True)
-        acc_cross = c.as_matrix()[0]
-        self.ACC_input = ACC_input
+        self.Cab_k = self.Cab_k_1 @ expm(self.T*gyro_cross)
         
-        self.Cab_k = self.Cab_k_1 @ np.exp(self.T*self.GYRO_input)
         self.Va_k = self.Va_k_1 + self.T * self.Cab_k_1 @ self.ACC_input + self.T * self.ga
-        #print(self.Va_k)
         self.ra_k = self.ra_k_1 + self.Va_k_1 * self.T
-        #print("gyro_cross" + str(self.GYRO_input))
-        #print("acc_cross" + str(acc_cross))
         "failure point, array probably [[1, 2, 3], [4, 5, 6]]"
-        self.A = np.block( [[np.exp(self.T * self.GYRO_input),       self.zeros3 , self.zeros3],
+        self.A = np.block( [[(expm(self.T * gyro_cross)).T,       self.zeros3 , self.zeros3],
                             [self.T * self.Cab_k_1 @ acc_cross, self.ones3,   self.zeros3], 
                             [self.zeros3,              np.eye(3) *   self.T,       self.ones3]])
-        self.P_k = self.A @ self.P_k_1 @ self.A.T #+ self.L @ self.Q @ self.L.T
+        self.L = np.block([[np.eye(3)*self.T, self.zeros3],
+                          [self.zeros3, -self.T*self.Cab_k_1],
+                          [self.zeros3, self.zeros3]])
         
-        
+        self.P_k = self.A @ self.P_k_1 @ self.A.T + self.L @ self.Q @ self.L.T
+        print(self.ra_k)
 
     def kf_correct(self, GPS_input):
         self.GPS_input = GPS_input 
+        
+        self.S2 = self.M_k @ self.R @ self.M_k.T #utility
+        self.K_k = self.P_k @ self.C_k.T @ inv(self.C_k @ self.P_k @ self.C_k.T + self.S2)
 
         self.S1 = np.eye(9) - self.K_k @ self.C_k #utility
-        self.S2 = self.M_k @ self.R @ self.M_k #utility 
         self.P_k = self.S1 @ self.P_k @ self.S1.T + self.K_k @ self.S2 @ self.K_k.T
-        self.K_k = self.P_k @ self.C_k.T @ inv(self.C_k @ self.P_k @ self.C_k.T + self.S2)
+        
+        
         self.correction_term = self.K_k @ (self.GPS_input - self.ra_k)
 
-        r =  R.from_euler('zyx', self.correction_term[0], degrees=True)
-        correct_cross = r.as_matrix()
-        self.Cab_k = self.Cab_k @ np.exp(-correct_cross) #fa
-        self.Va_k = self.Va_k +  self.correction_term[1]
-        self.ra_k = self.ra_k + self.correction_term[2]
+        r = self.correction_term[0:2]
+        correct_cross = np.array([[0, -r[2], r[1]],
+                             [r[2], 0, -r[0]],
+                             [-r[1], r[0], 0]])
+        self.Cab_k = self.Cab_k @ expm(-correct_cross) #fa
+        self.Va_k = self.Va_k +  self.correction_term[3:5]
+        self.ra_k = self.ra_k + self.correction_term[6:8]
     
     #shuffles all k to k-1. ex: x[k-1] = x[k]
     def kf_update(self):
