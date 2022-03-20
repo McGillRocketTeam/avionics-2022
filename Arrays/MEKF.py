@@ -114,24 +114,21 @@ class MEKF:
         self.P_k = self.A @ self.P_k_1 @ self.A.T + self.L @ self.Q @ self.L.T
 
     def kf_correct(self, GPS_input):
-        self.GPS_input = GPS_input 
-        
+        self.GPS_input = GPS_input.T 
         self.S2 = self.M_k @ self.R @ self.M_k.T #utility
         self.K_k = self.P_k @ self.C_k.T @ inv(self.C_k @ self.P_k @ self.C_k.T + self.S2)
 
         self.S1 = np.eye(9) - self.K_k @ self.C_k #utility
         self.P_k = self.S1 @ self.P_k @ self.S1.T + self.K_k @ self.S2 @ self.K_k.T
-        
-        
-        self.correction_term = self.K_k @ (self.GPS_input - self.ra_k)
+        self.correction_term = self.K_k @ (self.GPS_input - self.ra_k.T)
 
-        r = self.correction_term[0:2]
+        r = np.block(self.correction_term[6:9])
         correct_cross = np.array([[0, -r[2], r[1]],
                              [r[2], 0, -r[0]],
-                             [-r[1], r[0], 0]])
+                             [-r[1], r[0], 0]], dtype='f')
         self.Cab_k = self.Cab_k @ expm(-correct_cross) #fa
-        self.Va_k = self.Va_k +  self.correction_term[3:5]
-        self.ra_k = self.ra_k + self.correction_term[6:8]
+        self.Va_k = self.Va_k +  self.correction_term[3:6].T
+        self.ra_k = self.ra_k + self.correction_term[0:3].T
     
     #shuffles all k to k-1. ex: x[k-1] = x[k]
     def kf_update(self):

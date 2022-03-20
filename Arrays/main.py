@@ -98,7 +98,7 @@ def runMEKF():
         orien_cov2.append(dcmToEuler(mekf.Cab_k)[0] - mekf.P_k[6][1])
         
         #correct
-        #mekf.kf_correct(GPS_meas_arr[i])
+        mekf.kf_correct(GPS_meas_arr[i])
         #position_corr.append(mekf.ra_k[0][0])
         
         #update
