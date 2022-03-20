@@ -31,7 +31,8 @@ def runMEKF():
     i = 0
     gyro_real_arr, GYRO_meas_arr = [], []
     acc_real_arr, ACC_meas_arr = [], []
-    gps_real_arr, GPS_meas_arr = [], []
+    gps_real_arr1, gps_real_arr2, gps_real_arr3 = [], [], []
+    GPS_meas_arr = []
     xt = []
     while (i < 100):
         #1. generate random gyro and acc data 
@@ -56,64 +57,54 @@ def runMEKF():
         xt.append(i)
         i += 1
         
-         #5. persist IMU and GPS data (real and measured)
+        #5. persist IMU and GPS data (real and measured)
+        #sensors
         gyro_real_arr.append(GYRO_input)
         GYRO_meas_arr.append(GYRO_meas)
         acc_real_arr.append(ACC_input)
         ACC_meas_arr.append(ACC_meas)
-        gps_real_arr.append(mekf.ra_k[0][0])
         GPS_meas_arr.append(GPS_meas)
-    #print("gyro_real " + str(gyro_real_arr[4]))
-    #print("gyro_meas " + str(GYRO_meas_arr[4]))
-    #print("gps_real" + str(gps_real_arr[4]))
         
-    """
-        #5. persist IMU and GPS data (real and measured)
-        gyro_real_arr.append(GYRO_input[0])
-        GYRO_meas_arr.append(GYRO_meas[0])
-        acc_real_arr.append(ACC_input[0])
-        ACC_meas_arr.append(ACC_meas[0])
-        gps_real_arr.append(mekf.ra_k[0])
-        GPS_meas_arr.append(GPS_meas)
-    #print("gyro_real " + str(gyro_real_arr[4]))
-    #print("gyro_meas " + str(GYRO_meas_arr[4]))
-    #print("gps_real" + str(gps_real_arr[4]))
-    pH.PlotKF(xt[0:90], ACC_meas_arr[0:90], "ACC input" , "blue")
-    plt.show()
-    pH.PlotKF(xt[0:90], GYRO_meas_arr[0:90], "GYRO input", "red")
-    """
-    """
-    #file persistence
-    csvHandler.store(gyro_real_arr, 'gyro_real')
-    csvHandler.store(GYRO_meas_arr, 'gyro_meas')
-    csvHandler.store(acc_real_arr, 'acc_real')
-    csvHandler.store(ACC_meas_arr, 'acc_meas')
-    csvHandler.store(gps_real_arr, 'gps_real')
-    csvHandler.store(GPS_meas_arr, 'gps_meas')
-    print("done creating fake data")
-    """
+        #real position
+        gps_real_arr1.append(mekf.ra_k[0][0])
+        gps_real_arr2.append(mekf.ra_k[0][1])
+        gps_real_arr3.append(mekf.ra_k[0][2])
+         
+
     #B) feed data into MEKF
-    position_pred = [] #predicted position
+    position_pred1, position_pred2, position_pred3 = [], [], [] #predicted position
     position_corr = [] #corrected position
     xt, cov1, cov2 = [], [], []
     i = 0
-    axis = 2
     N = 100 #nb samples
     while (i < N):
+        #predict
         mekf.kf_predict(GYRO_meas_arr[i], ACC_meas_arr[i])
-        position_pred.append(mekf.ra_k[0][axis])
+        position_pred1.append(mekf.ra_k[0][0])
+        position_pred2.append(mekf.ra_k[0][1])
+        position_pred3.append(mekf.ra_k[0][2])
+        
         cov1.append(mekf.ra_k[0][0] + mekf.P_k[0][0])
         cov2.append(mekf.ra_k[0][0] - mekf.P_k[0][0])
-        #print(mekf.P_k[0][axis])
+        
+        #correct
         #mekf.kf_correct(GPS_meas_arr[i])
         #position_corr.append(mekf.ra_k[0][0])
+        
+        #update
         mekf.kf_update()
         xt.append(i)
         i += 1
 
-    pH.PlotKF(xt[0:N], position_pred[0:N], "predicted position x-axis", "blue")
-    pH.PlotKF(xt[0:N], gps_real_arr[0:N], "real position", "red")
-    plt.fill_between(xt[0:N], cov1[0:N], cov2[0:N], alpha=.5, linewidth=0)
+    "note, I'm using the same cov on all axices. Will be fixed eventually."
+    #position 
+    pH.plotMEKF1axis(xt, position_pred1, gps_real_arr1, cov1, cov2, N)
+    pH.plotMEKF1axis(xt, position_pred2, gps_real_arr2, cov1, cov2, N)
+    pH.plotMEKF1axis(xt, position_pred3, gps_real_arr3, cov1, cov2, N)
+    
+    #orientation
+    
+    
 runMEKF()
 
 
