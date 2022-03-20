@@ -34,10 +34,11 @@ def runMEKF():
     gps_real_arr1, gps_real_arr2, gps_real_arr3 = [], [], []
     GPS_meas_arr = []
     xt = []
-    while (i < 100):
+    N = 1000 #nb samples
+    while (i < N):
         #1. generate random gyro and acc data 
         random_gyro = 10 * np.sin(2*100*i*np.pi) #+ round(random.uniform(-1, 1), 4)
-        random_acc = 10.0 * np.sin(2*50*i*np.pi) #+ round(random.uniform(-1, 1), 4)
+        random_acc = 0 # 10.0 * np.sin(2*50*i*np.pi) #+ round(random.uniform(-1, 1), 4)
         """
         GYRO_input = np.array( [random_gyro, 0, 0], dtype='f')
         """
@@ -72,11 +73,11 @@ def runMEKF():
          
 
     #B) feed data into MEKF
+    mekf = MEKF.MEKF(0.01, 1, 1)
     position_pred1, position_pred2, position_pred3 = [], [], [] #predicted position
     position_corr = [] #corrected position
     xt, cov1, cov2 = [], [], []
     i = 0
-    N = 100 #nb samples
     while (i < N):
         #predict
         mekf.kf_predict(GYRO_meas_arr[i], ACC_meas_arr[i])
