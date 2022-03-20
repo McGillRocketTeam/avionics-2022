@@ -20,6 +20,13 @@ def plotMEKF1axis(xt, state_pred, state_real, cov1, cov2, N):
     plt.fill_between(xt[0:N], cov1[0:N], cov2[0:N], alpha=.5, linewidth=0)
     plt.show()
     
+def plotMEKF1angle(xt, state_pred, state_real, cov1, cov2, N):
+     
+    plotKF(xt[0:N], state_pred[0:N], "predicted angle (rad)", "blue")
+    plotKF(xt[0:N], state_real[0:N], "real angle (rad)", "red")
+    plt.fill_between(xt[0:N], cov1[0:N], cov2[0:N], alpha=.5, linewidth=0)
+    plt.show()  
+    
     #takes 1 3x1 state and covariance as input. Plots evolution over time.
 def plotMEKFallaxices(xt, state_pred, state_real, P_k, N):
     

@@ -32,6 +32,7 @@ def runMEKF():
     gyro_real_arr, GYRO_meas_arr = [], []
     acc_real_arr, ACC_meas_arr = [], []
     gps_real_arr1, gps_real_arr2, gps_real_arr3 = [], [], []
+    orien_real1, orien_real2, orien_real3 = [], [], []
     GPS_meas_arr = []
     xt = []
     N = 1000 #nb samples
@@ -71,22 +72,40 @@ def runMEKF():
         gps_real_arr2.append(mekf.ra_k[0][1])
         gps_real_arr3.append(mekf.ra_k[0][2])
          
+        #real orientation
+        orien_real1.append(dcmToEuler(mekf.Cab_k)[0])
+        orien_real2.append(dcmToEuler(mekf.Cab_k)[1])
+        orien_real3.append(dcmToEuler(mekf.Cab_k)[2])        
 
     #B) feed data into MEKF
     mekf = MEKF.MEKF(0.01, 1, 1)
     position_pred1, position_pred2, position_pred3 = [], [], [] #predicted position
+    orien_pred1, orien_pred2, orien_pred3 = [], [], []
     position_corr = [] #corrected position
-    xt, cov1, cov2 = [], [], []
+    xt, pos_cov1, pos_cov2 = [], [], []
+    orien_cov1, orien_cov2 = [], []
     i = 0
     while (i < N):
         #predict
         mekf.kf_predict(GYRO_meas_arr[i], ACC_meas_arr[i])
+        
+        #position
         position_pred1.append(mekf.ra_k[0][0])
         position_pred2.append(mekf.ra_k[0][1])
         position_pred3.append(mekf.ra_k[0][2])
         
-        cov1.append(mekf.ra_k[0][0] + mekf.P_k[0][0])
-        cov2.append(mekf.ra_k[0][0] - mekf.P_k[0][0])
+        #orientation
+        orien_pred1.append(dcmToEuler(mekf.Cab_k)[0])
+        orien_pred2.append(dcmToEuler(mekf.Cab_k)[1])
+        orien_pred3.append(dcmToEuler(mekf.Cab_k)[2])  
+        
+        #cov position
+        pos_cov1.append(mekf.ra_k[0][0] + mekf.P_k[0][0])
+        pos_cov2.append(mekf.ra_k[0][0] - mekf.P_k[0][0])
+        
+        #cov orientation
+        orien_cov1.append(dcmToEuler(mekf.Cab_k)[0] + mekf.P_k[6][1])
+        orien_cov2.append(dcmToEuler(mekf.Cab_k)[0] - mekf.P_k[6][1])
         
         #correct
         #mekf.kf_correct(GPS_meas_arr[i])
@@ -99,16 +118,20 @@ def runMEKF():
 
     "note, I'm using the same cov on all axices. Will be fixed eventually."
     #position 
-    pH.plotMEKF1axis(xt, position_pred1, gps_real_arr1, cov1, cov2, N)
-    pH.plotMEKF1axis(xt, position_pred2, gps_real_arr2, cov1, cov2, N)
-    pH.plotMEKF1axis(xt, position_pred3, gps_real_arr3, cov1, cov2, N)
+    pH.plotMEKF1axis(xt, position_pred1, gps_real_arr1, pos_cov1, pos_cov2, N)
+    pH.plotMEKF1axis(xt, position_pred2, gps_real_arr2, pos_cov1, pos_cov2, N)
+    pH.plotMEKF1axis(xt, position_pred3, gps_real_arr3, pos_cov1, pos_cov2, N)
     
     #orientation
+    pH.plotMEKF1angle(xt, orien_pred1, orien_real1, orien_cov1, orien_cov2, N)
+    pH.plotMEKF1angle(xt, orien_pred2, orien_real2, orien_cov1, orien_cov2, N)
+    pH.plotMEKF1angle(xt, orien_pred3, orien_real3, orien_cov1, orien_cov2, N)
+
+def dcmToEuler(dcm):
+    return np.array([dcm[1][2], dcm[0][2], dcm[1][0]])
     
     
 runMEKF()
-
-
 
 
 
