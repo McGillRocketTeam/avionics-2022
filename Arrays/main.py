@@ -11,16 +11,6 @@ This file's main purpose is testing.
 
 """
 
-#CSV example 
-"""
-gyro = np.array([20, 30, 40])
-acc = np.array( [1, 3, 4])
-gps = np.array( [9, 0, 2])
-print("gyro:" + str(acc))
-csvHandler.store(acc, 'acc')
-print(csvHandler.read( 0, 'acc'))
-"""
-
 
 #Do everything, lol
 
@@ -38,12 +28,12 @@ def runMEKF():
     N = 1000 #nb samples
     while (i < N):
         #1. generate random gyro and acc data 
-        random_gyro = 10 * np.sin(2*100*i*np.pi) #+ round(random.uniform(-1, 1), 4)
-        random_acc = 0 # 10.0 * np.sin(2*50*i*np.pi) #+ round(random.uniform(-1, 1), 4)
+        random_gyro = 0 # 10.0 * np.sin(2*100*i*np.pi) + round(random.uniform(-1, 1), 4)
+        random_acc = 0 #10.0 * np.sin(2*50*i*np.pi) + round(random.uniform(-1, 1), 4)
         """
         GYRO_input = np.array( [random_gyro, 0, 0], dtype='f')
         """
-        GYRO_input = np.array([0, 0, 0], dtype='f')
+        GYRO_input = np.array([random_gyro, 0, 0], dtype='f')
         ACC_input = np.array( [random_acc, 0, 9.81], dtype='f')
         
         #2. feed through process model to create gps data

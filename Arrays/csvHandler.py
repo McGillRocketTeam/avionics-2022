@@ -6,6 +6,15 @@
 
 import pandas as pd
 
+#CSV example 
+"""
+gyro = np.array([20, 30, 40])
+acc = np.array( [1, 3, 4])
+gps = np.array( [9, 0, 2])
+print("gyro:" + str(acc))
+csvHandler.store(acc, 'acc')
+print(csvHandler.read( 0, 'acc'))
+"""
 
 #store columns in csv
 def store(results_to_be_stored, column):
