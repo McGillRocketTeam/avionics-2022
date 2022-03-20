@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import csvHandler
-import random
+import numpy.random as random
 import MEKF as MEKF 
 import pyplotHandler as pH
 import math
@@ -29,7 +29,7 @@ def runMEKF():
     while (i < N):
         #1. generate random gyro and acc data 
         random_gyro = 0 # 10.0 * np.sin(2*100*i*np.pi) + round(random.uniform(-1, 1), 4)
-        random_acc = 10.0 * np.sin(2*50*i*np.pi) + round(random.uniform(-1, 1), 4)
+        random_acc = 10.0 * np.sin(2*50*i*np.pi) + round(random.normal(0, 1), 4)
         """
         GYRO_input = np.array( [random_gyro, 0, 0], dtype='f')
         """
@@ -41,11 +41,11 @@ def runMEKF():
         mekf.kf_update()
 
         #3. GPS_measured = GPS_real + lots of noise
-        GPS_meas = mekf.ra_k # random.uniform(-2, 2) * np.array([1, 1, 1], dtype='f')
+        GPS_meas = mekf.ra_k + random.normal(0, 2) * np.array([1, 1, 1], dtype='f')
         
         #4. IMU_measured = IMU_real + a bit of noise 
-        GYRO_meas = GYRO_input #+ random.uniform(-1, 1) * np.array([1, 1, 1], dtype='f')
-        ACC_meas = ACC_input #+ random.uniform(-1, 1) * np.array([1, 1, 1], dtype='f')
+        GYRO_meas = GYRO_input + random.normal(0, 1) * np.array([1, 1, 1], dtype='f')
+        ACC_meas = ACC_input + random.normal(0, 1) * np.array([1, 1, 1], dtype='f')
         xt.append(i)
         i += 1
         
@@ -83,8 +83,8 @@ def runMEKF():
         mekf.kf_predict(GYRO_meas_arr[i], ACC_meas_arr[i])
         
         #correct
-        mekf.kf_update()
-        mekf.kf_correct(GPS_meas_arr[i])
+        #mekf.kf_update()
+        #mekf.kf_correct(GPS_meas_arr[i])
         #position_corr.append(mekf.ra_k[0][0])
           
         #position
