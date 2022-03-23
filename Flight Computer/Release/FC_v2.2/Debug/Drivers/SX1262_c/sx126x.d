@@ -40,7 +40,7 @@ Drivers/SX1262_c/sx126x.o: ../Drivers/SX1262_c/sx126x.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Drivers/SX1262_c/sx126x_regs.h
+ ../Core/Inc/MRT_setup.h ../Drivers/SX1262_c/sx126x_regs.h
 
 ../Drivers/SX1262_c/sx126x.h:
 
@@ -125,5 +125,7 @@ Drivers/SX1262_c/sx126x.o: ../Drivers/SX1262_c/sx126x.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
+
+../Core/Inc/MRT_setup.h:
 
 ../Drivers/SX1262_c/sx126x_regs.h:

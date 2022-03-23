@@ -31,7 +31,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 #include <MRT_RTOS.h>
 #include <IridiumSBD_Static_API.h>
 #include <MRT_Helpers.h>
@@ -39,6 +38,8 @@
 #include <gps.h>
 #include <sx126x.h>
 #include <MAX31855.h>
+
+//#include <MRT_setup.h> included in main.h
 
 #include <math.h>
 //#include <usbd_cdc_if.h>
@@ -53,8 +54,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+//TODO DEFINES ARE IN main.h
 #define DIAGNOSTICS false
-#define GPS_DATA_BUF_DIM 100
 
 /* USER CODE END PD */
 
@@ -128,21 +129,39 @@ const osThreadAttr_t WatchDog_attributes = {
 };
 /* USER CODE BEGIN PV */
 
-//TODO DEFINES ARE IN main.h
-//General
-osThreadId_t threadID[5];
 
-//Ejection (just invented variables for the sake of testing)
-uint8_t MIN_APOGEE = 20;
-uint8_t MAX_APOGEE = 30;
-uint8_t DEPLOY_ALT_MIN = 60;
-uint8_t DEPLOY_ALT_MAX = 65;
-uint8_t GROUND_LEVEL = 20;
+//**************************************************//
+//GENERAL
 
-//XTend
+//Jasper's variables
+volatile uint8_t start_ejection = 0;
+volatile uint8_t timer_actuated_vent_valve = 0;
+
+//Eject data
+float altitude_m = 0;
+
+
+//**************************************************//
+//MEMORY
+// sd card
+FATFS FatFs; 	//Fatfs handle
+FIL fil; 		//File handle
+FRESULT fres; //Result after operations
+char filename[13];
+uint8_t writeBuf[1000];
+
+
+//**************************************************//
+//TELEMETRY
+#if XTEND_
 uint8_t xtend_rx_buffer[64] = {0}; // XTend Reception buffer
 char xtend_tx_buffer[XTEND_BUFFER_SIZE]; // XTend Transmit
-//These variables are for testing the XTend
+#elif SRADIO_
+uint8_t sradio_rx_buffer[64] = {0}; // SRADio Reception buffer
+char sradio_tx_buffer[SRADIO_BUFFER_SIZE]; // SRADio Transmit
+#endif
+
+//Telemetry variables
 float ACCx;
 float ACCy;
 float ACCz;
@@ -158,14 +177,15 @@ float SUBSEC;
 float STATE;
 uint8_t CONT;
 
+float TANK_PRESSURE;
+float THERMO_TEMPERATURE;
+uint8_t VALVE_STATUS;
 
-//Jasper's variables
-volatile uint8_t start_ejection = 0;
-volatile uint8_t timer_actuated_vent_valve = 0;
 
-
-//Eject data
-float altitude_m = 0;
+//**************************************************//
+//SENSORS
+//Propulsion
+float transducer_pressure;
 
 // GPS data
 float time;
@@ -173,18 +193,14 @@ static uint8_t gps_fix_lat = 0;
 static uint8_t gps_fix_long = 0; // beep when we get fix
 char gps_data[GPS_DATA_BUF_DIM];
 
-
 //I2C devices
 stmdev_ctx_t lsm_ctx;
 stmdev_ctx_t lps_ctx;
 
 
-// sd card
-FATFS FatFs; 	//Fatfs handle
-FIL fil; 		//File handle
-FRESULT fres; //Result after operations
-char filename[13];
-uint8_t writeBuf[1000];
+//**************************************************//
+//WATCH DOG
+osThreadId_t threadID[5]; //Thread list accessed by Watch Dog thread
 
 
 
@@ -234,7 +250,6 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -271,6 +286,11 @@ int main(void)
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
+
+
+
+  //**************************************************//
+  //GENERAL
 
   /*
    * Reinitialize all peripherals
@@ -314,7 +334,6 @@ int main(void)
   HAL_GPIO_WritePin(OUT_FLASH_WP_GPIO_Port, OUT_FLASH_WP_Pin, SET);
   HAL_GPIO_WritePin(OUT_FLASH_IO3_GPIO_Port, OUT_FLASH_IO3_Pin, SET);
 
-
   //TODO
   /*
    * In general:
@@ -337,51 +356,52 @@ int main(void)
 	   * Watch dog
 	   * -Remove the MX_IWDG_Init() that is auto-generated and add it just before the osKernelStart
 	   * -Need to be put after RTOS setup
-	   *
-	   * IF THE WATCH DOG IS NOT REFRESH BEFORE THE X SECONDS TIMEOUT IT WILL RESET THE BOARD
-	   * It doesn't garantie that if a thread stops running it's going to be detected
-	   *
-	   *
-	   * Potential solutions:
-	   * 	-A watch dog thread where the refresh function is called:
-	   * 		This thread will be responsible for making sure that every other thread is running correctly
-	   * 		If this specific thread stops running, restart the whole thing when the timeout occurs.
-	   *
-	   * 	-A global interrupts that acts as a watchdog:
-	   * 		If the interrupts fails, we are doomed
-	   *
-	   *
-	   *Since the WD reset the board at random times, we need to know at which stage of ejection we were and we
-	   *need to keep track of other things. The solution to this is to save the data that we want to use after these
-	   *random resets. Now the problem is how do we start the FC from the beginning if we have a random
-	   *amount of resets?
-	   *Solution : We use the external IN_Button has an external reset that resets the board from
-	   *the beginning using the callback function (defined in MRT_Helpers.c)
 	   */
-	  MX_IWDG_Init();
+	#if IWDG_ACTIVE
+	MX_IWDG_Init();
+	#endif
 
-
-  /*
-   * For RTOS
-   * -Activate RTC, calendar and internal alarm A (don't forget to enable NVIC EXTI)
-   * -Define what you want in the alarms callback functions (check the MRT_RTOS_f4xx .h file)
-   * -Need to be before the IWDG setup
-   * -Need to be after the external flash setup
-   * -Because of IWDG, deactivate the alarm A when reset to deactivate the IWDG or it will cause an interrupt
-   * when being in standByMode (check MRT_helper.c)
-   * -(Optional) Use MCU APB1 freeze register to freeze the WD in StandByMode instead of resetting the FC
-   * -(Optional) Setup alarm A and the clock time in .ioc (not recommend because random resets)
-   * The rest have been taken care of
-   * You can access the flag of both alarm A and B with the variables flagA and flagB
-   */
+  //RTC
   MRT_setRTC(prev_hours,prev_min,prev_sec);
   HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
-  MRT_setAlarmA(WHEN_SLEEP_TIME_HOURS, WHEN_SLEEP_TIME_MIN, WHEN_SLEEP_TIME_SEC);
+  #if ALARM_A_ACTIVE
+    if (wu_flag == 0){
+    	MRT_setAlarmA(PRE_WHEN_SLEEP_TIME_HOURS, PRE_WHEN_SLEEP_TIME_MIN, PRE_WHEN_SLEEP_TIME_SEC);
+    }
+    else{
+    	MRT_setAlarmA(POST_WHEN_SLEEP_TIME_HOURS, POST_WHEN_SLEEP_TIME_MIN, POST_WHEN_SLEEP_TIME_SEC);
+    }
+  #endif
 
 
-   //checkForI2CDevices(huart8,hi2c1);
-   //checkForI2CDevices(huart8,hi2c2);
-   //checkForI2CDevices(huart8,hi2c3);
+
+
+
+	  //**************************************************//
+	  //MEMORY THREAD
+#if MEMORY_THREAD
+	  #if IWDG_ACTIVE
+	    HAL_IWDG_Refresh(&hiwdg);
+	  #endif
+
+		//SD card
+		sd_init_dynamic_filename("FC", "", filename);
+#endif
+
+
+
+
+
+
+    //**************************************************//
+    //SENSORS THREAD
+#if SENSORS_THREAD
+	#if CHECK_I2C
+      checkForI2CDevices(huart8,hi2c1);
+      checkForI2CDevices(huart8,hi2c2);
+      checkForI2CDevices(huart8,hi2c3);
+	#endif
+
 	/*
      * hi2c3:
 	 * -Barometer: 0x5C
@@ -389,77 +409,56 @@ int main(void)
 	 * -LPS22HH: 0x5C
 	 */
 
+	  #if IWDG_ACTIVE
+		HAL_IWDG_Refresh(&hiwdg);
+	  #endif
+	  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUG_UART);
 
-  /*
-   * For Iridium:
-   * -Set the project as c++
-   */
-    HAL_IWDG_Refresh(&hiwdg);
-	HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-    uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
+	  #if IWDG_ACTIVE
+	    HAL_IWDG_Refresh(&hiwdg);
+	  #endif
+	  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUG_UART);
 
-  /*
-   * For LSM6DSR
-   *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
-   */
-  HAL_IWDG_Refresh(&hiwdg);
-  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUG_UART);
-
-
-   /*
-    * For LPS22HH
-    *-Enable float formatting for sprintf (go to Project->Properties->C/C++ Build->Settings->MCU Settings->Check the box "Use float with printf")
-    */
-  HAL_IWDG_Refresh(&hiwdg);
-  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUG_UART);
-
-
-   /*
-    * For the GPS:
-    * -huart6 on v4.3
-    * -Set its uart to 9600
-    *
-    */
-  HAL_IWDG_Refresh(&hiwdg);
-  GPS_init(&GPS_UART, &DEBUG_UART);
-
-
-   /*
-    * For the xtend
-    * -huart3 on v4.3
-    */
-   HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET); //TODO is it necessary?
+	  GPS_init(&GPS_UART, &DEBUG_UART);
+#endif
 
 
 
-   /*
-    * For the SRadio
-    * -SPI2 on v4.3
-    */
-  HAL_IWDG_Refresh(&hiwdg);
-  set_hspi(SRADIO_SPI);
-  // SPI2_SX_CS_GPIO_Port
-  set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
-  set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
-  set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
-  set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-  //Tx_setup(); TODO
 
-	/*
-	* For the SD card
-	*
-	*/
-    HAL_IWDG_Refresh(&hiwdg);
-    sd_init_dynamic_filename("FC", "", filename);
 
-	/*
-	 * For the thermocouple
-	 * -SPI4 on v4.3
-	 * -No setup needed (just activate SPI4, the work is done by a MAX31855)
-	 */
+
+	  //**************************************************//
+	  //TELEMETRY_THREAD
+#if TELEMETRY_THREAD
+	  #if IWDG_ACTIVE
+		HAL_IWDG_Refresh(&hiwdg);
+   	  #endif
+
+	  #if XTEND_
+	   HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET); //TODO is it necessary?
+	  #elif SRADIO_
+	  set_hspi(SRADIO_SPI);
+	  // SPI2_SX_CS_GPIO_Port TODO ???
+	  set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
+	  set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+	  set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+	  set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+	  Tx_setup();
+	  #endif
+
+	  #if IWDG_ACTIVE
+		HAL_IWDG_Refresh(&hiwdg);
+	  #endif
+
+	  #if IRIDIUM_
+	  HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
+	  uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART); //TODO remove lol?
+	  #endif
+#endif
 
 
 //TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED (or find other way to completely reset the board)
+
 
   /* USER CODE END 2 */
 
@@ -1282,7 +1281,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-//TODO Maybe put this in a driver
+//TODO Maybe put this in another file to include
 
 /**
  * @brief   Function to transmit message to XTend
@@ -1307,22 +1306,28 @@ void StartMemory0(void *argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
 
-	//osThreadExit();
-
 	//Add thread id to the list
 	threadID[0]=osThreadGetId();
+
+	#if !MEMORY_THREAD
+    osThreadExit();
+	#endif
+
+	uint8_t counter = 0;
 
 
 	  /* Infinite loop */
 	  for(;;)
 	  {
-
-
 		  //Write data to sd and flash
-		  sd_open_file(&filename);
+		  if(counter==0) sd_open_file(&filename);
 		  sprintf((char*)writeBuf, "Data: %f, %f, %f, %f\r\n", PRESSURE, MIN, SEC, SUBSEC);
 		  sd_write(&fil, writeBuf);
-		  f_close(&fil);
+		  if (counter == 50) {
+			  f_close(&fil);
+			  counter = 0;
+		  }
+		  counter++;
 
 		  osDelay(1000/DATA_FREQ);
 	  }
@@ -1345,15 +1350,17 @@ void StartEjection1(void *argument)
 {
   /* USER CODE BEGIN StartEjection1 */
 
+	//Add thread id to the list
+	threadID[1]=osThreadGetId();
+
+	#if !EJECTION_THREAD
 	osThreadExit();
+	#endif
+
 
 	//TODO add flag for when we are done with the thread
 	if (altitude_m < GROUND_LEVEL)  osThreadExit();
 	if (wu_flag) osThreadExit(); //WHEN WAKING UP
-
-
-	//Add thread id to the list
-	threadID[1]=osThreadGetId();
 
 	char buffer[TX_BUF_DIM];
 
@@ -1428,66 +1435,86 @@ void StartTelemetry2(void *argument)
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
+	#if !TELEMETRY_THREAD
 	osThreadExit();
+	#endif
+
+	uint8_t counter = 0;
 
 	osDelay(1000);
 
   /* Infinite loop */
   for(;;)
   {
-	  //Poll sensors data in other thread
-
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
-	  //Send data via radios:
+	  //Get propulsion data TODO
+	  TANK_PRESSURE = transducer_pressure;
+	  THERMO_TEMPERATURE = THERMO_TEMP;
+	  VALVE_STATUS = 0;
+
+	  //Send propulsion data
+	  #if XTEND_ //Xtend send
+  		memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
+  		sprintf(xtend_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
+  		XTend_Transmit(xtend_tx_buffer);
+	  #elif SRADIO_ //SRadio send
+    	memset(sradio_tx_buffer, 0, SRADIO_BUFFER_SIZE);
+    	sprintf(sradio_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
+    	TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
+	  #endif
 
 
-	  //Updating data variables
+	  if (counter == 10){
+		  counter = 0;
 
-	  //Need to verify these six to make sure they are in the right order
+		  //Get sensors data
+		  //TODO Need to verify these six to make sure they are in the right order
+	  	  ACCx = acceleration_mg[0];
+	  	  ACCy = acceleration_mg[1];
+	  	  ACCz = acceleration_mg[2];
+	  	  GYROx = angular_rate_mdps[0];
+	  	  GYROy = angular_rate_mdps[1];
+	  	  GYROz = angular_rate_mdps[2];
+	  	  PRESSURE = pressure_hPa;
+	  	  //LATITUDE Poll already updated
+	  	  //LONGITUDE already updated
 
-  	  ACCx = acceleration_mg[0];
-  	  ACCy = acceleration_mg[1];
-  	  ACCz = acceleration_mg[2];
-  	  GYROx = angular_rate_mdps[0];
-  	  GYROy = angular_rate_mdps[1];
-  	  GYROz = angular_rate_mdps[2];
-  	  PRESSURE = pressure_hPa;
+		  //TODO Need to make this 't' variable from the Iridium or convert the seconds from the GPS
+		  /*
+		  HOUR = t.tm_hour;
+		  MIN = t.tm_min;
+		  SEC = t.tm_sec;
+		  */
 
-	  //From the GPS time value
-	  MIN = ((uint8_t) time % 3600) / 60.0;
-	  sprintf(&MIN, "%.0f",MIN);
-	  SEC = (uint8_t) time % 60;
-	  sprintf(&SEC,"%.0f",SEC);
-	  SUBSEC = time / 3600.0;
-	  sprintf(&SUBSEC,"%.0f",SUBSEC);
+		  //From the GPS time value
+		  MIN = ((uint8_t) time % 3600) / 60.0; sprintf(&MIN, "%.0f",MIN);
+		  SEC = (uint8_t) time % 60; sprintf(&SEC,"%.0f",SEC);
+		  SUBSEC = time / 3600.0; sprintf(&SUBSEC,"%.0f",SUBSEC);
+	  	  STATE = 0; //TODO not the right value
+	  	  CONT = MRT_getContinuity();
 
-  	  STATE = THERMO_TEMP; //TODO not the right value
-  	  CONT = MRT_getContinuity();
-
-
-	  //TODO Need to make this 't' variable from the Iridium or convert the seconds from the GPS
-	  /*
-	  HOUR = t.tm_hour;
-	  MIN = t.tm_min;
-	  SEC = t.tm_sec;
-	  */
-
-  	  memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
-  	  sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.7f,%.7f,%.1f,%.1f,%.1f,%.2f,%i,E",
-  			  	  	  	  	  	  ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LATITUDE,LONGITUDE,MIN,SEC,SUBSEC,STATE,CONT);
-
-	  //Xtend send
-	  XTend_Transmit(xtend_tx_buffer);
-
-	  //SRadio send
-	  //TxProtocol(xtend_tx_buffer, strlen(xtend_tx_buffer)); TODO
+	  	  //Send sensors data
+		  #if XTEND_ //Xtend send
+			memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
+			sprintf(xtend_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.7f,%.7f,%.1f,%.1f,%.1f,%.2f,%i,E",
+										ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LATITUDE,LONGITUDE,MIN,SEC,SUBSEC,STATE,CONT);
+			XTend_Transmit(xtend_tx_buffer);
+		  #elif SRADIO_ //SRadio send
+			memset(sradio_tx_buffer, 0, SRADIO_BUFFER_SIZE);
+			sprintf(sradio_tx_buffer,"S,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.7f,%.7f,%.1f,%.1f,%.1f,%.2f,%i,E",
+										ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LATITUDE,LONGITUDE,MIN,SEC,SUBSEC,STATE,CONT);
+			TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
+		  #endif
 
 
-	  //Iridium send
-	  //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
-	  //MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
-	  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
+		  #if IRIDIUM_ //Iridium send
+		    //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
+		    MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
+		    //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
+		  #endif
+	  }
+	  counter++;
 
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
@@ -1516,7 +1543,9 @@ void StartSensors3(void *argument)
 
 	uint8_t counter = 0;
 
-	//osThreadExit();
+	#if !SENSORS_THREAD
+	osThreadExit();
+	#endif
 
 	//Add thread id to the list
 	threadID[3]=osThreadGetId();
@@ -1538,12 +1567,9 @@ void StartSensors3(void *argument)
 		  MRT_LSM6DSR_getTemperature(lsm_ctx,&lsm_temperature_degC);
 
 		  //LPS22HH
-	  	  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
 		  MRT_LPS22HH_getTemperature(lps_ctx,&lps_temperature_degC);
+		  MRT_LPS22HH_getPressure(lps_ctx,&pressure_hPa);
 		  altitude_m = MRT_getAltitude(pressure_hPa); //Update altitude
-
-		  //TODO Pressure tank (just use an analog sensor if you don't have it)
-
 	  }
 	  counter++;
 
@@ -1554,7 +1580,7 @@ void StartSensors3(void *argument)
 	  Max31855_Read_Temp();
 
 	  //Pressure tank
-	  float temporary = MRT_prop_poll_pressure_transducer(&hadc1); //TODO have a global variable
+	  transducer_pressure = MRT_prop_poll_pressure_transducer(&hadc1);
 
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
@@ -1567,8 +1593,6 @@ void StartSensors3(void *argument)
   HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 3\r\n",36,HAL_MAX_DELAY);
 
   osThreadExit();
-
-
 
   /* USER CODE END StartSensors3 */
 }
@@ -1584,7 +1608,9 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	//osThreadExit();
+	#if !PRINTING_THREAD
+	osThreadExit();
+	#endif
 
 	char buffer[TX_BUF_DIM];
 
@@ -1635,7 +1661,9 @@ void StartPrinting(void *argument)
 
 
 	  //Iridium
-	  //MRT_Static_Iridium_getTime(); //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
+	  #if IRIDIUM_
+	  MRT_Static_Iridium_getTime(); //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
+	  #endif
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
@@ -1659,12 +1687,19 @@ void StartWatchDog(void *argument)
 {
   /* USER CODE BEGIN StartWatchDog */
 
+	#if !WATCHDOG_THREAD
+	osThreadExit();
+	#endif
+
 	char buffer[TX_BUF_DIM];
   /* Infinite loop */
   for(;;)
   {
 	 HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-	 HAL_IWDG_Refresh(&hiwdg);
+
+	#if IWDG_ACTIVE
+	HAL_IWDG_Refresh(&hiwdg);
+	#endif
 
 	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
@@ -1673,9 +1708,9 @@ void StartWatchDog(void *argument)
 	 prev_min = sTime.Minutes;
 	 prev_sec = sTime.Seconds;
 
-	  memset(buffer, 0, TX_BUF_DIM);
-	  sprintf(buffer, "Time: %i:%i:%i	Date: \r\n %f\r\n", prev_hours,prev_min,prev_sec, altitude_m);
-	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	 memset(buffer, 0, TX_BUF_DIM);
+	 sprintf(buffer, "Time: %i:%i:%i	Date: \r\n %f\r\n", prev_hours,prev_min,prev_sec, altitude_m);
+	 HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  /*

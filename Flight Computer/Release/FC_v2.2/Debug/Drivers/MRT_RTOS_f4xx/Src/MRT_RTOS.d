@@ -53,7 +53,8 @@ Drivers/MRT_RTOS_f4xx/Src/MRT_RTOS.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
  ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h \
- ../Drivers/MRT_Helpers_f4xx/Inc/w25qxx.h ../Core/Inc/main.h
+ ../Drivers/MRT_Helpers_f4xx/Inc/w25qxx.h ../Core/Inc/main.h \
+ ../Core/Inc/MRT_setup.h
 
 ../Drivers/MRT_RTOS_f4xx/Inc/MRT_RTOS.h:
 
@@ -164,3 +165,5 @@ Drivers/MRT_RTOS_f4xx/Src/MRT_RTOS.o: \
 ../Drivers/MRT_Helpers_f4xx/Inc/w25qxx.h:
 
 ../Core/Inc/main.h:
+
+../Core/Inc/MRT_setup.h:

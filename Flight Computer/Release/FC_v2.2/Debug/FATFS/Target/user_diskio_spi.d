@@ -46,7 +46,7 @@ FATFS/Target/user_diskio_spi.o: ../FATFS/Target/user_diskio_spi.c \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/ffconf.h \
- ../Core/Inc/main.h \
+ ../Core/Inc/main.h ../Core/Inc/MRT_setup.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  ../Core/Inc/FreeRTOSConfig.h \
@@ -156,6 +156,8 @@ FATFS/Target/user_diskio_spi.o: ../FATFS/Target/user_diskio_spi.c \
 ../FATFS/Target/ffconf.h:
 
 ../Core/Inc/main.h:
+
+../Core/Inc/MRT_setup.h:
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
 

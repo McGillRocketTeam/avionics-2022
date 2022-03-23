@@ -33,6 +33,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <MRT_setup.h> //TODO
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -170,58 +172,6 @@ void Error_Handler(void);
 #define UART8_TX_Debug_Pin GPIO_PIN_1
 #define UART8_TX_Debug_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
-
-
-//TODO
-UART_HandleTypeDef huart8;
-#define DEBUG_UART huart8
-#define SD_SPI_HANDLE hspi5
-
-#define SEA_LEVEL_TEMPERATURE 25+273.15 //Sea level temperature kelvin
-#define SEA_LEVEL_PRESSURE 1014 //Sea level pressure hPa
-#define  BASE_HEIGHT 100 //In meters
-#define M 0.0289644 //Molar mass of earth's air in kg/mol
-#define go 9.80665 //Gravitational acceleration constant in m/s^2
-#define R 8.31432 //Universal gas constant Nm / mol K
-
-
-//RTOS
-#define SLEEP_TIME 5 //In seconds
-#define WHEN_SLEEP_TIME_SEC 0  //In seconds
-#define WHEN_SLEEP_TIME_MIN 2  //In minutes
-#define WHEN_SLEEP_TIME_HOURS 0  //In hours
-
-//WatchDog Thread
-#define WD_FREQ 1 //Times per second that you want to check threads
-
-
-//Telemetry
-#define DATA_FREQ 10 //Times per second that you want to save data
-#define SEND_FREQ 20 //Times per second that you want to transmit data
-
-//SRadio
-#define SRADIO_SPI hspi2
-
-//XTend
-#define XTEND_UART huart3
-#define XTEND_BUFFER_SIZE 256
-
-//Iridium
-//#define IRIDIUM_I2C I2C2 //TODO defined in the IridiumSBD.h
-
-
-//Sensors
-#define POLL_FREQ 20 //Times per second that you want to poll data
-
-//GPS
-#define GPS_UART huart6 //TODO cannot call it GPS_USART because already defined in gps.c
-
-//LSM6DSR
-#define LSM_I2C hi2c3
-
-//LPS22HH
-#define LPS_I2C hi2c3
-
 
 /* USER CODE END Private defines */
 

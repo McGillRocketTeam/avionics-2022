@@ -34,7 +34,7 @@ typedef struct MRT_RTOS{
 extern struct MRT_RTOS rtos; //Only used for huart
 extern uint8_t flagA; //Alarm A usable flag
 extern uint8_t flagB; //Alarm B usable flag
-extern uint8_t wu_flag;
+extern uint8_t wu_flag; //Wake up flag (can be greater than 1)
 
 
 //For RTC
