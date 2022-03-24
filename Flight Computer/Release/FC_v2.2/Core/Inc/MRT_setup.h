@@ -131,6 +131,7 @@ UART_HandleTypeDef huart8;
 
 //**************************************************//
 //WATCHDOG THREAD
+#define NUMBER_OF_THREADS 4
 #define WD_FREQ 1 //Times per second that you want to check threads
 
 

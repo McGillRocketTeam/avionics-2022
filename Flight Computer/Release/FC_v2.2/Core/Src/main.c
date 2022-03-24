@@ -200,7 +200,7 @@ stmdev_ctx_t lps_ctx;
 
 //**************************************************//
 //WATCH DOG
-osThreadId_t threadID[5]; //Thread list accessed by Watch Dog thread
+osThreadId_t threadID[NUMBER_OF_THREADS]; //Thread list accessed by Watch Dog thread
 
 
 
@@ -1541,14 +1541,14 @@ void StartSensors3(void *argument)
 {
   /* USER CODE BEGIN StartSensors3 */
 
-	uint8_t counter = 0;
+	//Add thread id to the list
+	threadID[3]=osThreadGetId();
 
 	#if !SENSORS_THREAD
 	osThreadExit();
 	#endif
 
-	//Add thread id to the list
-	threadID[3]=osThreadGetId();
+	uint8_t counter = 0;
 
   for(;;)
   {
@@ -1692,6 +1692,9 @@ void StartWatchDog(void *argument)
 	#endif
 
 	char buffer[TX_BUF_DIM];
+
+	osThreadState_t thread_state;
+
   /* Infinite loop */
   for(;;)
   {
@@ -1732,6 +1735,37 @@ void StartWatchDog(void *argument)
 
 		//Reset to deactivate IWDG
 		NVIC_SystemReset();
+	  }
+
+
+	  //Check each thread state
+	  for (int i=0; i < NUMBER_OF_THREADS;i++){
+		  thread_state = osThreadGetState(threadID[i]);
+
+		  if (thread_state == osThreadInactive ||
+		      thread_state == osThreadBlocked  ||
+		      thread_state == osThreadTerminated){
+			  uint8_t ejection_stage = 5; //TODO invented a random variable with a random value
+			  if (i==1 && ejection_stage < 5){
+				 osThreadResume(threadID[i]);
+			  }
+			  else if (i!=1){
+				 osThreadResume(threadID[i]);
+			  }
+		  }
+
+		  else if (thread_state == osThreadError){
+			  NVIC_SystemReset();
+		  }
+
+		  /*
+		  else if (thread_state == osThreadReady){
+		  }
+		  else if (thread_state == osThreadRunning){
+		  }
+		  else if (thread_state == osThreadReserved){ TODO not sure what is this state
+		  }
+		  */
 	  }
 
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);

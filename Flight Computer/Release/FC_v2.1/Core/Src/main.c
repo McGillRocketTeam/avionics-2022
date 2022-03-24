@@ -1439,7 +1439,7 @@ void StartTelemetry2(void *argument)
 	//Add thread id to the list
 	threadID[2]=osThreadGetId();
 
-	osThreadExit();
+	//osThreadExit();
 
 	osDelay(1000);
 
@@ -1618,7 +1618,7 @@ void StartPrinting(void *argument)
 {
   /* USER CODE BEGIN StartPrinting */
 
-	//osThreadExit();
+	osThreadExit();
 
 	char buffer[TX_BUF_DIM];
 
