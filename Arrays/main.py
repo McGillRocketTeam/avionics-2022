@@ -19,8 +19,8 @@ def runMEKF():
     #0) constants
     N = 1000 #nb samples
     T = 0.01 #time step
-    Q_init_pos = 0.2  #process noise on position
-    Q_init_orien = 0.02 #process noise on orientation
+    Q_init_orien = 0.1 #process noise on orientation
+    Q_init_pos = 0.3  #process noise on position
     R_init = 2 #sensor noise (GPS only)
     P_init = 0.01 #confidence in position and orientation at time = 0
     
@@ -49,8 +49,8 @@ def runMEKF():
         GPS_meas = mekf.ra_k + random.normal(0, 2) * np.array([1, 1, 1], dtype='f')
         
         #4. IMU_measured = IMU_real + a bit of noise 
-        GYRO_meas = GYRO_input + random.normal(0, 0.01) * np.array([1, 1, 1], dtype='f')
-        ACC_meas = ACC_input + random.normal(0, 0.1) * np.array([1, 1, 1], dtype='f')
+        GYRO_meas = GYRO_input + random.normal(0, 0.1) * np.array([1, 1, 1], dtype='f')
+        ACC_meas = ACC_input + random.normal(0, 0.3) * np.array([1, 1, 1], dtype='f')
         xt.append(i)
         i += 1
         
@@ -152,6 +152,7 @@ def runMEKF():
     """
     
     #position error + cov 
+    print(pos_error1)
     pH.plotMEKF1axisError(xt, pos_error1, pos_cov1a, pos_cov1b, N)
     pH.plotMEKF1axisError(xt, pos_error2, pos_cov2a, pos_cov2b, N)
     pH.plotMEKF1axisError(xt, pos_error3, pos_cov3a, pos_cov3b, N)
