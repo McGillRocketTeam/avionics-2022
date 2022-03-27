@@ -19,8 +19,8 @@ def runMEKF():
     #0) constants
     N = 1000 #nb samples
     T = 0.01 #time step
-    Q_init_pos = 1  #process noise on position
-    Q_init_orien = 0.01 #process noise on orientation
+    Q_init_pos = 0.2  #process noise on position
+    Q_init_orien = 0.02 #process noise on orientation
     R_init = 2 #sensor noise (GPS only)
     P_init = 0.01 #confidence in position and orientation at time = 0
     
@@ -35,11 +35,9 @@ def runMEKF():
     xt = []
     while (i < N):
         #1. generate random gyro and acc data 
-        random_gyro = 1 # 10.0 * np.sin(2*100*i*np.pi) + round(random.uniform(-1, 1), 4)
-        random_acc = 0#10.0 * np.sin(2*50*i*np.pi) + round(random.normal(0, 1), 4)
-        """
-        GYRO_input = np.array( [random_gyro, 0, 0], dtype='f')
-        """
+        random_gyro = 10.0 * np.sin(2*100*i*np.pi) 
+        random_acc = 10.0 * np.sin(2*50*i*np.pi) 
+
         GYRO_input = np.array([random_gyro, 0, 0], dtype='f')
         ACC_input = np.array( [random_acc, 0, 9.81], dtype='f')
         
@@ -51,8 +49,8 @@ def runMEKF():
         GPS_meas = mekf.ra_k + random.normal(0, 2) * np.array([1, 1, 1], dtype='f')
         
         #4. IMU_measured = IMU_real + a bit of noise 
-        GYRO_meas = GYRO_input #+ random.normal(0, 1) * np.array([1, 1, 1], dtype='f')
-        ACC_meas = ACC_input #+ random.normal(0, 1) * np.array([1, 1, 1], dtype='f')
+        GYRO_meas = GYRO_input + random.normal(0, 0.01) * np.array([1, 1, 1], dtype='f')
+        ACC_meas = ACC_input + random.normal(0, 0.1) * np.array([1, 1, 1], dtype='f')
         xt.append(i)
         i += 1
         
