@@ -40,7 +40,11 @@ class MEKF:
     """
 
     
-    def __init__(self, dt, Q_init, R_init):
+    def __init__(self, dt, Q_init_pos, Q_init_orien, R_init, P_init):
+        #dummy variables
+        self.zeros3 = np.zeros((3, 3), dtype='f')
+        self.ones3 = np.eye((3), dtype='f')
+        
         #predict 
         euler_Cab = np.array([0, 0, 0])
         self.Cab_k_1 = R.from_euler('zyx', euler_Cab, degrees=False).as_matrix() # rotation matrix (DCM at k-1)
@@ -53,7 +57,10 @@ class MEKF:
         self.T = dt #state transition model (process model) (B = T)
 
             #noise 
-        self.Q = np.eye(6, dtype='f')*Q_init #covariance of process noise (error on prediction)
+            #covariance of process noise (error on prediction)
+        self.Q = np.block([[self.ones3*Q_init_orien,self.zeros3],
+                          [self.zeros3, self.ones3*Q_init_pos]]) 
+        
         self.R = np.eye(3, dtype='f')*R_init #covariance of obervation noise (sensor noise)
         # Q : get value when robot is static 
         # R : get value from sensor datasheet 
@@ -66,8 +73,8 @@ class MEKF:
         self.Cab_k = np.eye(3, dtype='f')
         self.Va_k = np.zeros((3, 1), dtype='f')
         self.ra_k = np.zeros((3, 1), dtype='f')
-        self.P_k = np.eye(9, dtype='f')
-        self.P_k_1 = np.eye(9, dtype='f')
+        self.P_k = np.eye(9, dtype='f') * P_init
+        self.P_k_1 = np.eye(9, dtype='f') * P_init
         self.L = np.zeros((9, 6), dtype='f')
         self.S1 = np.eye(9, dtype='f') 
         self.S2 = np.eye(3, dtype='f')
@@ -82,9 +89,6 @@ class MEKF:
         self.M_k = np.eye(3, dtype='f')
         self.C_k = np.zeros((3, 9), dtype='f')
         
-        #dummy variables
-        self.zeros3 = np.zeros((3, 3), dtype='f')
-        self.ones3 = np.eye((3), dtype='f')
 
         print("init done")
         
