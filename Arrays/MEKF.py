@@ -88,8 +88,7 @@ class MEKF:
         self.GPS_input =  np.zeros((3, 1), dtype='f')
 
         self.M_k = np.eye(3, dtype='f')
-        self.C_k = np.zeros((3, 9), dtype='f')
-        
+        self.C_k = np.block([self.zeros3, self.zeros3, self.ones3])
 
         print("init done")
         
@@ -133,7 +132,6 @@ class MEKF:
                              [-r[1], r[0], 0]], dtype='f')
         self.Cab_k = self.Cab_k @ expm(-correct_cross) #fa
         self.Va_k = self.Va_k +  self.correction_term[3:6].T
-        print(self.correction_term)
         self.ra_k = self.ra_k + self.correction_term[6:9].T
     
     #shuffles all k to k-1. ex: x[k-1] = x[k]

@@ -35,22 +35,36 @@ def runMEKF():
     xt = []
     while (i < N):
         #1. generate random gyro and acc data 
-        random_gyro = 10.0 * np.sin(2*100*i*np.pi) 
-        random_acc = 10.0 * np.sin(2*50*i*np.pi) 
+        random_gyro1 = 10.0 * np.sin(2*120*i*np.pi) 
+        random_gyro2 = 15.0 * np.sin(2*90*i*np.pi) 
+        random_gyro3 = 8.0 * np.sin(2*70*i*np.pi) 
+        random_acc1 = 7.0 * np.sin(2*40*i*np.pi) 
+        random_acc2 = 2.0 * np.sin(2*80*i*np.pi) 
+        random_acc3 = 3.0 * np.sin(2*50*i*np.pi) 
+        
+        rg1 = random.normal(0, 0.1)
+        rg2 = random.normal(0, 0.1)
+        rg3 = random.normal(0, 0.1)
+        ra1 = random.normal(0, 0.3)
+        ra2 = random.normal(0, 0.3)
+        ra3 = random.normal(0, 0.3)
+        rgps1 = random.normal(0, 2)
+        rgps2 = random.normal(0, 2)
+        rgps3 = random.normal(0, 2)
 
-        GYRO_input = np.array([random_gyro, 0, 0], dtype='f')
-        ACC_input = np.array( [random_acc, 0, 9.81], dtype='f')
+        GYRO_input = np.array([random_gyro1, random_gyro2, random_gyro3], dtype='f')
+        ACC_input = np.array( [random_acc1, random_acc2, random_acc3], dtype='f')
         
         #2. feed through process model to create gps data
         mekf.kf_predict(GYRO_input, ACC_input)
         mekf.kf_update()
 
         #3. GPS_measured = GPS_real + lots of noise
-        GPS_meas = mekf.ra_k #+ random.normal(0, 2) * np.array([1, 1, 1], dtype='f')
+        GPS_meas = mekf.ra_k + np.array([rgps1, rgps2, rgps3], dtype='f')
         
         #4. IMU_measured = IMU_real + a bit of noise 
-        GYRO_meas = GYRO_input + random.normal(0, 0.1) * np.array([1, 1, 1], dtype='f')
-        ACC_meas = ACC_input + random.normal(0, 0.3) * np.array([1, 1, 1], dtype='f')
+        GYRO_meas = GYRO_input +  np.array([rg1, rg2, rg3], dtype='f')
+        ACC_meas = ACC_input + np.array([ra1, ra2, ra3], dtype='f')
         xt.append(i)
         i += 1
         
