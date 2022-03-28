@@ -46,7 +46,7 @@ def runMEKF():
         mekf.kf_update()
 
         #3. GPS_measured = GPS_real + lots of noise
-        GPS_meas = mekf.ra_k + random.normal(0, 2) * np.array([1, 1, 1], dtype='f')
+        GPS_meas = mekf.ra_k #+ random.normal(0, 2) * np.array([1, 1, 1], dtype='f')
         
         #4. IMU_measured = IMU_real + a bit of noise 
         GYRO_meas = GYRO_input + random.normal(0, 0.1) * np.array([1, 1, 1], dtype='f')
@@ -90,8 +90,8 @@ def runMEKF():
         mekf.kf_predict(GYRO_meas_arr[i], ACC_meas_arr[i])
         
         #correct
-        #mekf.kf_update()
-        #mekf.kf_correct(GPS_meas_arr[i])
+        mekf.kf_update()
+        mekf.kf_correct(GPS_meas_arr[i])
         #position_corr.append(mekf.ra_k[0][0])
           
         "predicted state"
@@ -152,7 +152,7 @@ def runMEKF():
     """
     
     #position error + cov 
-    print(pos_error1)
+    print(pos_error1[N-1])
     pH.plotMEKF1axisError(xt, pos_error1, pos_cov1a, pos_cov1b, N)
     pH.plotMEKF1axisError(xt, pos_error2, pos_cov2a, pos_cov2b, N)
     pH.plotMEKF1axisError(xt, pos_error3, pos_cov3a, pos_cov3b, N)

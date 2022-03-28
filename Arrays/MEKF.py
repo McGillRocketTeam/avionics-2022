@@ -17,7 +17,8 @@ However, we only care about:
 """
 
 import numpy as np
-from numpy.linalg import inv
+#from numpy.linalg import inv
+from scipy.linalg import inv
 from scipy.spatial.transform import Rotation as R
 from scipy.linalg import expm, sinm, cosm
 
@@ -126,13 +127,14 @@ class MEKF:
         self.P_k = self.S1 @ self.P_k @ self.S1.T + self.K_k @ self.S2 @ self.K_k.T
         self.correction_term = self.K_k @ (self.GPS_input - self.ra_k.T)
 
-        r = np.block(self.correction_term[6:9])
+        r = np.block(self.correction_term[0:3])
         correct_cross = np.array([[0, -r[2], r[1]],
                              [r[2], 0, -r[0]],
                              [-r[1], r[0], 0]], dtype='f')
         self.Cab_k = self.Cab_k @ expm(-correct_cross) #fa
         self.Va_k = self.Va_k +  self.correction_term[3:6].T
-        self.ra_k = self.ra_k + self.correction_term[0:3].T
+        print(self.correction_term)
+        self.ra_k = self.ra_k + self.correction_term[6:9].T
     
     #shuffles all k to k-1. ex: x[k-1] = x[k]
     def kf_update(self):
