@@ -21,9 +21,9 @@ void MRT_Static_Iridium_Destructor(){
 }
 
 
-uint8_t MRT_Static_Iridium_Setup(UART_HandleTypeDef huart){
+uint8_t MRT_Static_Iridium_Setup(UART_HandleTypeDef huart, uint8_t timeout, uint8_t i2c_bus){
 	MRT_Static_Iridium_Constructor();
-	return E_T->MRT_Iridium_setup(huart);
+	return E_T->MRT_Iridium_setup(huart,timeout, i2c_bus);
 }
 
 bool MRT_Static_Iridium_Shutdown(void){

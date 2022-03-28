@@ -1,7 +1,7 @@
-IridiumSBD.h:184:1:IridiumSBD::IridiumSBD(TwoWire&, uint8_t)	24	static
+IridiumSBD.h:191:1:IridiumSBD::IridiumSBD(TwoWire&, uint8_t)	24	static
 IridiumSBD_Static_API.cpp:11:6:void MRT_Static_Iridium_Constructor()	16	static
 IridiumSBD_Static_API.cpp:17:6:void MRT_Static_Iridium_Destructor()	4	static
-IridiumSBD_Static_API.cpp:24:9:uint8_t MRT_Static_Iridium_Setup(UART_HandleTypeDef)	80	static
+IridiumSBD_Static_API.cpp:24:9:uint8_t MRT_Static_Iridium_Setup(UART_HandleTypeDef, uint8_t, uint8_t)	88	static
 IridiumSBD_Static_API.cpp:29:6:bool MRT_Static_Iridium_Shutdown()	16	static
 IridiumSBD_Static_API.cpp:35:6:void MRT_Static_Iridium_ErrorMessage(uint8_t)	16	static
 IridiumSBD_Static_API.cpp:39:6:bool MRT_Static_Iridium_getIMEI()	8	static

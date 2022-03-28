@@ -130,7 +130,7 @@ public:
 
 
    //TODO Homemade non-static functions
-         uint8_t MRT_Iridium_setup(UART_HandleTypeDef huart);
+         uint8_t MRT_Iridium_setup(UART_HandleTypeDef huart, uint8_t timeout, uint8_t i2c_bus);
          boolean MRT_Iridium_shutdown(void);
          void MRT_Iridium_ErrorMessage(uint8_t error);
          boolean MRT_Iridium_getIMEI(void);
@@ -144,10 +144,17 @@ public:
          UART_HandleTypeDef uart;
          char* IMEI;
 
-      //TODO define the right I2C bus using the "Wire"
-		//#define MRT_IRIDIUM_I2C Wire //I2C1
-		#define MRT_IRIDIUM_I2C Wire1 //I2C2
-        //#define MRT_IRIDIUM_I2C Wire2 //I2C3
+      //TODO Define the right I2C bus using the "Wire"
+		#define IRIDIUM_I2C Wire //I2C1 (DEFAULT, i2c_bus set in setup function)
+         /*
+		#if MRT_IRIDIUM_I2C == 1
+		#define IRIDIUM_I2C Wire //I2C1
+		#elif MRT_IRIDIUM_I2C == 2
+		#define IRIDIUM_I2C Wire1 //I2C2
+		#elif MRT_IRIDIUM_I2C == 3
+        #define IRIDIUM_I2C Wire2 //I2C3
+		#endif
+		*/
 
 
    /* Not using this constructor
@@ -181,7 +188,7 @@ public:
    }
    */
 
-IridiumSBD(TwoWire &wirePort = MRT_IRIDIUM_I2C, uint8_t deviceAddress = 0x63)
+IridiumSBD(TwoWire &wirePort = IRIDIUM_I2C, uint8_t deviceAddress = 0x63)
    {
       useSerial = false;
       wireport = &wirePort;

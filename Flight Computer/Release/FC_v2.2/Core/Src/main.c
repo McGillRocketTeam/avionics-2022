@@ -348,7 +348,7 @@ int main(void)
    * For external FLASH memory
    *-Put before RTOS setup because you need the external flash in its setup
    */
-    MRT_SetupRTOS(&hrtc, DEBUG_UART,SLEEP_TIME); //Put here so we can pass the uart value to the setup
+    MRT_SetupRTOS(&hrtc, DEBUG_UART, SLEEP_TIME); //Put here so we can pass the uart value to the setup
 	MRT_externalFlashSetup(&DEBUG_UART);
 
 
@@ -452,7 +452,7 @@ int main(void)
 
 	  #if IRIDIUM_
 	  HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-	  uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART); //TODO remove lol?
+	  uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART, IRIDIUM_TIMEOUT, IRIDIUM_I2C); //TODO remove lol?
 	  #endif
 #endif
 
@@ -1465,7 +1465,7 @@ void StartTelemetry2(void *argument)
 	  #endif
 
 
-	  if (counter == 10){
+	  if (counter == 5){
 		  counter = 0;
 
 		  //Get sensors data

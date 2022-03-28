@@ -904,6 +904,7 @@ bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char 
    enum {LOOKING_FOR_PROMPT, GATHERING_RESPONSE, LOOKING_FOR_TERMINATOR};
    int promptState = prompt ? LOOKING_FOR_PROMPT : LOOKING_FOR_TERMINATOR;
    //consoleprint(F("<< ")); //TODO If we comment out this it looks cleaner in the serial
+
    for (unsigned long start=millis(); millis() - start < 1000UL * atTimeout;)
    {
       if (cancelled())
@@ -1732,10 +1733,24 @@ static void diagnostic(void){
 }
 
 
-//uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart,POWERPROFILE profile){ TODO
-uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart){
+//uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart,POWERPROFILE profile){ TODO??
+uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart, uint8_t timeout, uint8_t i2c_bus){
 	this->uart = huart;
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "\r\nSetting up the Iridium 9603N\r\n", 32, HAL_MAX_DELAY);
+
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Setting I2C bus...", 18, HAL_MAX_DELAY);
+	if (i2c_bus == 1){
+		this->wireport = &Wire;
+	}
+	else if (i2c_bus == 2){
+		this->wireport = &Wire1;
+	}
+	else if (i2c_bus == 3){
+		this->wireport = &Wire2;
+	}
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 6, HAL_MAX_DELAY);
+
+
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Checking for the device...", 28, HAL_MAX_DELAY);
 	while(!this->isConnected()){
 		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Check if the device is connected. Trying again in\r\n", 53, HAL_MAX_DELAY);
@@ -1786,10 +1801,17 @@ uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart){
 
 	    return HAL_ERROR;
 	  }
-	HAL_UART_Transmit(&(this->uart),(uint8_t*) "...OK\r\n", 7, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 4, HAL_MAX_DELAY);
 
 	//Setup default IMEI to 000000000000000 (no IMEI)
 	IMEI="000000000000000";
+
+	char str[30];
+	sprintf(str, "Setting timeout of %i seconds...", timeout);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) str, strlen(str), HAL_MAX_DELAY);
+	adjustATTimeout(timeout);
+	HAL_UART_Transmit(&(this->uart),(uint8_t*) "OK\r\n", 4, HAL_MAX_DELAY);
+
 
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "End of setup\r\n\r\n", 16, HAL_MAX_DELAY);
 
@@ -2019,6 +2041,11 @@ boolean IridiumSBD::MRT_Iridium_getTime(void){
  */
 boolean IridiumSBD::MRT_Iridium_sendMessage(char* msg){
 
+/*Use this if you want a different timeout when sending
+	int temp = this->atTimeout; //Save default atTimeout
+	adjustATTimeout(timeout);
+*/
+
 	// Send the message
 	HAL_UART_Transmit(&(this->uart),(uint8_t*) "Trying to send the message.  This might take several minutes.\r\n", 63, HAL_MAX_DELAY);
 	int err = this->sendSBDText((const char*) msg);
@@ -2037,7 +2064,7 @@ boolean IridiumSBD::MRT_Iridium_sendMessage(char* msg){
 	}
 
 	else{
-		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Hey, it worked!\r\n", 17, HAL_MAX_DELAY);
+		HAL_UART_Transmit(&(this->uart),(uint8_t*) "Message sent\r\n", 14, HAL_MAX_DELAY);
 	}
 
 	// Clear the Mobile Originated message buffer
@@ -2068,6 +2095,7 @@ boolean IridiumSBD::MRT_Iridium_sendMessage(char* msg){
 boolean IridiumSBD::MRT_Iridium_sendReceive(void){
 	// Define the binary test message (Fibonacci sequence)
 	uint8_t buffer[200] = { 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 };
+
 
 
 	static bool messageSent = false;

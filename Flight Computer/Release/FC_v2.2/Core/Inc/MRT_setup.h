@@ -90,7 +90,7 @@ UART_HandleTypeDef huart8;
 //**************************************************//
 //TELEMETRY_THREAD
 #define DATA_FREQ 10 //Times per second that you want to save data
-#define SEND_FREQ 20 //Times per second that you want to transmit data
+#define SEND_FREQ 50 //Times per second that you want to transmit data
 
 //SRadio
 #define SRADIO_ 0
@@ -104,14 +104,15 @@ UART_HandleTypeDef huart8;
 
 //Iridium
 #define IRIDIUM_ 1
-//#define IRIDIUM_I2C I2C2 //TODO defined in the IridiumSBD.h
+#define IRIDIUM_I2C 2 //I2C bus number
+#define IRIDIUM_TIMEOUT 5 //Timeout in seconds
 
 
 
 
 //**************************************************//
 //SENSORS THREAD
-#define POLL_FREQ 20 //Times per second that you want to poll data
+#define POLL_FREQ 50 //Times per second that you want to poll data
 
 //I2C
 #define CHECK_I2C 0

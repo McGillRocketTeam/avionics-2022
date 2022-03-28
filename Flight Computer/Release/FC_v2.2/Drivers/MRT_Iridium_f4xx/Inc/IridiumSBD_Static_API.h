@@ -19,7 +19,7 @@ void MRT_Static_Iridium_Constructor();
 void MRT_Static_Iridium_Destructor();
 
 //User functions
-uint8_t MRT_Static_Iridium_Setup(UART_HandleTypeDef huart);
+uint8_t MRT_Static_Iridium_Setup(UART_HandleTypeDef huart, uint8_t timeout, uint8_t i2c_bus);
 bool MRT_Static_Iridium_Shutdown(void);
 void MRT_Static_Iridium_ErrorMessage(uint8_t error);
 bool MRT_Static_Iridium_getIMEI(void);
