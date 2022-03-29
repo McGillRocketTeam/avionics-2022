@@ -44,6 +44,7 @@
 #include "video_recorder.h"
 #include "ejection.h"
 #include "MRT_RTOS.h"
+#include "MRT_setup.h"
 
 /* USER CODE END Includes */
 
