@@ -12,8 +12,6 @@
  * -(Optional) Setup alarm A and the clock time in .ioc
  * The rest have been taken care of
  */
-
-#include "cmsis_os.h"
 #include <stm32f4xx_hal.h>
 #include <MRT_Helpers.h>
 

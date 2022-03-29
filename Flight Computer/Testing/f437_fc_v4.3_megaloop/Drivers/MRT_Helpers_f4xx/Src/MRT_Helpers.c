@@ -116,34 +116,34 @@ void tone(uint32_t duration, uint32_t repeats, TIM_HandleTypeDef htim)
 /*
  * Helper functions
  */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+//
+//	if (GPIO_Pin == IN_Button_Pin){
+//		//Manual reset from external button
+//		MRT_resetFromStart();
+//	}
+//
+//}
 
-	if (GPIO_Pin == IN_Button_Pin){
-		//Manual reset from external button
-		MRT_resetFromStart();
-	}
 
-}
-
-
-void MRT_resetFromStart(void){
-	//Clear wakeup and reset flags
-	W25qxx_EraseSector(1);
-	W25qxx_WriteSector(FLAGS_NULL_BUFFER, 1, FLAGS_OFFSET, NB_OF_FLAGS);
-
-	//Clear RTC time (last recorded)
-	W25qxx_EraseSector(2);
-	W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
-
-	//Clear all saved data of ejection stages
-	//TODO
-
-	//Shutdown Iridium
-	MRT_Static_Iridium_Shutdown();
-
-	//Reset function
-	NVIC_SystemReset();
-}
+//void MRT_resetFromStart(void){
+//	//Clear wakeup and reset flags
+//	W25qxx_EraseSector(1);
+//	W25qxx_WriteSector(FLAGS_NULL_BUFFER, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+//
+//	//Clear RTC time (last recorded)
+//	W25qxx_EraseSector(2);
+//	W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
+//
+//	//Clear all saved data of ejection stages
+//	//TODO
+//
+//	//Shutdown Iridium
+//	MRT_Static_Iridium_Shutdown();
+//
+//	//Reset function
+//	NVIC_SystemReset();
+//}
 
 
 void MRT_updateExternalFlashBuffers(void){
@@ -234,63 +234,63 @@ void MRT_getFlags(void){
 }
 
 
-void MRT_resetInfo(UART_HandleTypeDef* uart){
-
-	  char buffer[100];
-	  sprintf(buffer,"Reset: %i,  WU: %i,  IWDG: %i\r\nPrevious RTC time: %i:%i:%i\r\n",reset_flag, wu_flag, iwdg_flag, prev_hours, prev_min, prev_sec);
-	  HAL_UART_Transmit(uart, buffer, strlen(buffer), HAL_MAX_DELAY);
-
-	  //Check if IWDG is being deactivated
-	  if (iwdg_flag==1){
-		  HAL_UART_Transmit(uart, "Deactivating IWDG\r\n", 19, HAL_MAX_DELAY);
-
-		  iwdg_flag = 0; //Flip flag
-
-		  //Write new flag to flash memory
-		  flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
-		  W25qxx_EraseSector(1);
-		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
-
-		  HAL_Delay(1000);
-
-		  //Go to sleep
-		  MRT_StandByMode(SLEEP_TIME);
-	  }
-
-
-	  //Check if we are after waking up (and at which wake up we are at)
-	  if (wu_flag>0){
-		  char buf[20];
-		  sprintf(buf, "FC wake up %i\r\n", wu_flag);
-		  HAL_UART_Transmit(uart, buf, strlen(buf), HAL_MAX_DELAY);
-
-		  HAL_UART_Transmit(uart, "Resetting RTC time\r\n", 20, HAL_MAX_DELAY);
-
-
-		  //Clear RTC time (last recorded)
-		  W25qxx_EraseSector(2);
-		  W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
-
-		  //Update variables (to 0)
-		  for (int i = 0; i < 3; i++){
-			  *flash_time[i] = 0x0;
-		  }
-
-	  }
-
-
-	  //Check if we start from the beginning
-	  if (reset_flag==0){
-		  HAL_UART_Transmit(uart, "FC restarted\r\n", 14, HAL_MAX_DELAY);
-
-		  reset_flag = 1; //Flip flag
-
-		  //Write new flag to flash memory
-	      flash_flags_buffer[RESET_FLAG_OFFSET] = reset_flag;
-		  W25qxx_EraseSector(1);
-		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
-	  }
-}
+//void MRT_resetInfo(UART_HandleTypeDef* uart){
+//
+//	  char buffer[100];
+//	  sprintf(buffer,"Reset: %i,  WU: %i,  IWDG: %i\r\nPrevious RTC time: %i:%i:%i\r\n",reset_flag, wu_flag, iwdg_flag, prev_hours, prev_min, prev_sec);
+//	  HAL_UART_Transmit(uart, buffer, strlen(buffer), HAL_MAX_DELAY);
+//
+//	  //Check if IWDG is being deactivated
+//	  if (iwdg_flag==1){
+//		  HAL_UART_Transmit(uart, "Deactivating IWDG\r\n", 19, HAL_MAX_DELAY);
+//
+//		  iwdg_flag = 0; //Flip flag
+//
+//		  //Write new flag to flash memory
+//		  flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
+//		  W25qxx_EraseSector(1);
+//		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+//
+//		  HAL_Delay(1000);
+//
+//		  //Go to sleep
+//		  MRT_StandByMode(SLEEP_TIME);
+//	  }
+//
+//
+//	  //Check if we are after waking up (and at which wake up we are at)
+//	  if (wu_flag>0){
+//		  char buf[20];
+//		  sprintf(buf, "FC wake up %i\r\n", wu_flag);
+//		  HAL_UART_Transmit(uart, buf, strlen(buf), HAL_MAX_DELAY);
+//
+//		  HAL_UART_Transmit(uart, "Resetting RTC time\r\n", 20, HAL_MAX_DELAY);
+//
+//
+//		  //Clear RTC time (last recorded)
+//		  W25qxx_EraseSector(2);
+//		  W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
+//
+//		  //Update variables (to 0)
+//		  for (int i = 0; i < 3; i++){
+//			  *flash_time[i] = 0x0;
+//		  }
+//
+//	  }
+//
+//
+//	  //Check if we start from the beginning
+//	  if (reset_flag==0){
+//		  HAL_UART_Transmit(uart, "FC restarted\r\n", 14, HAL_MAX_DELAY);
+//
+//		  reset_flag = 1; //Flip flag
+//
+//		  //Write new flag to flash memory
+//	      flash_flags_buffer[RESET_FLAG_OFFSET] = reset_flag;
+//		  W25qxx_EraseSector(1);
+//		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+//	  }
+//}
 
 
 /*
@@ -311,14 +311,14 @@ void MRT_saveRTCTime(void){
  * returns a binary number in its decimal form. Each bit is the state of a gate.
  * bit3 bit2 bit1 bit0 = drogue1 drogue2 prop1 prop2
  */
-uint8_t MRT_getContinuity(void){
-	uint8_t drogue1 = HAL_GPIO_ReadPin(IN_EJ_Drogue_Cont_GPIO_Port, IN_EJ_Drogue_Cont_Pin);
-	uint8_t drogue2 = HAL_GPIO_ReadPin(IN_EJ_Main_Cont_GPIO_Port, IN_EJ_Main_Cont_Pin);
-	uint8_t prop1 = HAL_GPIO_ReadPin(IN_PyroValve_Cont_1_GPIO_Port, IN_PyroValve_Cont_1_Pin);
-	uint8_t prop2 = HAL_GPIO_ReadPin(IN_PyroValve_Cont_2_GPIO_Port, IN_PyroValve_Cont_2_Pin);
-	uint8_t continuity = 8*drogue1 + 4*drogue2 + 2*prop1 + prop2;
-	return continuity;
-}
+//uint8_t MRT_getContinuity(void){
+//	uint8_t drogue1 = HAL_GPIO_ReadPin(IN_EJ_Drogue_Cont_GPIO_Port, IN_EJ_Drogue_Cont_Pin);
+//	uint8_t drogue2 = HAL_GPIO_ReadPin(IN_EJ_Main_Cont_GPIO_Port, IN_EJ_Main_Cont_Pin);
+//	uint8_t prop1 = HAL_GPIO_ReadPin(IN_PyroValve_Cont_1_GPIO_Port, IN_PyroValve_Cont_1_Pin);
+//	uint8_t prop2 = HAL_GPIO_ReadPin(IN_PyroValve_Cont_2_GPIO_Port, IN_PyroValve_Cont_2_Pin);
+//	uint8_t continuity = 8*drogue1 + 4*drogue2 + 2*prop1 + prop2;
+//	return continuity;
+//}
 
 
 /*
@@ -344,6 +344,6 @@ float MRT_prop_poll_pressure_transducer(ADC_HandleTypeDef* hadc) {
  * Gets the altitude using temperature, pressure and sea-level pressure
  *https://www.mide.com/air-pressure-at-altitude-calculator
  */
-float MRT_getAltitude(float pressure){
-	return BASE_HEIGHT+(SEA_LEVEL_TEMPERATURE/-0.0065)*(pow(pressure/SEA_LEVEL_PRESSURE,(-R*-0.0065/(go*M)))-1);
-}
+//float MRT_getAltitude(float pressure){
+//	return BASE_HEIGHT+(SEA_LEVEL_TEMPERATURE/-0.0065)*(pow(pressure/SEA_LEVEL_PRESSURE,(-R*-0.0065/(go*M)))-1);
+//}
