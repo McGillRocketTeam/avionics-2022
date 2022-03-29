@@ -43,6 +43,7 @@
 //#include <IridiumSBD_Static_API.h>
 #include "video_recorder.h"
 #include "ejection.h"
+#include "MRT_RTOS.h"
 
 /* USER CODE END Includes */
 
@@ -313,6 +314,20 @@ int main(void)
   Tx_setup();
 #endif
 
+#ifdef USING_RTC
+  MRT_SetupRTOS(&hrtc, DEBUG_UART, SLEEP_TIME);
+  MRT_setRTC(prev_hours,prev_min,prev_sec);
+  HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
+
+#endif
+#if ALARM_A_ACTIVE
+  if (wu_flag == 0){
+  	MRT_setAlarmA(PRE_WHEN_SLEEP_TIME_HOURS, PRE_WHEN_SLEEP_TIME_MIN, PRE_WHEN_SLEEP_TIME_SEC);
+  }
+  else{
+  	MRT_setAlarmA(POST_WHEN_SLEEP_TIME_HOURS, POST_WHEN_SLEEP_TIME_MIN, POST_WHEN_SLEEP_TIME_SEC);
+  }
+#endif
   // init i2c sensors and data storage
   dev_ctx_lsm = lsm6dsl_init();
   buzz_success();
