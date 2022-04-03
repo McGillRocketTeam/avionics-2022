@@ -54,6 +54,7 @@
 #include "radio_commands.h"
 #include "MRT_setup.h"
 #include "MRT_RTOS.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,14 +64,15 @@
 
 // radios
 #define USING_XTEND 	// comment out to use SRADio
-#define TIMING_ITM 		// comment out
+//#define TIMING_ITM 		// comment out
 
 #ifdef TIMING_ITM
 #define ITM_Port32(n) (*((volatile unsigned long *) (0xE0000000+4*n)))
 #define TIMING_ITM_LOOPS	500
 #endif
 
-#define PROP_TANK_PRESSURE_ADC_BUF_LEN	50	// samples
+#define PROP_TANK_PRESSURE_ADC_BUF_LEN	15	// samples
+#define USING_RTC
 
 /* USER CODE END PTD */
 
@@ -151,6 +153,8 @@ volatile uint8_t xtend_tx_completed = 1; // to allow first tx
 volatile uint8_t xtend_tx_start_av = 0;	 // distinguishing tx of av and pr in callback with timer
 volatile uint8_t xtend_tx_start_pr = 0;
 
+const char xtend_ack_msg[] = "xtend_ack\r\n";
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -212,8 +216,10 @@ void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 void tone(uint32_t duration, uint32_t repeats) {
 	for (uint32_t i = 0; i < repeats; i++) {
 		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
 		HAL_Delay(duration);
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
+		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, RESET);
 		if (repeats > 1)
 			HAL_Delay(duration);
 	}
@@ -228,8 +234,10 @@ void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
 
 	for (uint32_t i = 0; i < repeats; i++) {
 		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
 		HAL_Delay(duration);
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
+		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, RESET);
 		if (repeats > 1)
 			HAL_Delay(duration);
 	}
@@ -237,6 +245,12 @@ void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
 
 void buzz_success(void) { tone_freq(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS, BUZZ_SUCCESS_FREQ); };
 void buzz_failure(void) { tone_freq(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS, BUZZ_FAILURE_FREQ); };
+void buzz_startup_success(void) {
+	for (uint8_t i = 0; i < 5; i++) {
+		buzz_success();
+		HAL_Delay(1000);
+	}
+};
 
 /* USER CODE END 0 */
 
@@ -247,14 +261,6 @@ void buzz_failure(void) { tone_freq(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS,
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
-	// array to determine success of startup
-	// 0: lsm6dsl/r
-	// 1: lps22hh
-	// 2: FLASH
-	// 3: SD card
-
-	uint8_t startup_errors[4] = {0};
 
 	// just for debugging adc resolution with averaging
 	for (uint8_t i = 0; i < PROP_TANK_PRESSURE_ADC_BUF_LEN; i++) {
@@ -300,6 +306,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // *** IMPORTANT: DMA Init function must be called before peripheral init! *** //
+
+  // turn on LED near vent hole to show that FC is on
+  HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
 
   // FLASH set CS, WP and IO3 pins high
   HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, SET);
@@ -374,11 +383,11 @@ int main(void)
 	  // init sd card with dynamic filename
 	  fres = sd_init_dynamic_filename("FC", sd_file_header, filename);
 	  if (fres != FR_OK) {
-			buzz_failure();
+			Error_Handler();
 	  }
   }
   else {
-	  buzz_failure();
+	  Error_Handler();
   }
 
   // check if flash empty and write to sd card if not
@@ -386,6 +395,9 @@ int main(void)
 //  if (save_flash) {
 //	  buzz_failure();
 //  }
+
+  // got to this point, successful init
+  buzz_startup_success();
 
   // get ground altitude
   for (uint8_t i = 0; i < 100; i++) {
@@ -398,8 +410,6 @@ int main(void)
 //  HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN); // GPS
   memset(xtend_rx_buf, 0, 10);
 //  HAL_UART_Receive_DMA(&huart3, (uint8_t *)xtend_rx_buf, XTEND_RX_DMA_CMD_LEN); // XTend
-//  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)tank_pressure_buf, PROP_TANK_PRESSURE_ADC_BUF_LEN); // ADC for propulsion
-  HAL_TIM_Base_Start_IT(&htim8);	// drives ADC DMA
 
   // initialize avionics and propulsion xtend buffers with *something* so DMA can happen without zero length error
   telemetry_format_avionics();
@@ -407,7 +417,7 @@ int main(void)
 
   // start timers:
 //  HAL_TIM_Base_Start_IT(&htim3);	// drives XTend DMA
-//  HAL_TIM_Base_Start(&htim8);	// drives ADC DMA
+  HAL_TIM_Base_Start_IT(&htim8);	// drives ADC
 
   /* USER CODE END 2 */
 
@@ -446,16 +456,6 @@ int main(void)
 		// propulsion data (not needed after apogee)
 		if (state < FLIGHT_STATE_PRE_MAIN) {
 			tank_temperature = Max31855_Read_Temp();
-//			while (1) {
-////				tank_pressure = prop_poll_pressure_transducer();
-//				sprintf(msg_buffer_av, "tank pressure = %f\r\n", tank_pressure);
-//				debug_tx_uart(msg_buffer_av);
-//				HAL_Delay(10);
-//			}
-			uint8_t prebuf[100];
-			sprintf(prebuf, "pressure = %f\r\n", tank_pressure);
-			debug_tx_uart(prebuf);
-
 			valve_state = HAL_GPIO_ReadPin(IN_Prop_ActuatedVent_Feedback_GPIO_Port, IN_Prop_ActuatedVent_Feedback_Pin);
 
 			#ifdef TIMING_ITM
@@ -605,6 +605,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		radio_command cmd = xtend_parse_dma_command();
 		execute_parsed_command(cmd); // ASSUMING VR IS CONTROLLED BY ATTINY AND VR COMMANDS ARE NON BLOCKING
 
+		// send acknowledge
+		HAL_UART_DMAStop(&huart3);
+		xtend_tx_start_av = 0;	// set flags to zero to allow new tx
+		xtend_tx_start_pr = 0;
+		sprintf(msg_buffer_av, "%s_%d", (int)cmd);
+		radio_tx(msg_buffer_av, strlen(msg_buffer_av));
+
 		// prep for next command to be sent
 		memset(xtend_rx_buf, 0, 10);
 		HAL_UART_Receive_DMA(&huart3, xtend_rx_buf, XTEND_RX_DMA_CMD_LEN);
@@ -639,16 +646,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		xtend_transmit_telemetry(&state);
 	}
 	else if (htim == &htim8) {
-		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 
 #ifdef TIMING_ITM
 		ITM_Port32(31) = 20;
 #endif
 		prop_poll_pressure_transducer();
+
 #ifdef TIMING_ITM
 		ITM_Port32(31) = 21;
 #endif
+#ifdef DEBUG_MODE
 		tank_pressure = convert_prop_tank_pressure(); // for debug, later move to telemetry_format_prop()
+#endif
 
 #ifdef TIMING_ITM
 		ITM_Port32(31) = 22;
@@ -957,6 +966,7 @@ void telemetry_format_avionics(void) {
 
 // formats propulsion telemetry string using sprintf
 void telemetry_format_propulsion(void) {
+	tank_pressure = convert_prop_tank_pressure(); // convert buffered readings to voltage
 	sprintf((char*) msg_buffer_pr, "P,%03.2f,%03.2f,%d,%02d,%02d,%lu,E\r\n",
 			tank_pressure, tank_temperature, valve_state, stimeget.Minutes,
 			stimeget.Seconds, stimeget.SubSeconds);
@@ -973,8 +983,10 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
 	HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, GPIO_PIN_SET);
-	buzz_failure();
-	__BKPT();
+	while (1) {
+		buzz_failure();
+	}
+
   /* USER CODE END Error_Handler_Debug */
 }
 

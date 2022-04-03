@@ -165,6 +165,8 @@ void Error_Handler(void);
 #define Rcov_Cont_Drogue_GPIO_Port GPIOG
 #define Rcov_Arm_Pin GPIO_PIN_14
 #define Rcov_Arm_GPIO_Port GPIOG
+#define POWER_ON_EXT_LED_Pin GPIO_PIN_9
+#define POWER_ON_EXT_LED_GPIO_Port GPIOB
 #define UART8_RX_Debug_Pin GPIO_PIN_0
 #define UART8_RX_Debug_GPIO_Port GPIOE
 #define UART8_TX_Debug_Pin GPIO_PIN_1
@@ -203,12 +205,12 @@ extern UART_HandleTypeDef huart6;
 #define XTEND_RX_DMA_CMD_LEN			2		// all commands have this length (in chars)
 
 // buzzer durations
-#define BUZZ_SUCCESS_DURATION	50		// ms
-#define BUZZ_SUCCESS_REPEATS	1
+#define BUZZ_SUCCESS_DURATION	100		// ms
+#define BUZZ_SUCCESS_REPEATS	2
 #define BUZZ_SUCCESS_FREQ		1046	// Hz
 
-#define BUZZ_FAILURE_DURATION	500 	// ms
-#define BUZZ_FAILURE_REPEATS	1
+#define BUZZ_FAILURE_DURATION	1000 	// ms
+#define BUZZ_FAILURE_REPEATS	3
 #define	BUZZ_FAILURE_FREQ		220		// Hz
 
 #define LOCAL_PRESSURE_HPA		1028	// hPa
