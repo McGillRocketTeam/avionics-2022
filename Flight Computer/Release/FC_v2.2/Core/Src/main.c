@@ -154,8 +154,8 @@ uint8_t writeBuf[1000];
 //**************************************************//
 //TELEMETRY
 #if XTEND_
-uint8_t xtend_rx_buffer[64] = {0}; // XTend Reception buffer
 char xtend_tx_buffer[XTEND_BUFFER_SIZE]; // XTend Transmit
+uint8_t xtend_rx_buffer[XTEND_BUFFER_SIZE]; // XTend Receive
 #elif SRADIO_
 uint8_t sradio_rx_buffer[64] = {0}; // SRADio Reception buffer
 char sradio_tx_buffer[SRADIO_BUFFER_SIZE]; // SRADio Transmit
@@ -458,6 +458,63 @@ int main(void)
 
 
 //TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED (or find other way to completely reset the board)
+
+
+
+	  //**************************************************//
+
+	  //Poll propulsion until launch command sent
+
+  	  memset(xtend_rx_buffer, 0, XTEND_BUFFER_SIZE); //clear the buffer
+
+	  while(strcmp(xtend_rx_buffer, "launch") != 0 && wu_flag == 0){
+		  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
+
+		  HAL_IWDG_Refresh(&hiwdg);
+
+		  //Poll propulsion sensors
+
+		  //Thermocouple
+		  Max31855_Read_Temp();
+
+		  //Pressure tank
+		  transducer_pressure = MRT_prop_poll_pressure_transducer(&hadc1);
+
+
+		  //Get propulsion data TODO
+		  TANK_PRESSURE = transducer_pressure;
+		  THERMO_TEMPERATURE = THERMO_TEMP;
+		  VALVE_STATUS = 0;
+
+		  //Send propulsion data
+		  #if XTEND_ //Xtend send
+	  		memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
+	  		sprintf(xtend_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
+	  		XTend_Transmit(xtend_tx_buffer);
+
+		  	//Check for launch command
+		  	memset(xtend_rx_buffer, 0, XTEND_BUFFER_SIZE);
+		  	//HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, HAL_MAX_DELAY);
+		  	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, 0x50); //TODO play around with this delay (should be less than 5 sec)
+
+		  #elif SRADIO_ //SRadio send
+	    	memset(sradio_tx_buffer, 0, SRADIO_BUFFER_SIZE);
+	    	sprintf(sradio_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
+	    	TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
+		  #endif
+
+	  	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
+
+
+	  	  //Reset IWDG timer
+	  	  HAL_IWDG_Refresh(&hiwdg);
+
+	      HAL_Delay(1000/SEND_FREQ);
+	  }
+
+
+
+
 
 
   /* USER CODE END 2 */
