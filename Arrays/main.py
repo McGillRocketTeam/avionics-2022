@@ -23,12 +23,12 @@ def runMEKF():
     sigma_gyro = 0.1 #process noise on orientation
     sigma_acc = 0.1  #process noise on position
     sigma_gps = 2 #sensor noise (GPS only)
-    P_init = 0.1 #confidence in position and orientation at time = 0
-    
+    P_init_orien = 0.1 #confidence in orientation at time = 0
+    P_init_pos = 0.5 #confidence in position at time = 0
     
     
     #A) create fake data
-    mekf = MEKF.MEKF(T, sigma_gyro, sigma_acc, sigma_gps, P_init)
+    mekf = MEKF.MEKF(T, sigma_gyro, sigma_acc, sigma_gps, P_init_orien, P_init_pos)
     i = 0
     gyro_real_arr, GYRO_meas_arr = [], []
     acc_real_arr, ACC_meas_arr = [], []
@@ -90,7 +90,7 @@ def runMEKF():
         orien_real3.append(dcmToEuler(mekf.Cab_k)[2])        
 
     #B) feed data into MEKF
-    mekf = MEKF.MEKF(T, sigma_gyro, sigma_acc, sigma_gps, P_init)
+    mekf = MEKF.MEKF(T, sigma_gyro, sigma_acc, sigma_gps, P_init_orien, P_init_pos)
     position_pred1, position_pred2, position_pred3 = [], [], [] #predicted position
     orien_pred1, orien_pred2, orien_pred3 = [], [], []
     xt, pos_cov1a, pos_cov1b = [], [], []

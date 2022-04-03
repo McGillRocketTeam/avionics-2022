@@ -41,7 +41,7 @@ class MEKF:
     """
 
     
-    def __init__(self, dt, sigma_gyro, sigma_acc, sigma_gps, P_init):
+    def __init__(self, dt, sigma_gyro, sigma_acc, sigma_gps, P_init_orien, P_init_pos):
         #dummy variables
         self.zeros3 = np.zeros((3, 3), dtype='f')
         self.ones3 = np.eye((3), dtype='f')
@@ -78,8 +78,10 @@ class MEKF:
         self.Cab_k = np.eye(3, dtype='f')
         self.Va_k = np.zeros((3, 1), dtype='f')
         self.ra_k = np.zeros((3, 1), dtype='f')
-        self.P_k = np.eye(9, dtype='f') * P_init
-        self.P_k_1 = np.eye(9, dtype='f') * P_init
+        self.P_k = np.eye(9, dtype='f') 
+        self.P_k_1 =  np.block([[self.ones3*P_init_orien,    self.zeros3 ,      self.zeros3],
+                                [self.zeros3,           self.ones3*P_init_pos,   self.zeros3], 
+                                [self.zeros3,           self.zeros3,        self.ones3*P_init_pos]])
         self.L = np.zeros((9, 6), dtype='f')
         self.S1 = np.eye(9, dtype='f') 
         self.S2 = np.eye(3, dtype='f')
