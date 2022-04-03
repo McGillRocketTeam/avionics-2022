@@ -38,7 +38,8 @@ FATFS/Target/user_diskio.o: ../FATFS/Target/user_diskio.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../FATFS/Target/user_diskio_spi.h \
+ ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h ../Core/Inc/w25qxx.h \
+ ../Core/Inc/main.h ../FATFS/Target/user_diskio_spi.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h
 
@@ -123,6 +124,12 @@ FATFS/Target/user_diskio.o: ../FATFS/Target/user_diskio.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+
+../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h:
+
+../Core/Inc/w25qxx.h:
+
+../Core/Inc/main.h:
 
 ../FATFS/Target/user_diskio_spi.h:
 

@@ -58,24 +58,18 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 // radios
 #define USING_XTEND 	// comment out to use SRADio
-//#define TIMING_ITM 		// comment out
+#define TIMING_ITM 		// comment out
 
 #ifdef TIMING_ITM
 #define ITM_Port32(n) (*((volatile unsigned long *) (0xE0000000+4*n)))
+#define TIMING_ITM_LOOPS	500
 #endif
 
-// buzzer durations
-#define BUZZ_SUCCESS_DURATION	50		// ms
-#define BUZZ_SUCCESS_REPEATS	1
-
-#define BUZZ_FAILURE_DURATION	500 	// ms
-#define BUZZ_FAILURE_REPEATS	1
-
-#define PROP_TANK_PRESSURE_ADC_BUF_LEN	10	// samples
+#define PROP_TANK_PRESSURE_ADC_BUF_LEN	50	// samples
 
 /* USER CODE END PTD */
 
@@ -102,7 +96,6 @@ float acceleration_mg[] = {0, 0, 0};
 float angular_rate_mdps[]= {0, 0, 0};
 float pressure_hPa = 0;
 float temperature_degC = 0;
-float local_pressure = 1028.0;
 
 // gps data
 double latitude;
@@ -115,7 +108,9 @@ volatile uint8_t gps_dma_ready = 0;
 volatile float tank_temperature = 0.0f;
 uint8_t valve_state = 0;
 volatile float tank_pressure = 0.0f;
-volatile uint16_t tank_pressure_buf[PROP_TANK_PRESSURE_ADC_BUF_LEN]; // buffer for DMA, average 10 values
+volatile uint16_t tank_pressure_buf[PROP_TANK_PRESSURE_ADC_BUF_LEN]; // circular buffer for averaging (low pass filter)
+volatile uint8_t tank_pressure_buf_idx = 0;
+
 
 // rtc
 RTC_TimeTypeDef stimeget = {0};
@@ -168,7 +163,7 @@ void tone(uint32_t duration, uint32_t repeats);
 int flash_write(char *msg_buffer);
 
 uint8_t get_continuity(void);
-float prop_poll_pressure_transducer(void);
+void prop_poll_pressure_transducer(void);
 float convert_prop_tank_pressure(void);
 float getAltitude(void);
 
@@ -185,11 +180,11 @@ void telemetry_format_propulsion(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-#ifdef DEBUG_MODE
-void debug_tx_uart(uint8_t *msg_buffer) {
-	HAL_UART_Transmit(&huart8, msg_buffer, strlen((char *)msg_buffer), HAL_MAX_DELAY);
+//#ifdef DEBUG_MODE
+void debug_tx_uart(char *msg) {
+	HAL_UART_Transmit(&huart8, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
-#endif
+//#endif
 
 // radio transmission wrapper
 #ifdef USING_XTEND
@@ -222,8 +217,25 @@ void tone(uint32_t duration, uint32_t repeats) {
 			HAL_Delay(duration);
 	}
 }
-void buzz_success(void) { tone(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS); };
-void buzz_failure(void) { tone(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS); };
+
+// buzz at particular frequency
+void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
+	// TIM2 base frequency is 90 MHz, PSC = 90-1
+	// can calculate required ARR value
+	TIM2->ARR = 1000000 / freq;
+	TIM2->EGR |= TIM_EGR_UG;
+
+	for (uint32_t i = 0; i < repeats; i++) {
+		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+		HAL_Delay(duration);
+		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
+		if (repeats > 1)
+			HAL_Delay(duration);
+	}
+}
+
+void buzz_success(void) { tone_freq(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS, BUZZ_SUCCESS_FREQ); };
+void buzz_failure(void) { tone_freq(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS, BUZZ_FAILURE_FREQ); };
 
 /* USER CODE END 0 */
 
@@ -234,6 +246,19 @@ void buzz_failure(void) { tone(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS); };
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
+	// array to determine success of startup
+	// 0: lsm6dsl/r
+	// 1: lps22hh
+	// 2: FLASH
+	// 3: SD card
+
+	uint8_t startup_errors[4] = {0};
+
+	// just for debugging adc resolution with averaging
+	for (uint8_t i = 0; i < PROP_TANK_PRESSURE_ADC_BUF_LEN; i++) {
+		tank_pressure_buf[i] = 1940;
+	}
 
   /* USER CODE END 1 */
 
@@ -356,8 +381,9 @@ int main(void)
   // initial DMA requests:
 //  HAL_UART_Receive_DMA(&huart6, gps_rx_buf, GPS_RX_DMA_BUF_LEN); // GPS
   memset(xtend_rx_buf, 0, 10);
-  HAL_UART_Receive_DMA(&huart3, (uint8_t *)xtend_rx_buf, XTEND_RX_DMA_CMD_LEN); // XTend
-//  HAL_ADC_Start_DMA(&hadc1, tank_pressure_buf, PROP_TANK_PRESSURE_ADC_BUF_LEN); // ADC for propulsion
+//  HAL_UART_Receive_DMA(&huart3, (uint8_t *)xtend_rx_buf, XTEND_RX_DMA_CMD_LEN); // XTend
+//  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)tank_pressure_buf, PROP_TANK_PRESSURE_ADC_BUF_LEN); // ADC for propulsion
+  HAL_TIM_Base_Start_IT(&htim8);	// drives ADC DMA
 
   // initialize avionics and propulsion xtend buffers with *something* so DMA can happen without zero length error
   telemetry_format_avionics();
@@ -365,7 +391,7 @@ int main(void)
 
   // start timers:
 //  HAL_TIM_Base_Start_IT(&htim3);	// drives XTend DMA
-//  HAL_TIM_Base_Start_IT(&htim8);	// drives ADC DMA
+//  HAL_TIM_Base_Start(&htim8);	// drives ADC DMA
 
   /* USER CODE END 2 */
 
@@ -376,7 +402,7 @@ int main(void)
   while (1)
 #else
   ITM_Port32(31) = 1;
-  for (uint32_t i = 2; i < 2+10; i++)
+  for (uint32_t i = 2; i < 2+TIMING_ITM_LOOPS; i++)
 #endif
   {
 //	    buzz_success();
@@ -410,6 +436,9 @@ int main(void)
 //				debug_tx_uart(msg_buffer_av);
 //				HAL_Delay(10);
 //			}
+			uint8_t prebuf[100];
+			sprintf(prebuf, "pressure = %f\r\n", tank_pressure);
+			debug_tx_uart(prebuf);
 
 			valve_state = HAL_GPIO_ReadPin(IN_Prop_ActuatedVent_Feedback_GPIO_Port, IN_Prop_ActuatedVent_Feedback_Pin);
 
@@ -593,30 +622,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		HAL_GPIO_TogglePin(LEDF_GPIO_Port, LEDF_Pin);
 		xtend_transmit_telemetry(&state);
 	}
-//	else if (htim == &htim8) {
-//		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
-////		HAL_ADC_Start_DMA(&hadc1, tank_pressure_buf, PROP_TANK_PRESSURE_ADC_BUF_LEN);
-//	}
+	else if (htim == &htim8) {
+		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+
+#ifdef TIMING_ITM
+		ITM_Port32(31) = 20;
+#endif
+		prop_poll_pressure_transducer();
+#ifdef TIMING_ITM
+		ITM_Port32(31) = 21;
+#endif
+		tank_pressure = convert_prop_tank_pressure(); // for debug, later move to telemetry_format_prop()
+
+#ifdef TIMING_ITM
+		ITM_Port32(31) = 22;
+#endif
+	}
 }
-
-//void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc) {
-//	// only one ADC, no need to check
-//	HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
-//	tank_pressure = convert_prop_tank_pressure();
-//}
-//
-//void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-//	// only one ADC, no need to check
-////	HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
-////	tank_pressure = convert_prop_tank_pressure();
-//
-//	HAL_ADC_Start_DMA(&hadc1, tank_pressure_buf, PROP_TANK_PRESSURE_ADC_BUF_LEN);
-//}
-
 
 float getAltitude(void) {
 	get_pressure(dev_ctx_lps, &pressure_hPa);
-	uint32_t altitude = 145442.1609 * (1.0 - pow(pressure_hPa/local_pressure, 0.190266436));
+	uint32_t altitude = 145442.1609 * (1.0 - pow(pressure_hPa/LOCAL_PRESSURE_HPA, 0.190266436));
 	return altitude;
 }
 
@@ -642,19 +668,17 @@ uint8_t get_continuity(void) {
 }
 
 // polling ADC for pressure transducer voltage
-float prop_poll_pressure_transducer(void) {
+void prop_poll_pressure_transducer(void) {
 	// reading adc
 	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1, 1000);
+	HAL_ADC_PollForConversion(&hadc1, 10);
 	uint32_t pressure_sensor_raw = HAL_ADC_GetValue(&hadc1);
 	HAL_ADC_Stop(&hadc1);
 
-	float voltage = (float) (pressure_sensor_raw / 4095.0) * 3.3; // assuming 12 bits
-
-	// convert using transfer function
-	// TODO
-
-	return voltage;
+	// store to circular buffer
+	tank_pressure_buf[tank_pressure_buf_idx++] = pressure_sensor_raw; // convert to float later
+	if (tank_pressure_buf_idx == PROP_TANK_PRESSURE_ADC_BUF_LEN)
+		tank_pressure_buf_idx = 0;
 }
 
 // supposed to be used for ADC DMA callback to average
@@ -664,16 +688,11 @@ float prop_poll_pressure_transducer(void) {
 float convert_prop_tank_pressure(void) {
 	// average values in the buffer
 	uint32_t avg = 0;
-	float pressure;
 	for (uint16_t i = 0; i < PROP_TANK_PRESSURE_ADC_BUF_LEN; i++) {
 		avg += tank_pressure_buf[i];
 	}
 
-	pressure = ((float) avg) / PROP_TANK_PRESSURE_ADC_BUF_LEN / 4095.0 * 3.3; // 12 bit ADC
-
-	// convert using transfer function
-	// TODO
-
+	float pressure = ((float) avg) / PROP_TANK_PRESSURE_ADC_BUF_LEN / 4095.0 * 3.3; // 12 bit ADC
 	return pressure;
 }
 

@@ -22,6 +22,8 @@ OBJCOPY_BIN :=
 SUBDIRS := \
 Core/Src \
 Core/Startup \
+Drivers/MRT_Helpers_f4xx/Src \
+Drivers/MRT_RTOS_f4xx/Src \
 Drivers/STM32F4xx_HAL_Driver/Src \
 FATFS/App \
 FATFS/Target \

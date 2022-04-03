@@ -38,7 +38,9 @@ Middlewares/Third_Party/FatFs/src/diskio.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+ ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h ../Core/Inc/w25qxx.h \
+ ../Core/Inc/main.h
 
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
 
@@ -121,3 +123,9 @@ Middlewares/Third_Party/FatFs/src/diskio.o: \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+
+../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h:
+
+../Core/Inc/w25qxx.h:
+
+../Core/Inc/main.h:

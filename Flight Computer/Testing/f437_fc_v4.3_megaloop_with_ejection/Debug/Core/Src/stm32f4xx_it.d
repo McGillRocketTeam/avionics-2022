@@ -34,7 +34,8 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/stm32f4xx_it.h
+ ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h ../Core/Inc/w25qxx.h \
+ ../Core/Inc/main.h ../Core/Inc/stm32f4xx_it.h
 
 ../Core/Inc/main.h:
 
@@ -107,5 +108,11 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+
+../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h:
+
+../Core/Inc/w25qxx.h:
+
+../Core/Inc/main.h:
 
 ../Core/Inc/stm32f4xx_it.h:

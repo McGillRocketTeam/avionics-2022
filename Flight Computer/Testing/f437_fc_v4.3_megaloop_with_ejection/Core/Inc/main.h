@@ -202,6 +202,17 @@ extern UART_HandleTypeDef huart6;
 #define GPS_RX_DMA_BUF_LEN				175		// characters
 #define XTEND_RX_DMA_CMD_LEN			2		// all commands have this length (in chars)
 
+// buzzer durations
+#define BUZZ_SUCCESS_DURATION	50		// ms
+#define BUZZ_SUCCESS_REPEATS	1
+#define BUZZ_SUCCESS_FREQ		1046	// Hz
+
+#define BUZZ_FAILURE_DURATION	500 	// ms
+#define BUZZ_FAILURE_REPEATS	1
+#define	BUZZ_FAILURE_FREQ		220		// Hz
+
+#define LOCAL_PRESSURE_HPA		1028	// hPa
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

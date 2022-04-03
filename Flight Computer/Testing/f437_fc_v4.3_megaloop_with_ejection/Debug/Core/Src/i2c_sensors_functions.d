@@ -35,7 +35,8 @@ Core/Src/i2c_sensors_functions.o: ../Core/Src/i2c_sensors_functions.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/lsm6dsl_reg.h ../Core/Inc/lps22hh_reg.h
+ ../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h ../Core/Inc/w25qxx.h \
+ ../Core/Inc/main.h ../Core/Inc/lsm6dsl_reg.h ../Core/Inc/lps22hh_reg.h
 
 ../Core/Inc/i2c_sensor_functions.h:
 
@@ -110,6 +111,12 @@ Core/Src/i2c_sensors_functions.o: ../Core/Src/i2c_sensors_functions.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+
+../Drivers/MRT_Helpers_f4xx/Inc/MRT_Helpers.h:
+
+../Core/Inc/w25qxx.h:
+
+../Core/Inc/main.h:
 
 ../Core/Inc/lsm6dsl_reg.h:
 
