@@ -7,6 +7,7 @@ import MEKF as MEKF
 import pyplotHandler as pH
 import math
 from scipy.linalg import logm
+from scipy.linalg import expm, sinm, cosm
 """
 This file's main purpose is testing. 
 
@@ -19,13 +20,15 @@ def runMEKF():
     #0) constants
     N = 1000 #nb samples
     T = 0.01 #time step
-    Q_init_orien = 0.1 #process noise on orientation
-    Q_init_pos = 0.3  #process noise on position
-    R_init = 2 #sensor noise (GPS only)
-    P_init = 0.01 #confidence in position and orientation at time = 0
+    sigma_gyro = 0.1 #process noise on orientation
+    sigma_acc = 0.1  #process noise on position
+    sigma_gps = 2 #sensor noise (GPS only)
+    P_init = 0.1 #confidence in position and orientation at time = 0
+    
+    
     
     #A) create fake data
-    mekf = MEKF.MEKF(T, Q_init_pos, Q_init_orien, R_init, P_init)
+    mekf = MEKF.MEKF(T, sigma_gyro, sigma_acc, sigma_gps, P_init)
     i = 0
     gyro_real_arr, GYRO_meas_arr = [], []
     acc_real_arr, ACC_meas_arr = [], []
@@ -35,22 +38,22 @@ def runMEKF():
     xt = []
     while (i < N):
         #1. generate random gyro and acc data 
-        random_gyro1 = 10.0 * np.sin(2*120*i*np.pi) 
-        random_gyro2 = 15.0 * np.sin(2*90*i*np.pi) 
-        random_gyro3 = 8.0 * np.sin(2*70*i*np.pi) 
+        random_gyro1 = np.sin(2*120*i*np.pi) 
+        random_gyro2 = np.sin(2*90*i*np.pi) 
+        random_gyro3 = np.sin(2*70*i*np.pi) 
         random_acc1 = 7.0 * np.sin(2*40*i*np.pi) 
         random_acc2 = 2.0 * np.sin(2*80*i*np.pi) 
         random_acc3 = 3.0 * np.sin(2*50*i*np.pi) 
         
-        rg1 = random.normal(0, 0.1)
-        rg2 = random.normal(0, 0.1)
-        rg3 = random.normal(0, 0.1)
-        ra1 = random.normal(0, 0.3)
-        ra2 = random.normal(0, 0.3)
-        ra3 = random.normal(0, 0.3)
-        rgps1 = random.normal(0, 2)
-        rgps2 = random.normal(0, 2)
-        rgps3 = random.normal(0, 2)
+        rg1 = random.normal(0, sigma_gyro)
+        rg2 = random.normal(0, sigma_gyro)
+        rg3 = random.normal(0, sigma_gyro)
+        ra1 = random.normal(0, sigma_acc)
+        ra2 = random.normal(0, sigma_acc)
+        ra3 = random.normal(0, sigma_acc)
+        rgps1 = random.normal(0, sigma_gps)
+        rgps2 = random.normal(0, sigma_gps)
+        rgps3 = random.normal(0, sigma_gps)
 
         GYRO_input = np.array([random_gyro1, random_gyro2, random_gyro3], dtype='f')
         ACC_input = np.array( [random_acc1, random_acc2, random_acc3], dtype='f')
@@ -87,7 +90,7 @@ def runMEKF():
         orien_real3.append(dcmToEuler(mekf.Cab_k)[2])        
 
     #B) feed data into MEKF
-    mekf = MEKF.MEKF(T, Q_init_pos, Q_init_orien, R_init, P_init)
+    mekf = MEKF.MEKF(T, sigma_gyro, sigma_acc, sigma_gps, P_init)
     position_pred1, position_pred2, position_pred3 = [], [], [] #predicted position
     orien_pred1, orien_pred2, orien_pred3 = [], [], []
     xt, pos_cov1a, pos_cov1b = [], [], []
@@ -152,18 +155,11 @@ def runMEKF():
         mekf.kf_update()
         xt.append(i)
         i += 1
-
-    """
-    #position 
-    pH.plotMEKF1axis(xt, position_pred1, gps_real_arr1, pos_cov1a, pos_cov1b, N)
-    pH.plotMEKF1axis(xt, position_pred2, gps_real_arr2, pos_cov2a, pos_cov2b, N)
-    pH.plotMEKF1axis(xt, position_pred3, gps_real_arr3, pos_cov3a, pos_cov3b, N)
     
-    #orientation
-    pH.plotMEKF1angle(xt, orien_pred1, orien_real1, orien_cov1a, orien_cov1b, N)
-    pH.plotMEKF1angle(xt, orien_pred2, orien_real2, orien_cov2a, orien_cov2b, N)
-    pH.plotMEKF1angle(xt, orien_pred3, orien_real3, orien_cov3a, orien_cov3b, N)
-    """
+    #orientation error + cov
+    pH.plotMEKF1angleError(xt, orien_error1, orien_cov1a, orien_cov1b, N)
+    pH.plotMEKF1angleError(xt, orien_error2, orien_cov2a, orien_cov2b, N)
+    pH.plotMEKF1angleError(xt, orien_error3, orien_cov3a, orien_cov3b, N)
     
     #position error + cov 
     print(pos_error1[N-1])
@@ -171,15 +167,10 @@ def runMEKF():
     pH.plotMEKF1axisError(xt, pos_error2, pos_cov2a, pos_cov2b, N)
     pH.plotMEKF1axisError(xt, pos_error3, pos_cov3a, pos_cov3b, N)
     
-    #orientation error + cov
-    pH.plotMEKF1angleError(xt, orien_error1, orien_cov1a, orien_cov1b, N)
-    pH.plotMEKF1angleError(xt, orien_error2, orien_cov2a, orien_cov2b, N)
-    pH.plotMEKF1angleError(xt, orien_error3, orien_cov3a, orien_cov3b, N)
-    
 
 def dcmToEuler(dcm):
     c = logm(dcm)
-    d = np.array([c[2][1], c[2][0], c[1][0]])
+    d = np.array([c[2][1], c[0][2], c[1][0]])
     return d
     
 runMEKF()

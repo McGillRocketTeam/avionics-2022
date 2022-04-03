@@ -41,7 +41,7 @@ class MEKF:
     """
 
     
-    def __init__(self, dt, Q_init_pos, Q_init_orien, R_init, P_init):
+    def __init__(self, dt, sigma_gyro, sigma_acc, sigma_gps, P_init):
         #dummy variables
         self.zeros3 = np.zeros((3, 3), dtype='f')
         self.ones3 = np.eye((3), dtype='f')
@@ -59,10 +59,14 @@ class MEKF:
 
             #noise 
             #covariance of process noise (error on prediction)
-        self.Q = np.block([[self.ones3*Q_init_orien,self.zeros3],
-                          [self.zeros3, self.ones3*Q_init_pos]]) 
+        cov_gyro = sigma_gyro**2
+        cov_acc = sigma_acc**2
+        cov_gps = sigma_gps**2
+        self.Q = np.block([[self.ones3*cov_gyro,self.zeros3],
+                          [self.zeros3, self.ones3*cov_acc]])
         
-        self.R = np.eye(3, dtype='f')*R_init #covariance of obervation noise (sensor noise)
+        
+        self.R = np.eye(3, dtype='f')*cov_gps #covariance of obervation noise (sensor noise)
         # Q : get value when robot is static 
         # R : get value from sensor datasheet 
 
