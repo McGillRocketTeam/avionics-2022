@@ -23,6 +23,7 @@
 #include "dma.h"
 #include "fatfs.h"
 #include "i2c.h"
+#include "iwdg.h"
 #include "rtc.h"
 #include "spi.h"
 #include "tim.h"
@@ -118,6 +119,7 @@ volatile uint8_t tank_pressure_buf_idx = 0;
 // rtc
 RTC_TimeTypeDef stimeget = {0};
 RTC_DateTypeDef sdateget = {0};
+volatile uint8_t sleepmode = 0;
 
 // sd card
 FATFS FatFs; 	// Fatfs handle
@@ -125,6 +127,7 @@ FIL fil; 		// File handle
 FRESULT fres; 	// Result after operations
 static uint8_t msg_buffer_av[200];
 static uint8_t msg_buffer_pr[50];
+volatile uint8_t msg[1000];
 static char filename[13]; // filename will be of form fc000000.txt which is 13 chars in the array (with null termination)
 const char sd_file_header[] = "S,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E\r\n"; // printed to top of SD card file
 
@@ -246,7 +249,7 @@ void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
 void buzz_success(void) { tone_freq(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS, BUZZ_SUCCESS_FREQ); };
 void buzz_failure(void) { tone_freq(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS, BUZZ_FAILURE_FREQ); };
 void buzz_startup_success(void) {
-	for (uint8_t i = 0; i < 5; i++) {
+	for (uint8_t i = 0; i < 3; i++) {
 		buzz_success();
 		HAL_Delay(1000);
 	}
@@ -282,7 +285,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  __HAL_DBGMCU_FREEZE_IWDG();	// turn off IWDG during debugging
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -303,72 +306,76 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM3_Init();
   MX_TIM8_Init();
+//  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
   // *** IMPORTANT: DMA Init function must be called before peripheral init! *** //
 
-  // turn on LED near vent hole to show that FC is on
-  HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
+//  if (!(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))) {
 
-  // FLASH set CS, WP and IO3 pins high
-  HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, SET);
-  HAL_GPIO_WritePin(FLASH_WP_GPIO_Port, FLASH_WP_Pin, SET);
-  HAL_GPIO_WritePin(FLASH_IO3_GPIO_Port, FLASH_IO3_Pin, SET);
+	  // turn on LED near vent hole to show that FC is on
+	  HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
 
-  // set other SPI CS pins high
-  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, SET);
-  HAL_GPIO_WritePin(TH_CS_GPIO_Port, TH_CS_Pin, SET);
+	  // FLASH set CS, WP and IO3 pins high
+	  HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, SET);
+	  HAL_GPIO_WritePin(FLASH_WP_GPIO_Port, FLASH_WP_Pin, SET);
+	  HAL_GPIO_WritePin(FLASH_IO3_GPIO_Port, FLASH_IO3_Pin, SET);
 
-  // reset LEDs
-  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET);
-  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
-  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, RESET);
-  HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, RESET);
+	  // set other SPI CS pins high
+	  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, SET);
+	  HAL_GPIO_WritePin(TH_CS_GPIO_Port, TH_CS_Pin, SET);
 
-  // reset recovery pyro pins
-  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, RESET);
-  HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, RESET);
-  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
+	  // reset LEDs
+	  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET);
+	  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
+	  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, RESET);
+	  HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, RESET);
 
-  // reset prop pyro pins
-  HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, RESET);
-  HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, RESET);
-  HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, RESET);
+	  // reset recovery pyro pins
+	  HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, RESET);
+	  HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, RESET);
+	  HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
 
-  // reset 12 V buck converter enable pin (disable converter)
-  HAL_GPIO_WritePin(PM_12V_EN_GPIO_Port, PM_12V_EN_Pin, RESET);
-  HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET);
+	  // reset prop pyro pins
+	  HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, RESET);
+	  HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, RESET);
+	  HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, RESET);
 
-  // reset payload EN signal
-  HAL_GPIO_WritePin(Payload_EN_GPIO_Port, Payload_EN_Pin, RESET);
+	  // reset 12 V buck converter enable pin (disable converter)
+	  HAL_GPIO_WritePin(PM_12V_EN_GPIO_Port, PM_12V_EN_Pin, RESET);
+	  HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET);
 
-  // set power off for VR
-  HAL_GPIO_WritePin(VR_CTRL_PWR_GPIO_Port, VR_CTRL_PWR_Pin, RESET);
-  HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
+	  // reset payload EN signal
+	  HAL_GPIO_WritePin(Payload_EN_GPIO_Port, Payload_EN_Pin, RESET);
 
-#ifndef USING_XTEND
-  set_hspi(hspi2);
-  set_NSS_pin(SX_NSS_GPIO_Port, SX_NSS_Pin);
-  set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
-  set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
-  set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-  Tx_setup();
-#endif
+	  // set power off for VR
+	  HAL_GPIO_WritePin(VR_CTRL_PWR_GPIO_Port, VR_CTRL_PWR_Pin, RESET);
+	  HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
 
-#ifdef USING_RTC
-  MRT_SetupRTOS(&hrtc, DEBUG_UART, SLEEP_TIME);
-  MRT_setRTC(prev_hours,prev_min,prev_sec);
-  HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
+	#ifndef USING_XTEND
+	  set_hspi(hspi2);
+	  set_NSS_pin(SX_NSS_GPIO_Port, SX_NSS_Pin);
+	  set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+	  set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+	  set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+	  Tx_setup();
+	#endif
 
-#endif
-#if ALARM_A_ACTIVE
-  if (wu_flag == 0){
-  	MRT_setAlarmA(PRE_WHEN_SLEEP_TIME_HOURS, PRE_WHEN_SLEEP_TIME_MIN, PRE_WHEN_SLEEP_TIME_SEC);
-  }
-  else{
-  	MRT_setAlarmA(POST_WHEN_SLEEP_TIME_HOURS, POST_WHEN_SLEEP_TIME_MIN, POST_WHEN_SLEEP_TIME_SEC);
-  }
-#endif
+//	#ifdef USING_RTC
+//	  MRT_SetupRTOS(&hrtc, DEBUG_UART, SLEEP_TIME);
+//	  MRT_setRTC(prev_hours,prev_min,prev_sec);
+//	  HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
+//
+//	#endif
+//	#if ALARM_A_ACTIVE
+//	  if (wu_flag == 0){
+//		MRT_setAlarmA(PRE_WHEN_SLEEP_TIME_HOURS, PRE_WHEN_SLEEP_TIME_MIN, PRE_WHEN_SLEEP_TIME_SEC);
+//	  }
+//	  else{
+//		MRT_setAlarmA(POST_WHEN_SLEEP_TIME_HOURS, POST_WHEN_SLEEP_TIME_MIN, POST_WHEN_SLEEP_TIME_SEC);
+//	  }
+//	#endif
+//  }
 
   // init i2c sensors and data storage
   dev_ctx_lsm = lsm6dsl_init();
@@ -419,6 +426,11 @@ int main(void)
 //  HAL_TIM_Base_Start_IT(&htim3);	// drives XTend DMA
   HAL_TIM_Base_Start_IT(&htim8);	// drives ADC
 
+  // start watchdog
+  MX_IWDG_Init();
+
+  // to test watchdog
+  uint8_t loopcount = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -497,6 +509,10 @@ int main(void)
 //		flash_write((char *)msg_buffer_av);
 //		flash_write((char *)msg_buffer_pr);
 
+//		if (loopcount == 20) {
+//			while (1);
+//		}
+
 	  	#ifdef DEBUG_MODE
 			debug_tx_uart(msg_buffer_av);
 			debug_tx_uart(msg_buffer_pr);
@@ -505,6 +521,18 @@ int main(void)
 		// check which state of flight we are in
 		check_flight_state(&state);
 
+		// reload watchdog counter
+		__HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+
+		if (sleepmode) {
+			__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+			HAL_PWR_EnableSleepOnExit();
+			HAL_SuspendTick();
+			HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+	   }
+
+
+//		loopcount++;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -635,6 +663,66 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 		}
 	}
 }
+
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
+
+	sprintf((char*) msg, "Alarm A callback entered\r\n");
+	debug_tx_uart(msg);
+
+	sprintf((char*) msg, "alarmA flag: %d\talarmB flag: %d\r\n\n",
+			__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF),
+			__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
+	debug_tx_uart(msg);
+
+	// clear the alarm flag
+	__HAL_RTC_WRITEPROTECTION_DISABLE(hrtc);
+	while (__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF) != RESET) {
+		__HAL_RTC_ALARM_CLEAR_FLAG(hrtc, RTC_FLAG_ALRAF);
+		__HAL_RTC_ALARM_CLEAR_FLAG(hrtc, RTC_FLAG_ALRBF);
+		__HAL_RTC_WAKEUPTIMER_ENABLE_IT(hrtc, RTC_IT_WUT);
+		__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
+	}
+	__HAL_RTC_WRITEPROTECTION_ENABLE(hrtc);
+
+	sprintf((char*) msg, "alarmA flag after clear: %d\talarmB flag: %d\r\n\n",
+				__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF),
+				__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
+	debug_tx_uart(msg);
+
+	sleepmode = 1;
+}
+
+void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
+	// wake up by alarm B, re-init clocks and resume tick
+	SystemClock_Config();
+	HAL_ResumeTick();
+
+	HAL_PWR_DisableSleepOnExit();
+
+	sprintf((char *)msg, "Alarm B callback entered\r\n");
+	debug_tx_uart(msg);
+
+	sprintf((char*) msg, "before clear attempt: alarmA flag: %d\talarmB flag: %d\r\n\n",
+			__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF), __HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
+	debug_tx_uart(msg);
+
+	sprintf((char*) msg, "after clear attempt: alarmA flag: %d\talarmB flag: %d\r\n\n", __HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF), __HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRBF));
+    debug_tx_uart(msg);
+
+    sleepmode = 0;
+}
+
+void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc) {
+	if (sleepmode && __HAL_PWR_GET_FLAG(PWR_FLAG_WU)) {
+		SystemClock_Config(); // woke from stop mode, re-init clocks
+		HAL_ResumeTick();
+		__HAL_IWDG_RELOAD_COUNTER(&hiwdg); // refresh watchdog
+
+		sprintf(msg, "wakeup timer callback\r\n");
+		debug_tx_uart(msg);
+	}
+}
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim == &htim3) {
@@ -850,6 +938,11 @@ void check_flight_state(volatile uint8_t *state) {
 
 	case FLIGHT_STATE_LANDED: // landed
 //		__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
+
+		// stop video recorder
+		VR_Stop_Rec();
+		HAL_Delay(1000);
+		VR_Power_Off();
 
 		#ifdef DEBUG_MODE
 			while (1) {

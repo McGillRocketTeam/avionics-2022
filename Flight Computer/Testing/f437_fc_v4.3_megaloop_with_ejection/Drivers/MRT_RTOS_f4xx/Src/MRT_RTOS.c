@@ -28,19 +28,19 @@ uint8_t int_to_hex_table[60] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9
 								0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59};
 
 /*You cannot put these in the user callbacks section and I don't know why (can put in user begin 4)*/
-void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
-	HAL_UART_Transmit(&(rtos.huart),(uint8_t*)"AlarmA\r\n", 8, HAL_MAX_DELAY);
-	flagA = 1;
-}
-
-void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
-	HAL_UART_Transmit(&(rtos.huart),(uint8_t*)"AlarmB\r\n", 8, HAL_MAX_DELAY);
-	flagB = 1;
-}
-
-void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *rtc){
-}
-
+//void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
+//	HAL_UART_Transmit(&(rtos.huart),(uint8_t*)"AlarmA\r\n", 8, HAL_MAX_DELAY);
+//	flagA = 1;
+//}
+//
+//void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
+//	HAL_UART_Transmit(&(rtos.huart),(uint8_t*)"AlarmB\r\n", 8, HAL_MAX_DELAY);
+//	flagB = 1;
+//}
+//
+//void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *rtc){
+//}
+//
 
 
 
