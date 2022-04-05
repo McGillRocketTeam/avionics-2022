@@ -12,6 +12,8 @@
 #include "string.h" // strcmp
 
 extern UART_HandleTypeDef huart8;
+extern volatile uint8_t state_rcov_arm;
+extern volatile uint8_t state_prop_arm;
 
 extern volatile char xtend_rx_buf[10]; // dma buffer
 
@@ -113,11 +115,13 @@ void rocket_launch(void) {
 void arming_propulsion(void) {
 	// arm, TODO: decide whether to add feedback/check on arming status
 	HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, SET);
+	state_prop_arm = 1;
 }
 
 void arming_recovery(void) {
 	// arm, TODO: decide whether to add feedback/check on arming status
 	HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, SET);
+	state_prop_arm = 1;
 }
 
 void disarm_propulsion(void) {

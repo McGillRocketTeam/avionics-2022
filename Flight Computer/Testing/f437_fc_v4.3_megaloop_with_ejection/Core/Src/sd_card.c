@@ -81,7 +81,7 @@ FRESULT sd_init_dynamic_filename(char *prefix, char *header_text, char* return_f
 	FRESULT fres = f_mount(&FatFs, "", 1);
 	if (fres != FR_OK) {
 		myprintf("f_mount error (%i)\r\n", fres);
-		__BKPT();
+		Error_Handler();
 		return fres;
 	}
 

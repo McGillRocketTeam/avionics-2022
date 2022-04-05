@@ -138,6 +138,8 @@ static uint32_t flash_write_address = 0;
 // state of flight (for changing radio transmission rate)
 volatile uint8_t state = FLIGHT_STATE_PAD;
 volatile uint8_t num_radio_transmissions = 0;
+volatile uint8_t state_rcov_arm = 0;
+volatile uint8_t state_prop_arm = 0;
 
 // tracking altitude for state of flight changing
 float alt_ground = 0;
@@ -218,7 +220,7 @@ void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 // helper functions for buzzing
 void tone(uint32_t duration, uint32_t repeats) {
 	for (uint32_t i = 0; i < repeats; i++) {
-		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+//		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
 		HAL_Delay(duration);
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
@@ -236,7 +238,7 @@ void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
 	TIM2->EGR |= TIM_EGR_UG;
 
 	for (uint32_t i = 0; i < repeats; i++) {
-		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+//		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
 		HAL_Delay(duration);
 		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
@@ -285,7 +287,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  __HAL_DBGMCU_FREEZE_IWDG();	// turn off IWDG during debugging
+  __HAL_DBGMCU_FREEZE_IWDG();	// turn off IWDG and RTC during debugging
+  __HAL_FREEZE_RTC_DBGMCU();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -311,7 +314,7 @@ int main(void)
 
   // *** IMPORTANT: DMA Init function must be called before peripheral init! *** //
 
-//  if (!(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))) {
+  if (!(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))) {
 
 	  // turn on LED near vent hole to show that FC is on
 	  HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
@@ -376,6 +379,11 @@ int main(void)
 //	  }
 //	#endif
 //  }
+
+  } // if IWDG reset flag high
+
+  // clear RCC reset flags
+  __HAL_RCC_CLEAR_RESET_FLAGS();
 
   // init i2c sensors and data storage
   dev_ctx_lsm = lsm6dsl_init();
@@ -514,8 +522,12 @@ int main(void)
 //		}
 
 	  	#ifdef DEBUG_MODE
-			debug_tx_uart(msg_buffer_av);
-			debug_tx_uart(msg_buffer_pr);
+//			debug_tx_uart(msg_buffer_av);
+//			debug_tx_uart(msg_buffer_pr);
+			sprintf(msg, "states of fc: s=%d, ap=%d, ar=%d, HH:MM:SS = %02d:%02d:%02d\r\n",
+				   state, state_prop_arm, state_rcov_arm,
+				   stimeget.Hours, stimeget.Minutes, stimeget.Seconds);
+			debug_tx_uart(msg);
 		#endif
 
 		// check which state of flight we are in
@@ -613,6 +625,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	if (GPIO_Pin == IN_Button_Pin) {
 		button_pressed = 1;
 		state++;
+
+		while (1); // trigger watchdog during testing
 
 		__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER4);
 	}
