@@ -11,13 +11,15 @@
 
 /*Flags*/
 uint8_t reset_flag = 0; //In external memory
+//wu_flag defined in MRT_RTOS.c
 uint8_t iwdg_flag = 0; //In external memory
+uint8_t apogee_flag = 0; //In external memory
 
 //Flags read/write buffer
 uint8_t flash_flags_buffer[NB_OF_FLAGS];
 
 //TODO Reference array to each flag
-uint8_t* flash_flags[NB_OF_FLAGS] = {&reset_flag, &wu_flag, &iwdg_flag};
+uint8_t* flash_flags[NB_OF_FLAGS] = {&reset_flag, &wu_flag, &iwdg_flag, &apogee_flag};
 
 /*
 //Offset of flags in external flash sector 1 (can go and change NB_OF_FLAGS as needed)
@@ -173,12 +175,7 @@ void MRT_getFlags(void){
 	}
 
 	//Assign each value read to their variable
-	for (int i = 0; i < NB_OF_FLAGS; i++){
-		*flash_flags[i] = flash_flags_buffer[i];
-	}
-	for (int i = 0; i < 3; i++){
-		*flash_time[i] = flash_time_buffer[i];
-	}
+	MRT_updateExternalFlashBuffers();
 
 
 	//Check flags values
@@ -202,6 +199,14 @@ void MRT_getFlags(void){
 	if (iwdg_flag != 0 && iwdg_flag !=1){ //If random value (none was written)
 		iwdg_flag = 0;
 		flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
+		W25qxx_EraseSector(1);
+		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+	}
+
+	//Apogee flag
+	if (apogee_flag != 0 && apogee_flag !=1){ //If random value (none was written)
+		apogee_flag = 0;
+		flash_flags_buffer[APOGEE_FLAG_OFFSET] = apogee_flag;
 		W25qxx_EraseSector(1);
 		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
@@ -266,7 +271,6 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 
 		  HAL_UART_Transmit(uart, "Resetting RTC time\r\n", 20, HAL_MAX_DELAY);
 
-
 		  //Clear RTC time (last recorded)
 		  W25qxx_EraseSector(2);
 		  W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
@@ -289,6 +293,15 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 	      flash_flags_buffer[RESET_FLAG_OFFSET] = reset_flag;
 		  W25qxx_EraseSector(1);
 		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+	  }
+
+
+	  //Check if before or after apogee
+	  if (apogee_flag==0){
+		  HAL_UART_Transmit(uart, "Pre-apogee\r\n", 12, HAL_MAX_DELAY);
+	  }
+	  else if(apogee_flag==1){
+		  HAL_UART_Transmit(uart, "Post-apogee\r\n", 13, HAL_MAX_DELAY);
 	  }
 }
 

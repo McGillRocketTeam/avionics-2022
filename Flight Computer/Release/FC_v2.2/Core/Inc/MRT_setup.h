@@ -22,7 +22,8 @@
 UART_HandleTypeDef huart8;
 #define DEBUG_UART huart8
 
-
+#define FORCED_APOGEE 0 //Can only take value of 0 or 1
+#define FORCED_EJECTION_STAGE 0 //Can take value of X //TODO
 
 //**************************************************//
 //Constants
@@ -71,7 +72,7 @@ UART_HandleTypeDef huart8;
 //**************************************************//
 //MEMORY THREAD
 #define SD_SPI_HANDLE hspi5
-
+#define DATA_FREQ 10 //Times per second that you want to save data
 
 
 
@@ -89,8 +90,13 @@ UART_HandleTypeDef huart8;
 
 //**************************************************//
 //TELEMETRY_THREAD
-#define DATA_FREQ 10 //Times per second that you want to save data
-#define SEND_FREQ 50 //Times per second that you want to transmit data
+#define PRE_APOGEE_SEND_FREQ 50 //Times per second that you want to transmit data before apogee
+#define POST_APOGEE_SEND_FREQ 100 //Times per second that you want to transmit data after apogee
+#define SENSORS_SEND_FREQ_DIVIDER 10 //Number of times that you want to send sensors data relative to propulsion data
+									 //(can only be equal or slower). Divides the XXXX_APOGEE_SEND_FREQ
+#define IRIDIUM_SEND_FREQ_DIVIDER 5 //Number of times that you want to send iridium data relative to sensors data
+									//(can only be equal or slower). Divides the XXXX_APOGEE_SEND_FREQ after it has been divided
+									//by SENSORS_SEND_FREQ_DIVIDER
 
 //SRadio
 #define SRADIO_ 0
@@ -112,7 +118,10 @@ UART_HandleTypeDef huart8;
 
 //**************************************************//
 //SENSORS THREAD
-#define POLL_FREQ 50 //Times per second that you want to poll data
+#define PRE_APOGEE_POLL_FREQ 50 //Times per second that you want to poll data (pre apogee)
+#define POST_APOGEE_POLL_FREQ 100 //Times per second that you want to poll data (post apogee)
+#define SENSORS_POLL_FREQ_DIVIDER 10 //Number of times that you want to poll sensors data relative to propulsion data
+									//(can only be equal or slower). Divides the XXXX_APOGEE_POLL_FREQ
 
 //I2C
 #define CHECK_I2C 0

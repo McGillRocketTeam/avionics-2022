@@ -460,6 +460,14 @@ int main(void)
 //TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED (or find other way to completely reset the board)
 
 
+#if FORCED_APOGEE
+	  apogee_flag = 2; //Flag set to 'forced'. The value of 2 makes it such that it doesn't affect the external flash
+#endif
+
+#if FORCED_EJECTION_STAGE
+	  //TODO
+#endif
+
 
 	  //**************************************************//
 
@@ -467,7 +475,7 @@ int main(void)
 
   	  memset(xtend_rx_buffer, 0, XTEND_BUFFER_SIZE); //clear the buffer
 
-	  while(strcmp(xtend_rx_buffer, "launch") != 0 && wu_flag == 0){
+	  while(strcmp(xtend_rx_buffer, "launch") != 0 && wu_flag == 0 && apogee_flag == 0){ //TODO need to change flag conditions
 		  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 		  HAL_IWDG_Refresh(&hiwdg);
@@ -494,13 +502,15 @@ int main(void)
 
 		  	//Check for launch command
 		  	memset(xtend_rx_buffer, 0, XTEND_BUFFER_SIZE);
-		  	//HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, HAL_MAX_DELAY);
-		  	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, 0x50); //TODO play around with this delay (should be less than 5 sec)
+		  	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, 0x500); //TODO timeout is about 1.2 sec (should be less than 5 sec)
 
 		  #elif SRADIO_ //SRadio send
 	    	memset(sradio_tx_buffer, 0, SRADIO_BUFFER_SIZE);
 	    	sprintf(sradio_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
 	    	TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
+
+	    	//Check for launch command
+	    	//TODO
 		  #endif
 
 	  	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
@@ -509,13 +519,25 @@ int main(void)
 	  	  //Reset IWDG timer
 	  	  HAL_IWDG_Refresh(&hiwdg);
 
-	      HAL_Delay(1000/SEND_FREQ);
+	      HAL_Delay(1000/PRE_APOGEE_SEND_FREQ);
 	  }
 
 
+	  //Send acknowledgement
+	#if XTEND_ //Xtend send
+		memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
+		sprintf(xtend_tx_buffer,"LAUNCH COMMAND RECEIVED");
+		XTend_Transmit(xtend_tx_buffer);
+	#elif SRADIO_ //SRadio send
+		memset(sradio_tx_buffer, 0, SRADIO_BUFFER_SIZE);
+		sprintf(sradio_tx_buffer,"LAUNCH COMMAND RECEIVED");
+		TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
+	#endif
 
 
 
+
+//TODO I2C SENSORS SOMETIMES DON'T WANT TO WORK ANYMORE -> NEED TO RESET THE POWER
 
   /* USER CODE END 2 */
 
@@ -1377,7 +1399,7 @@ void StartMemory0(void *argument)
 	  for(;;)
 	  {
 		  //Write data to sd and flash
-		  if(counter==0) sd_open_file(&filename);
+		  if(counter==1) sd_open_file(&filename);
 		  sprintf((char*)writeBuf, "Data: %f, %f, %f, %f\r\n", PRESSURE, MIN, SEC, SUBSEC);
 		  sd_write(&fil, writeBuf);
 		  if (counter == 50) {
@@ -1497,6 +1519,7 @@ void StartTelemetry2(void *argument)
 	#endif
 
 	uint8_t counter = 0;
+	uint8_t iridium_counter = 0;
 
 	osDelay(1000);
 
@@ -1505,24 +1528,26 @@ void StartTelemetry2(void *argument)
   {
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
-	  //Get propulsion data TODO
-	  TANK_PRESSURE = transducer_pressure;
-	  THERMO_TEMPERATURE = THERMO_TEMP;
-	  VALVE_STATUS = 0;
+	  if(apogee_flag == 0){ //Only send prop data pre-apogee
+		  //Get propulsion data TODO
+		  TANK_PRESSURE = transducer_pressure;
+		  THERMO_TEMPERATURE = THERMO_TEMP;
+		  VALVE_STATUS = 0;
 
-	  //Send propulsion data
-	  #if XTEND_ //Xtend send
-  		memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
-  		sprintf(xtend_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
-  		XTend_Transmit(xtend_tx_buffer);
-	  #elif SRADIO_ //SRadio send
-    	memset(sradio_tx_buffer, 0, SRADIO_BUFFER_SIZE);
-    	sprintf(sradio_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
-    	TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
-	  #endif
+		  //Send propulsion data
+		  #if XTEND_ //Xtend send
+			memset(xtend_tx_buffer, 0, XTEND_BUFFER_SIZE);
+			sprintf(xtend_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
+			XTend_Transmit(xtend_tx_buffer);
+		  #elif SRADIO_ //SRadio send
+			memset(sradio_tx_buffer, 0, SRADIO_BUFFER_SIZE);
+			sprintf(sradio_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
+			TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
+		  #endif
+	  }
 
 
-	  if (counter == 5){
+	  if (counter == SENSORS_SEND_FREQ_DIVIDER){
 		  counter = 0;
 
 		  //Get sensors data
@@ -1565,19 +1590,26 @@ void StartTelemetry2(void *argument)
 		  #endif
 
 
-		  #if IRIDIUM_ //Iridium send
-		    //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
-		    MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
-		    //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
-		  #endif
+		  if(apogee_flag && iridium_counter == IRIDIUM_SEND_FREQ_DIVIDER){
+			  iridium_counter = 0;
+			  #if IRIDIUM_ //Iridium send
+			  MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
+			  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
+			  #endif
+		  }
+		  iridium_counter++;
 	  }
 	  counter++;
 
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
-
-      osDelay(1000/SEND_FREQ);
+	  if (apogee_flag){
+		  osDelay(1000/POST_APOGEE_SEND_FREQ);
+	  }
+	  else{
+		  osDelay(1000/PRE_APOGEE_SEND_FREQ);
+	  }
   }
 
   //In case it leaves the infinite loop
@@ -1612,7 +1644,7 @@ void StartSensors3(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, SET);
 
-	  if (counter == 10){
+	  if (counter == SENSORS_POLL_FREQ_DIVIDER){
 		  counter=0;
 
 		  //GPS
@@ -1631,19 +1663,24 @@ void StartSensors3(void *argument)
 	  counter++;
 
 
-	  //Poll propulsion sensors
+	  if(apogee_flag == 0){
+		  //Poll propulsion sensors
 
-	  //Thermocouple
-	  Max31855_Read_Temp();
+		  //Thermocouple
+		  Max31855_Read_Temp();
 
-	  //Pressure tank
-	  transducer_pressure = MRT_prop_poll_pressure_transducer(&hadc1);
-
+		  //Pressure tank
+		  transducer_pressure = MRT_prop_poll_pressure_transducer(&hadc1);
+	  }
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
 
-	  osDelay(1000/POLL_FREQ);
-
+	  if (apogee_flag){
+		  osDelay(1000/POST_APOGEE_POLL_FREQ);
+	  }
+	  else{
+		  osDelay(1000/PRE_APOGEE_POLL_FREQ);
+	  }
 }
 
   //In case it leaves the infinite loop
@@ -1724,7 +1761,12 @@ void StartPrinting(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
-	  osDelay(1000/SEND_FREQ);
+	  if (apogee_flag){
+		  osDelay(1000/POST_APOGEE_SEND_FREQ);
+	  }
+	  else{
+		  osDelay(1000/PRE_APOGEE_SEND_FREQ);
+	  }
 }
 
   //In case it leaves the infinite loop
