@@ -55,6 +55,8 @@
 #include "radio_commands.h"
 #include "MRT_setup.h"
 #include "MRT_RTOS.h"
+#include "helpers.h"
+#include "state_restoration.h"
 
 /* USER CODE END Includes */
 
@@ -115,7 +117,6 @@ volatile float tank_pressure = 0.0f;
 volatile uint16_t tank_pressure_buf[PROP_TANK_PRESSURE_ADC_BUF_LEN]; // circular buffer for averaging (low pass filter)
 volatile uint8_t tank_pressure_buf_idx = 0;
 
-
 // rtc
 RTC_TimeTypeDef stimeget = {0};
 RTC_DateTypeDef sdateget = {0};
@@ -133,13 +134,13 @@ const char sd_file_header[] = "S,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,PRESSURE,LAT,LONG
 
 // external flash
 extern w25qxx_t w25qxx;
-static uint32_t flash_write_address = 0;
+volatile uint32_t flash_write_address = 0;
 
 // state of flight (for changing radio transmission rate)
 volatile uint8_t state = FLIGHT_STATE_PAD;
 volatile uint8_t num_radio_transmissions = 0;
-volatile uint8_t state_rcov_arm = 0;
-volatile uint8_t state_prop_arm = 0;
+volatile uint8_t state_arm_rcov = 0;
+volatile uint8_t state_arm_prop = 0;
 
 // tracking altitude for state of flight changing
 float alt_ground = 0;
@@ -165,9 +166,6 @@ const char xtend_ack_msg[] = "xtend_ack\r\n";
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
-// helpers
-void tone(uint32_t duration, uint32_t repeats);
 
 // flash
 int flash_write(char *msg_buffer);
@@ -216,46 +214,6 @@ void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 	#endif
 }
 #endif
-
-// helper functions for buzzing
-void tone(uint32_t duration, uint32_t repeats) {
-	for (uint32_t i = 0; i < repeats; i++) {
-//		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
-		HAL_Delay(duration);
-		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
-		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, RESET);
-		if (repeats > 1)
-			HAL_Delay(duration);
-	}
-}
-
-// buzz at particular frequency
-void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
-	// TIM2 base frequency is 90 MHz, PSC = 90-1
-	// can calculate required ARR value
-	TIM2->ARR = 1000000 / freq;
-	TIM2->EGR |= TIM_EGR_UG;
-
-	for (uint32_t i = 0; i < repeats; i++) {
-//		HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, SET);
-		HAL_Delay(duration);
-		HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_3);
-		HAL_GPIO_WritePin(POWER_ON_EXT_LED_GPIO_Port, POWER_ON_EXT_LED_Pin, RESET);
-		if (repeats > 1)
-			HAL_Delay(duration);
-	}
-}
-
-void buzz_success(void) { tone_freq(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS, BUZZ_SUCCESS_FREQ); };
-void buzz_failure(void) { tone_freq(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS, BUZZ_FAILURE_FREQ); };
-void buzz_startup_success(void) {
-	for (uint8_t i = 0; i < 3; i++) {
-		buzz_success();
-		HAL_Delay(1000);
-	}
-};
 
 /* USER CODE END 0 */
 
@@ -364,26 +322,31 @@ int main(void)
 	  Tx_setup();
 	#endif
 
-//	#ifdef USING_RTC
-//	  MRT_SetupRTOS(&hrtc, DEBUG_UART, SLEEP_TIME);
-//	  MRT_setRTC(prev_hours,prev_min,prev_sec);
-//	  HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
-//
-//	#endif
-//	#if ALARM_A_ACTIVE
-//	  if (wu_flag == 0){
-//		MRT_setAlarmA(PRE_WHEN_SLEEP_TIME_HOURS, PRE_WHEN_SLEEP_TIME_MIN, PRE_WHEN_SLEEP_TIME_SEC);
-//	  }
-//	  else{
-//		MRT_setAlarmA(POST_WHEN_SLEEP_TIME_HOURS, POST_WHEN_SLEEP_TIME_MIN, POST_WHEN_SLEEP_TIME_SEC);
-//	  }
-//	#endif
-//  }
-
+	  init_backup_regs();
   } // if IWDG reset flag high
+  else {
+	  __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+	  restore_fc_states();
+	  sprintf(msg, "state = %d, ap = %d, ar = %d, alt_ground = %f",
+			  state, state_arm_prop, state_arm_rcov, alt_ground);
+	  debug_tx_uart(msg);
 
-  // clear RCC reset flags
-  __HAL_RCC_CLEAR_RESET_FLAGS();
+	  // for debug
+	  for (uint8_t i = 0; i < 3; i++) {
+		  __HAL_IWDG_RELOAD_COUNTER(&hiwdg);
+		  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
+		  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);
+		  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, SET);
+		  HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, SET);
+
+		  HAL_Delay(100);
+
+		  HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, RESET);
+		  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, RESET);
+		  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, RESET);
+		  HAL_GPIO_WritePin(LEDF_GPIO_Port, LEDF_Pin, RESET);
+	  }
+  }
 
   // init i2c sensors and data storage
   dev_ctx_lsm = lsm6dsl_init();
@@ -411,14 +374,17 @@ int main(void)
 //	  buzz_failure();
 //  }
 
-  // got to this point, successful init
-  buzz_startup_success();
+  if (!(__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST))) {
+	  // got to this point, successful init
+	  buzz_startup_success();
+  }
 
   // get ground altitude
   for (uint8_t i = 0; i < 100; i++) {
 	  alt_ground += getAltitude();
   }
   alt_ground /= 100.0;
+  set_backup_state(FC_STATE_ALT_GROUND, (uint32_t) alt_ground);
   alt_current = alt_ground;
 
   // initial DMA requests:
@@ -437,8 +403,10 @@ int main(void)
   // start watchdog
   MX_IWDG_Init();
 
-  // to test watchdog
-  uint8_t loopcount = 0;
+  // clear RCC reset flags
+  __HAL_RCC_CLEAR_RESET_FLAGS();
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -463,6 +431,7 @@ int main(void)
 		HAL_RTC_GetDate(&hrtc, &sdateget, RTC_FORMAT_BIN); // have to call GetDate for the time to be correct
 
 		continuity = get_continuity();
+		__HAL_IWDG_RELOAD_COUNTER(&hiwdg); // refresh watchdog
 
 		// gps
 		if (gps_dma_ready) {
@@ -490,6 +459,8 @@ int main(void)
 		}
 
 		// -----  FORMATTING TELEMETRY ----- //
+
+		__HAL_IWDG_RELOAD_COUNTER(&hiwdg); // refresh watchdog
 
 		// avionics message
 		#ifdef TIMING_ITM
@@ -520,12 +491,13 @@ int main(void)
 //		if (loopcount == 20) {
 //			while (1);
 //		}
+		__HAL_IWDG_RELOAD_COUNTER(&hiwdg); // refresh watchdog
 
 	  	#ifdef DEBUG_MODE
 //			debug_tx_uart(msg_buffer_av);
 //			debug_tx_uart(msg_buffer_pr);
 			sprintf(msg, "states of fc: s=%d, ap=%d, ar=%d, HH:MM:SS = %02d:%02d:%02d\r\n",
-				   state, state_prop_arm, state_rcov_arm,
+				   state, state_arm_prop, state_arm_rcov,
 				   stimeget.Hours, stimeget.Minutes, stimeget.Seconds);
 			debug_tx_uart(msg);
 		#endif
@@ -567,6 +539,7 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
+
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
@@ -624,7 +597,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == IN_Button_Pin) {
 		button_pressed = 1;
-		state++;
+		state += 1;
+		if (state == 2) {
+			state = 0;
+		}
+		set_backup_state(FC_STATE_FLIGHT, (uint32_t) state);
+
+		state_arm_prop++;
+		state_arm_rcov++;
+
+		set_backup_state(FC_STATE_ARM_PROP, (uint32_t) state_arm_prop);
+		set_backup_state(FC_STATE_ARM_RCOV, (uint32_t) state_arm_rcov);
+
+		sprintf(msg, "state = %d, ap = %d, ar = %d, alt_ground = %f",
+					  state, state_arm_prop, state_arm_rcov, alt_ground);
+		debug_tx_uart(msg);
 
 		while (1); // trigger watchdog during testing
 
@@ -680,6 +667,8 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
 
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 
+	HAL_RTCEx_DeactivateWakeUpTimer(hrtc);
+
 	sprintf((char*) msg, "Alarm A callback entered\r\n");
 	debug_tx_uart(msg);
 
@@ -693,10 +682,12 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	while (__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF) != RESET) {
 		__HAL_RTC_ALARM_CLEAR_FLAG(hrtc, RTC_FLAG_ALRAF);
 		__HAL_RTC_ALARM_CLEAR_FLAG(hrtc, RTC_FLAG_ALRBF);
-		__HAL_RTC_WAKEUPTIMER_ENABLE_IT(hrtc, RTC_IT_WUT);
 		__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
 	}
 	__HAL_RTC_WRITEPROTECTION_ENABLE(hrtc);
+
+	// start the timer (resets the count too)
+	HAL_RTCEx_SetWakeUpTimer_IT(hrtc, 2000-1, RTC_WAKEUPCLOCK_RTCCLK_DIV16); // start the timer
 
 	sprintf((char*) msg, "alarmA flag after clear: %d\talarmB flag: %d\r\n\n",
 				__HAL_RTC_ALARM_GET_FLAG(hrtc, RTC_FLAG_ALRAF),
@@ -712,6 +703,7 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	HAL_ResumeTick();
 
 	HAL_PWR_DisableSleepOnExit();
+	HAL_RTCEx_DeactivateWakeUpTimer(hrtc);
 
 	sprintf((char *)msg, "Alarm B callback entered\r\n");
 	debug_tx_uart(msg);
@@ -955,8 +947,10 @@ void check_flight_state(volatile uint8_t *state) {
 
 		// stop video recorder
 		VR_Stop_Rec();
+		set_backup_state(FC_STATE_VR_RECORDING, 0);
 		HAL_Delay(1000);
 		VR_Power_Off();
+		set_backup_state(FC_STATE_VR_POWER, 0);
 
 		#ifdef DEBUG_MODE
 			while (1) {

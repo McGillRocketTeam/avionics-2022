@@ -225,7 +225,7 @@ __weak HAL_StatusTypeDef HAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
   /* Check Null pointer */
   if(RCC_OscInitStruct == NULL)
   {
-    return HAL_ERROR;
+	  return HAL_ERROR;
   }
 
   /* Check the parameters */

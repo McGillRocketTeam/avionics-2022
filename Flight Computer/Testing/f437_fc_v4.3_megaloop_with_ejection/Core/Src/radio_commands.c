@@ -10,10 +10,11 @@
 #include "video_recorder.h"
 #include "main.h" // for pins
 #include "string.h" // strcmp
+#include "state_restoration.h"
 
 extern UART_HandleTypeDef huart8;
-extern volatile uint8_t state_rcov_arm;
-extern volatile uint8_t state_prop_arm;
+extern volatile uint8_t state_arm_rcov;
+extern volatile uint8_t state_arm_prop;
 
 extern volatile char xtend_rx_buf[10]; // dma buffer
 
@@ -115,13 +116,15 @@ void rocket_launch(void) {
 void arming_propulsion(void) {
 	// arm, TODO: decide whether to add feedback/check on arming status
 	HAL_GPIO_WritePin(Prop_Pyro_Arming_GPIO_Port, Prop_Pyro_Arming_Pin, SET);
-	state_prop_arm = 1;
+	state_arm_prop = 1;
+	set_backup_state(FC_STATE_ARM_PROP, state_arm_prop);
 }
 
 void arming_recovery(void) {
 	// arm, TODO: decide whether to add feedback/check on arming status
 	HAL_GPIO_WritePin(Rcov_Arm_GPIO_Port, Rcov_Arm_Pin, SET);
-	state_prop_arm = 1;
+	state_arm_rcov = 1;
+	set_backup_state(FC_STATE_ARM_RCOV, state_arm_rcov);
 }
 
 void disarm_propulsion(void) {
@@ -131,6 +134,9 @@ void disarm_propulsion(void) {
 	// also reset the gates in case they were high
 	HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, RESET);
 	HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, RESET);
+
+	state_arm_prop = 0;
+	set_backup_state(FC_STATE_ARM_PROP, state_arm_prop);
 }
 
 void disarm_recovery(void) {
@@ -140,4 +146,7 @@ void disarm_recovery(void) {
 	// also reset the gates in case they were high
 	HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, RESET);
 	HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, RESET);
+
+	state_arm_rcov = 0;
+	set_backup_state(FC_STATE_ARM_RCOV, state_arm_rcov);
 }
