@@ -18,14 +18,14 @@ This file's main purpose is testing.
 
 def runMEKF():
     #0) constants
-    N = 1000 #nb samples
+    N = 100 #nb samples
     T = 0.01 #time step
     sigma_gyro = 0.1 #process noise on orientation
     sigma_acc = 0.1  #process noise on position
     sigma_gps = 2 #sensor noise (GPS only)
     P_init_orien = 0.1 #confidence in orientation at time = 0
     P_init_pos = 0.5 #confidence in position at time = 0
-    
+    np.random.seed(0) 
     
     #A) create fake data
     mekf = MEKF.MEKF(T, sigma_gyro, sigma_acc, sigma_gps, P_init_orien, P_init_pos)
@@ -33,7 +33,7 @@ def runMEKF():
     gyro_real_arr, GYRO_meas_arr = [], []
     acc_real_arr, ACC_meas_arr = [], []
     gps_real_arr1, gps_real_arr2, gps_real_arr3 = [], [], []
-    orien_real1, orien_real2, orien_real3 = [], [], []
+    orien_real1, orien_real2, orien_real3, orien_real_arr = [], [], [], []
     GPS_meas_arr = []
     xt = []
     while (i < N):
@@ -87,7 +87,8 @@ def runMEKF():
         #real orientation
         orien_real1.append(dcmToEuler(mekf.Cab_k)[0])
         orien_real2.append(dcmToEuler(mekf.Cab_k)[1])
-        orien_real3.append(dcmToEuler(mekf.Cab_k)[2])        
+        orien_real3.append(dcmToEuler(mekf.Cab_k)[2])   
+        orien_real_arr.append(mekf.Cab_k)
 
     #B) feed data into MEKF
     mekf = MEKF.MEKF(T, sigma_gyro, sigma_acc, sigma_gps, P_init_orien, P_init_pos)
@@ -124,9 +125,9 @@ def runMEKF():
         
         "error"
         #error orientation
-        orien_error1.append(np.abs(dcmToEuler(mekf.Cab_k)[0] - orien_real1[i]))
-        orien_error2.append(np.abs(dcmToEuler(mekf.Cab_k)[1] - orien_real2[i]))
-        orien_error3.append(np.abs(dcmToEuler(mekf.Cab_k)[2] - orien_real3[i]))
+        orien_error1.append(dcmToEuler(orien_real_arr[i].T * mekf.Cab_k)[0])
+        orien_error2.append(dcmToEuler(orien_real_arr[i].T * mekf.Cab_k)[1])
+        orien_error3.append(dcmToEuler(orien_real_arr[i].T * mekf.Cab_k)[2])
         
         #error position
         pos_error1.append(mekf.ra_k[0][0] - gps_real_arr1[i])
