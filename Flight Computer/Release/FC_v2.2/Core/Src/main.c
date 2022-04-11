@@ -137,8 +137,11 @@ const osThreadAttr_t WatchDog_attributes = {
 volatile uint8_t start_ejection = 0;
 volatile uint8_t timer_actuated_vent_valve = 0;
 
-//Eject data
+
+//**************************************************//
+//EJECTION
 float altitude_m = 0;
+uint8_t wd_ejection_flag = 0; //Used to saved the new ejection state in the external flash through the watch dog thread
 
 
 //**************************************************//
@@ -186,6 +189,7 @@ uint8_t VALVE_STATUS;
 //SENSORS
 //Propulsion
 float transducer_pressure;
+uint8_t valve_status;
 
 // GPS data
 float time;
@@ -465,7 +469,7 @@ int main(void)
 #endif
 
 #if FORCED_EJECTION_STAGE
-	  //TODO
+	  ejection_stage_flag = FORCED_STAGE;
 #endif
 
 
@@ -473,9 +477,7 @@ int main(void)
 
 	  //Poll propulsion until launch command sent
 
-  	  memset(xtend_rx_buffer, 0, XTEND_BUFFER_SIZE); //clear the buffer
-
-	  while(strcmp(xtend_rx_buffer, "launch") != 0 && wu_flag == 0 && apogee_flag == 0){ //TODO need to change flag conditions
+	  while((XTEND_ || SRADIO_) && ejection_state_flag == 0 && wu_flag == 0){
 		  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 		  HAL_IWDG_Refresh(&hiwdg);
@@ -488,11 +490,14 @@ int main(void)
 		  //Pressure tank
 		  transducer_pressure = MRT_prop_poll_pressure_transducer(&hadc1);
 
+		  //Valve status
+		  valve_status = HAL_GPIO_ReadPin(IN_Prop_ActuatedVent_Feedback_GPIO_Port,IN_Prop_ActuatedVent_Feedback_Pin);
 
-		  //Get propulsion data TODO
+
+		  //Get propulsion data TODO (should be removed and use global constants)
 		  TANK_PRESSURE = transducer_pressure;
 		  THERMO_TEMPERATURE = THERMO_TEMP;
-		  VALVE_STATUS = 0;
+		  VALVE_STATUS = valve_status;
 
 		  //Send propulsion data
 		  #if XTEND_ //Xtend send
@@ -503,14 +508,28 @@ int main(void)
 		  	//Check for launch command
 		  	memset(xtend_rx_buffer, 0, XTEND_BUFFER_SIZE);
 		  	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, 0x500); //TODO timeout is about 1.2 sec (should be less than 5 sec)
+		  	if (strcmp(xtend_rx_buffer, "launch") == 0){
+				ejection_state_flag = 1;
+				flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
+				W25qxx_EraseSector(1);
+				W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		  	}
 
 		  #elif SRADIO_ //SRadio send
 	    	memset(sradio_tx_buffer, 0, SRADIO_BUFFER_SIZE);
 	    	sprintf(sradio_tx_buffer,"P,%.2f,%.2f, %i,E",TANK_PRESSURE,THERMO_TEMPERATURE,VALVE_STATUS);
 	    	TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
 
-	    	//Check for launch command
-	    	//TODO
+	    	//Check for launch command todo
+		  	memset(sradio_rx_buffer, 0, SRADIO_BUFFER_SIZE);
+
+		  	//TODO RX
+		  	if (strcmp(sradio_rx_buffer, "launch") == 0){
+				ejection_state_flag = 1;
+				flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
+				W25qxx_EraseSector(1);
+				W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		  	}
 		  #endif
 
 	  	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
@@ -534,7 +553,11 @@ int main(void)
 		TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
 	#endif
 
-
+	  //Update ejection state (saved state in WatchDog thread)
+	  if (ejection_state_flag < 1){
+		  ejection_state_flag = 1;
+		  wd_ejection_flag = 1;
+	  }
 
 
 //TODO I2C SENSORS SOMETIMES DON'T WANT TO WORK ANYMORE -> NEED TO RESET THE POWER
@@ -1436,54 +1459,86 @@ void StartEjection1(void *argument)
 	osThreadExit();
 	#endif
 
-
-	//TODO add flag for when we are done with the thread
-	if (altitude_m < GROUND_LEVEL)  osThreadExit();
+	if (ejection_state_flag >= 4)  osThreadExit(); //Ground reached
 	if (wu_flag) osThreadExit(); //WHEN WAKING UP
 
-	char buffer[TX_BUF_DIM];
+	osDelay(5000); //Let the LPS "warm up" to have a valid pressure_hPa
 
 	  /* Infinite loop */
 	  for(;;)
 	  {
+		  altitude_m = MRT_getAltitude(pressure_hPa);
 
-		  if (MIN_APOGEE <= altitude_m && MAX_APOGEE < altitude_m){
+		  if (MIN_APOGEE <= altitude_m || ejection_state_flag >= 2){
 
-			  HAL_UART_Transmit(&DEBUG_UART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
+			  if (ejection_state_flag < 2){
 
-			  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-				  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
-			  }
-			  while(!HAL_GPIO_ReadPin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin)){
-				  HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, SET); //PG12 DROGUE GATE
-			  }
-			  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-				  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
+				  //Update state (saved state in WatchDog thread)
+				  ejection_state_flag = 2;
+				  wd_ejection_flag = 1;
+
+				  HAL_UART_Transmit(&DEBUG_UART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
+
+				  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+					  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
+				  }
+				  while(!HAL_GPIO_ReadPin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin)){
+					  HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, SET); //PG12 DROGUE GATE
+				  }
+				  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+					  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
+				  }
 			  }
 
 			  for(;;){
 
+				  altitude_m = MRT_getAltitude(pressure_hPa);
+
 				  //We reached main deployment altitude
-				  if (altitude_m>DEPLOY_ALT_MIN && altitude_m<DEPLOY_ALT_MAX){
+				  if ((altitude_m>DEPLOY_ALT_MIN && altitude_m<DEPLOY_ALT_MAX) || ejection_state_flag >= 3){
 
-					  HAL_UART_Transmit(&DEBUG_UART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
 
-					  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-						  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
+					  if (ejection_state_flag < 3){
+
+						  //Update state (saved state in WatchDog thread)
+						  ejection_state_flag = 3;
+						  wd_ejection_flag = 1;
+
+						  HAL_UART_Transmit(&DEBUG_UART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
+
+						  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+							  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
+						  }
+						  while(!HAL_GPIO_ReadPin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin)){
+							  HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, SET); //PG11 MAIN GATE
+						  }
+						  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+							  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
+						  }
 					  }
-					  while(!HAL_GPIO_ReadPin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin)){
-						  HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, SET); //PG11 MAIN GATE
-					  }
-					  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-						  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
-					  }
 
-					  for(;;){
-
-						  if (altitude_m < GROUND_LEVEL)  osThreadExit();
-
+					  uint8_t prev_altitude = 0;
+					  uint8_t cur_altitude = 0;
+					  uint8_t counter = 0;
+					  while(counter < 5){
+						  cur_altitude = MRT_getAltitude(pressure_hPa);
+						  if (cur_altitude - prev_altitude == 0){ //TODO might need a bigger range
+							  counter++;
+						  }
+						  else{
+							  counter = 0;
+						  }
+						  prev_altitude = cur_altitude;
 						  osDelay(100);
 					  }
+
+					  //Update state (saved state in WatchDog thread)
+					  ejection_state_flag = 4;
+					  wd_ejection_flag = 1;
+
+					  HAL_UART_Transmit(&DEBUG_UART, "Ground Level Reached\r\n", 22, HAL_MAX_DELAY);
+					  osThreadExit();
+
 				  }
 
 				  osDelay(100);
@@ -1529,10 +1584,10 @@ void StartTelemetry2(void *argument)
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 	  if(apogee_flag == 0){ //Only send prop data pre-apogee
-		  //Get propulsion data TODO
+		  //Get propulsion data
 		  TANK_PRESSURE = transducer_pressure;
 		  THERMO_TEMPERATURE = THERMO_TEMP;
-		  VALVE_STATUS = 0;
+		  VALVE_STATUS = valve_status;
 
 		  //Send propulsion data
 		  #if XTEND_ //Xtend send
@@ -1551,7 +1606,6 @@ void StartTelemetry2(void *argument)
 		  counter = 0;
 
 		  //Get sensors data
-		  //TODO Need to verify these six to make sure they are in the right order
 	  	  ACCx = acceleration_mg[0];
 	  	  ACCy = acceleration_mg[1];
 	  	  ACCz = acceleration_mg[2];
@@ -1573,7 +1627,7 @@ void StartTelemetry2(void *argument)
 		  MIN = ((uint8_t) time % 3600) / 60.0; sprintf(&MIN, "%.0f",MIN);
 		  SEC = (uint8_t) time % 60; sprintf(&SEC,"%.0f",SEC);
 		  SUBSEC = time / 3600.0; sprintf(&SUBSEC,"%.0f",SUBSEC);
-	  	  STATE = 0; //TODO not the right value
+	  	  STATE = ejection_state_flag; //Ejection state
 	  	  CONT = MRT_getContinuity();
 
 	  	  //Send sensors data
@@ -1671,6 +1725,9 @@ void StartSensors3(void *argument)
 
 		  //Pressure tank
 		  transducer_pressure = MRT_prop_poll_pressure_transducer(&hadc1);
+
+		  //Valve status
+		  valve_status = HAL_GPIO_ReadPin(IN_Prop_ActuatedVent_Feedback_GPIO_Port,IN_Prop_ActuatedVent_Feedback_Pin);
 	  }
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
@@ -1726,9 +1783,6 @@ void StartPrinting(void *argument)
   	  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
   	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
-  	  /*
-  	   * TODO NEEDS FILTERING BUT WORKS (maybe acceleration needs filtering too)
-  	   */
   	  memset(buffer, 0, TX_BUF_DIM);
   	  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
   	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
@@ -1756,7 +1810,9 @@ void StartPrinting(void *argument)
 
 	  //Iridium
 	  #if IRIDIUM_
-	  MRT_Static_Iridium_getTime(); //TODO Can get stuck for some time (SHOULD CHANGE TIMEOUT)
+	  #if !PRINTING_THREAD //TODO Doesn't seem to work here for some reason (not critical)
+	  MRT_Static_Iridium_getTime();
+	  #endif
 	  #endif
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
@@ -1815,6 +1871,20 @@ void StartWatchDog(void *argument)
 	 HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
+	 if(wd_ejection_flag){
+		 wd_ejection_flag = 0;
+		 flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
+
+		 if (ejection_state_flag == 2){
+			 apogee_flag = 1;
+			 flash_flags_buffer[APOGEE_FLAG_OFFSET] = apogee_flag;
+		 }
+
+		 W25qxx_EraseSector(1);
+		 W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+	 }
+
+
 	  /*
 	   * TODO Watch OUT: when writing to the external flash, don't have an interrupt that
 	   * does it at the same time or it's a hardfault crash
@@ -1838,14 +1908,14 @@ void StartWatchDog(void *argument)
 
 
 	  //Check each thread state
+	  #if THREAD_KEEPER
 	  for (int i=0; i < NUMBER_OF_THREADS;i++){
 		  thread_state = osThreadGetState(threadID[i]);
 
 		  if (thread_state == osThreadInactive ||
 		      thread_state == osThreadBlocked  ||
 		      thread_state == osThreadTerminated){
-			  uint8_t ejection_stage = 5; //TODO invented a random variable with a random value
-			  if (i==1 && ejection_stage < 5){
+			  if (i==1 && ejection_state_flag < 4){
 				 osThreadResume(threadID[i]);
 			  }
 			  else if (i!=1){
@@ -1866,6 +1936,7 @@ void StartWatchDog(void *argument)
 		  }
 		  */
 	  }
+	  #endif
 
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
 

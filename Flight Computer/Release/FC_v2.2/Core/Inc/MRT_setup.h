@@ -23,7 +23,8 @@ UART_HandleTypeDef huart8;
 #define DEBUG_UART huart8
 
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
-#define FORCED_EJECTION_STAGE 0 //Can take value of X //TODO
+#define FORCED_EJECTION_STAGE 0 //Can take value from 0 to 1 (boolean)
+#define FORCED_STAGE 1 //Can take value from 0 to 4 (only happens if FORCED_EJECTION_STAGE is 1)
 
 //**************************************************//
 //Constants
@@ -59,8 +60,8 @@ UART_HandleTypeDef huart8;
 //**************************************************//
 //THREADS
 #define MEMORY_THREAD 1
-#define EJECTION_THREAD 0
-#define TELEMETRY_THREAD 1
+#define EJECTION_THREAD 1
+#define TELEMETRY_THREAD 0
 #define SENSORS_THREAD 1
 #define WATCHDOG_THREAD 1
 
@@ -79,11 +80,18 @@ UART_HandleTypeDef huart8;
 //**************************************************//
 //EJECTION THREAD
 //TODO Ejection (just invented variables for the sake of testing)
-#define MIN_APOGEE 20
-#define MAX_APOGEE 30
+#define MIN_APOGEE 120
+#define MAX_APOGEE 200
 #define DEPLOY_ALT_MIN 60
 #define DEPLOY_ALT_MAX 65
 #define GROUND_LEVEL 20
+
+
+#define PAD_STATE 0
+#define BOOST_STATE 1
+#define DROGUE_STATE 2
+#define MAIN_STATE 3
+#define LANDED_STATE 4
 
 
 
@@ -104,7 +112,7 @@ UART_HandleTypeDef huart8;
 #define SRADIO_BUFFER_SIZE 256
 
 //XTend
-#define XTEND_ 1
+#define XTEND_ 0
 #define XTEND_UART huart3
 #define XTEND_BUFFER_SIZE 256
 
@@ -143,6 +151,14 @@ UART_HandleTypeDef huart8;
 //WATCHDOG THREAD
 #define NUMBER_OF_THREADS 4
 #define WD_FREQ 1 //Times per second that you want to check threads
+
+#if PRINTING_THREAD
+#define THREAD_KEEPER 0 //If you want to check the thread states of no, can't have it if printing thread is there
+#endif
+
+#ifndef THREAD_KEEPER
+#define THREAD_KEEPER 1 //If you want to check the thread states of no
+#endif
 
 
 

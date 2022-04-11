@@ -10,16 +10,17 @@
 //#include <IridiumSBD_Static_API.h> TODO why should we include this??
 
 /*Flags*/
-uint8_t reset_flag = 0; //In external memory
+uint8_t reset_flag = 0; //In external flash memory
 //wu_flag defined in MRT_RTOS.c
-uint8_t iwdg_flag = 0; //In external memory
-uint8_t apogee_flag = 0; //In external memory
+uint8_t iwdg_flag = 0; //In external flash memory
+uint8_t apogee_flag = 0; //In external flash memory
+uint8_t ejection_state_flag = 0; //In external flash memory
 
 //Flags read/write buffer
 uint8_t flash_flags_buffer[NB_OF_FLAGS];
 
-//TODO Reference array to each flag
-uint8_t* flash_flags[NB_OF_FLAGS] = {&reset_flag, &wu_flag, &iwdg_flag, &apogee_flag};
+//Reference array to each flag
+uint8_t* flash_flags[NB_OF_FLAGS] = {&reset_flag, &wu_flag, &iwdg_flag, &apogee_flag, &ejection_state_flag};
 
 /*
 //Offset of flags in external flash sector 1 (can go and change NB_OF_FLAGS as needed)
@@ -129,16 +130,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 
 void MRT_resetFromStart(void){
-	//Clear wakeup and reset flags
+	//Clear flags
 	W25qxx_EraseSector(1);
 	W25qxx_WriteSector(FLAGS_NULL_BUFFER, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 
 	//Clear RTC time (last recorded)
 	W25qxx_EraseSector(2);
 	W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
-
-	//Clear all saved data of ejection stages
-	//TODO
 
 	//Shutdown Iridium
 	MRT_Static_Iridium_Shutdown();
@@ -154,6 +152,16 @@ void MRT_updateExternalFlashBuffers(void){
 	}
 	for (int i = 0; i < 3; i++){
 		flash_time_buffer[i] = *flash_time[i];
+	}
+}
+
+
+void MRT_updateFlagsValues(void){
+	for (int i = 0; i < NB_OF_FLAGS; i++){
+		*flash_flags[i] = flash_flags_buffer[i];
+	}
+	for (int i = 0; i < 3; i++){
+		*flash_time[i] = flash_time_buffer[i];
 	}
 }
 
@@ -175,7 +183,7 @@ void MRT_getFlags(void){
 	}
 
 	//Assign each value read to their variable
-	MRT_updateExternalFlashBuffers();
+	MRT_updateFlagsValues();
 
 
 	//Check flags values
@@ -207,6 +215,14 @@ void MRT_getFlags(void){
 	if (apogee_flag != 0 && apogee_flag !=1){ //If random value (none was written)
 		apogee_flag = 0;
 		flash_flags_buffer[APOGEE_FLAG_OFFSET] = apogee_flag;
+		W25qxx_EraseSector(1);
+		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+	}
+
+	//Ejection state flag
+	if (!(ejection_state_flag >= 0 && ejection_state_flag <=4)){ //If random value (none was written)
+		ejection_state_flag = 0;
+		flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
 		W25qxx_EraseSector(1);
 		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
@@ -303,6 +319,24 @@ void MRT_resetInfo(UART_HandleTypeDef* uart){
 	  else if(apogee_flag==1){
 		  HAL_UART_Transmit(uart, "Post-apogee\r\n", 13, HAL_MAX_DELAY);
 	  }
+
+
+	  //Check ejection state
+	  if (ejection_state_flag==0){
+		  HAL_UART_Transmit(uart, "Ejection State: Pad\r\n", 21, HAL_MAX_DELAY);
+	  }
+	  else if(ejection_state_flag==1){
+		  HAL_UART_Transmit(uart, "Ejection State: Boost\r\n", 23, HAL_MAX_DELAY);
+	  }
+	  else if(ejection_state_flag==2){
+		  HAL_UART_Transmit(uart, "Ejection State: Drogue descent\r\n", 32, HAL_MAX_DELAY);
+	  }
+	  else if(ejection_state_flag==3){
+		  HAL_UART_Transmit(uart, "Ejection State: Main descent\r\n", 30, HAL_MAX_DELAY);
+	  }
+	  else if(ejection_state_flag==4){
+		  HAL_UART_Transmit(uart, "Ejection State: Landed\r\n", 24, HAL_MAX_DELAY);
+	  }
 }
 
 
@@ -346,9 +380,6 @@ float MRT_prop_poll_pressure_transducer(ADC_HandleTypeDef* hadc) {
 
 	float voltage = (float) (pressure_sensor_raw / 4095.0) * 3.3; // assuming 12 bits
 
-	// convert using transfer function
-	// TODO
-
 	return voltage;
 }
 
@@ -358,5 +389,5 @@ float MRT_prop_poll_pressure_transducer(ADC_HandleTypeDef* hadc) {
  *https://www.mide.com/air-pressure-at-altitude-calculator
  */
 float MRT_getAltitude(float pressure){
-	return BASE_HEIGHT+(SEA_LEVEL_TEMPERATURE/-0.0065)*(pow(pressure/SEA_LEVEL_PRESSURE,(-R*-0.0065/(go*M)))-1);
+	return BASE_HEIGHT+(SEA_LEVEL_TEMPERATURE/-0.0065)*(pow(pressure/SEA_LEVEL_PRESSURE,0.190263236)-1); //(-R*-0.0065/(go*M)) = 0.190263236
 }

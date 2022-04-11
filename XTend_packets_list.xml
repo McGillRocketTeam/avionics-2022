@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<data>
+  <loop>false</loop>
+  <repeat_times>1</repeat_times>
+  <repeat_period>500</repeat_period>
+  <packets_list>
+    <packet name="Launch_command">
+      <payload>6C61756E6368</payload>
+    </packet>
+    <packet name="Random_data">
+      <payload>44554D4D59</payload>
+    </packet>
+  </packets_list>
+</data>
