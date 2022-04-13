@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Core/Src/MRT_setup.c \
 ../Core/Src/freertos.c \
 ../Core/Src/i2c_sensors.c \
 ../Core/Src/main.c \
@@ -16,6 +17,7 @@ C_SRCS += \
 ../Core/Src/system_stm32f4xx.c 
 
 C_DEPS += \
+./Core/Src/MRT_setup.d \
 ./Core/Src/freertos.d \
 ./Core/Src/i2c_sensors.d \
 ./Core/Src/main.d \
@@ -27,6 +29,7 @@ C_DEPS += \
 ./Core/Src/system_stm32f4xx.d 
 
 OBJS += \
+./Core/Src/MRT_setup.o \
 ./Core/Src/freertos.o \
 ./Core/Src/i2c_sensors.o \
 ./Core/Src/main.o \

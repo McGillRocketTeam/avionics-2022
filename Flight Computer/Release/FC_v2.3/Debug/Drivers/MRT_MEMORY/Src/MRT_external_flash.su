@@ -1,0 +1,4 @@
+MRT_external_flash.c:55:6:MRT_external_flash_Init	16	static
+MRT_external_flash.c:71:6:MRT_get_flags	8	static
+MRT_external_flash.c:161:6:MRT_update_external_flash_buffers	16	static
+MRT_external_flash.c:171:6:MRT_update_flags_values	16	static
