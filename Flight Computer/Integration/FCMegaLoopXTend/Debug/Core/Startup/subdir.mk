@@ -5,16 +5,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 S_SRCS += \
-../Core/Startup/startup_stm32f437zitx.s 
+../Core/Startup/startup_stm32f303retx.s 
 
 OBJS += \
-./Core/Startup/startup_stm32f437zitx.o 
+./Core/Startup/startup_stm32f303retx.o 
 
 S_DEPS += \
-./Core/Startup/startup_stm32f437zitx.d 
+./Core/Startup/startup_stm32f303retx.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 Core/Startup/%.o: ../Core/Startup/%.s Core/Startup/subdir.mk
-	arm-none-eabi-gcc -mcpu=cortex-m4 -g3 -DDEBUG -c -I../../Drivers/MRT_LSM6DSR_f4xx/Inc -x assembler-with-cpp -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@" "$<"
+	arm-none-eabi-gcc -mcpu=cortex-m4 -g3 -c -x assembler-with-cpp -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@" "$<"
 

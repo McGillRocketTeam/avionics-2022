@@ -1,0 +1,11 @@
+i2c_sensors_functions.c:54:14:lsm6dsl_init	40	static
+i2c_sensors_functions.c:105:6:get_acceleration	40	static
+i2c_sensors_functions.c:126:6:get_angvelocity	40	static
+i2c_sensors_functions.c:146:14:lps22hh_init	40	static
+i2c_sensors_functions.c:184:6:get_pressure	40	static
+i2c_sensors_functions.c:196:6:get_temperature	40	static
+i2c_sensors_functions.c:221:16:lsm6dsl_write	40	static
+i2c_sensors_functions.c:242:16:lsm6dsl_read	40	static
+i2c_sensors_functions.c:262:16:lps22hh_write	40	static
+i2c_sensors_functions.c:282:16:lps22hh_read	40	static
+i2c_sensors_functions.c:298:13:platform_delay	16	static

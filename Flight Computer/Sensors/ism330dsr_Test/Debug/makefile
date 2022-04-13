@@ -9,7 +9,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
+-include Drivers/STM32F3xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include subdir.mk
@@ -35,34 +35,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := LSM6DSR_Test
+BUILD_ARTIFACT_NAME := f303-flash_interface
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-LSM6DSR_Test.elf \
+f303-flash_interface.elf \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-LSM6DSR_Test.list \
+f303-flash_interface.list \
 
 OBJCOPY_BIN += \
-LSM6DSR_Test.bin \
+f303-flash_interface.bin \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: LSM6DSR_Test.elf secondary-outputs
+main-build: f303-flash_interface.elf secondary-outputs
 
 # Tool invocations
-LSM6DSR_Test.elf: $(OBJS) $(USER_OBJS) C:\Users\Jacoby\STM32CubeIDE\workspace_1.7.0\LSM6DSR_Test\STM32F446ZETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "LSM6DSR_Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jacoby\STM32CubeIDE\workspace_1.7.0\LSM6DSR_Test\STM32F446ZETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="LSM6DSR_Test.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+f303-flash_interface.elf: $(OBJS) $(USER_OBJS) C:\Users\SlinderKid\Desktop\McGill\00\ -\ MRT\avionics-2022\Flight\ Computer\RTOS\f303-flash_interface\STM32F303RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "f303-flash_interface.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\SlinderKid\Desktop\McGill\00 - MRT\avionics-2022\Flight Computer\RTOS\f303-flash_interface\STM32F303RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f303-flash_interface.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -71,19 +71,19 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-LSM6DSR_Test.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "LSM6DSR_Test.list"
+f303-flash_interface.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "f303-flash_interface.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-LSM6DSR_Test.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "LSM6DSR_Test.bin"
+f303-flash_interface.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "f303-flash_interface.bin"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(SIZE_OUTPUT)$(OBJDUMP_LIST)$(EXECUTABLES)$(OBJS)$(S_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(OBJCOPY_BIN) LSM6DSR_Test.elf
+	-$(RM) $(SIZE_OUTPUT)$(OBJDUMP_LIST)$(EXECUTABLES)$(OBJS)$(S_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(OBJCOPY_BIN) f303-flash_interface.elf
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
