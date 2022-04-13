@@ -23,6 +23,10 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+//TODO
+#include <MRT_Helpers.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,6 +95,10 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+
+	  //TODO
+	  buzz_failure();
+
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }

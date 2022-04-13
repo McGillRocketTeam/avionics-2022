@@ -167,6 +167,8 @@ void Error_Handler(void);
 #define IN_EJ_Drogue_Cont_GPIO_Port GPIOG
 #define OUT_EJ_Arming_Pin GPIO_PIN_14
 #define OUT_EJ_Arming_GPIO_Port GPIOG
+#define POWER_ON_EXT_LED_Pin GPIO_PIN_9
+#define POWER_ON_EXT_LED_GPIO_Port GPIOB
 #define UART8_RX_Debug_Pin GPIO_PIN_0
 #define UART8_RX_Debug_GPIO_Port GPIOE
 #define UART8_TX_Debug_Pin GPIO_PIN_1

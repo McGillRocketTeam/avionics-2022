@@ -67,7 +67,6 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
-I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef hi2c3;
 
@@ -214,7 +213,6 @@ osThreadId_t threadID[NUMBER_OF_THREADS]; //Thread list accessed by Watch Dog th
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_SPI2_Init(void);
@@ -275,7 +273,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ADC1_Init();
-  MX_I2C1_Init();
   MX_I2C2_Init();
   MX_I2C3_Init();
   MX_SPI2_Init();
@@ -507,7 +504,7 @@ int main(void)
 
 		  	//Check for launch command
 		  	memset(xtend_rx_buffer, 0, XTEND_BUFFER_SIZE);
-		  	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, 0x500); //TODO timeout is about 1.2 sec (should be less than 5 sec)
+		  	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
 		  	if (strcmp(xtend_rx_buffer, "launch") == 0){
 				ejection_state_flag = 1;
 				flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
@@ -560,7 +557,11 @@ int main(void)
 	  }
 
 
-//TODO I2C SENSORS SOMETIMES DON'T WANT TO WORK ANYMORE -> NEED TO RESET THE POWER
+//TODO I2C SENSORS SOMETIMES DON'T WANT TO WORK ANYMORE -> NEED TO RESET THE POWER (Enter quick standByMode?)
+
+	  HAL_IWDG_Refresh(&hiwdg);
+	  buzz_startup_success();
+
 
   /* USER CODE END 2 */
 
@@ -716,52 +717,6 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -1091,6 +1046,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -1098,23 +1054,32 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 90-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4294967295;
+  htim2.Init.Period = 400-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 100;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
@@ -1263,7 +1228,7 @@ static void MX_GPIO_Init(void)
                           |OUT_EJ_Main_Gate_Pin|OUT_EJ_Drogue_Gate_Pin|OUT_EJ_Arming_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, SPI2_SX_CS_Pin|GPIO_PIN_8|POWER_ON_EXT_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, XTend_CTS_Pin|XTend_RTS_Pin|XTend_SLEEP_Pin|XTend_RX_LED_Pin
@@ -1345,12 +1310,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SPI2_SX_CS_Pin */
-  GPIO_InitStruct.Pin = SPI2_SX_CS_Pin;
+  /*Configure GPIO pins : SPI2_SX_CS_Pin PB8 POWER_ON_EXT_LED_Pin */
+  GPIO_InitStruct.Pin = SPI2_SX_CS_Pin|GPIO_PIN_8|POWER_ON_EXT_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SPI2_SX_CS_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : XTend_CTS_Pin XTend_RTS_Pin XTend_SLEEP_Pin XTend_RX_LED_Pin
                            XTend_TX_PWR_Pin OUT_FLASH_IO3_Pin OUT_FLASH_WP_Pin OUT_FLASH_CS_Pin
@@ -1890,6 +1855,8 @@ void StartWatchDog(void *argument)
 	   * does it at the same time or it's a hardfault crash
 	   *
 	   * Moved the other code where we write to external flash to this thread (when going to sleep)
+	   *
+	   * TAKE CARE OF SETUP HARDFAULT IN stm32f4xx_it.c
 	   */
 	  //Save the time
 	  MRT_saveRTCTime();

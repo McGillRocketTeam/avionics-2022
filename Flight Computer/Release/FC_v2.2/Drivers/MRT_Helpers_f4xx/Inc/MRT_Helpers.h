@@ -55,7 +55,7 @@ uint8_t flash_time_buffer[3];
 uint8_t* flash_time[3];
 
 
-void checkForI2CDevices(UART_HandleTypeDef uart, I2C_HandleTypeDef I2C);
+//RTC
 void MRT_externalFlashSetup(UART_HandleTypeDef* uart);
 void MRT_freezeWatchDog(void);
 void MRT_getFlags(void);
@@ -69,4 +69,10 @@ float MRT_prop_poll_pressure_transducer(ADC_HandleTypeDef* hadc);
 //Ejection
 float MRT_getAltitude(float pressure);
 
-//void tone(uint32_t duration, uint32_t repeats, TIM_HandleTypeDef htim);
+
+//Misc
+void checkForI2CDevices(UART_HandleTypeDef uart, I2C_HandleTypeDef I2C);
+void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq);
+void buzz_success(void);
+void buzz_failure(void);
+void buzz_startup_success(void);

@@ -17,6 +17,7 @@
 #define IWDG_ACTIVE 0
 #else
 #define IWDG_ACTIVE 1
+//#define HAL_UART_Transmit(u, b, l, d) 0 STOPS PRINTING
 #endif
 
 UART_HandleTypeDef huart8;
@@ -25,6 +26,17 @@ UART_HandleTypeDef huart8;
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
 #define FORCED_EJECTION_STAGE 0 //Can take value from 0 to 1 (boolean)
 #define FORCED_STAGE 1 //Can take value from 0 to 4 (only happens if FORCED_EJECTION_STAGE is 1)
+
+
+//Buzzer
+#define BUZZ_SUCCESS_DURATION	75		// ms
+#define BUZZ_SUCCESS_REPEATS	2
+#define BUZZ_SUCCESS_FREQ		1046	// Hz
+
+#define BUZZ_FAILURE_DURATION	1000 	// ms
+#define BUZZ_FAILURE_REPEATS	3
+#define	BUZZ_FAILURE_FREQ		220		// Hz
+
 
 //**************************************************//
 //Constants
