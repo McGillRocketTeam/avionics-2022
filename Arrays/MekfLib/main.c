@@ -4,7 +4,7 @@
 #include <string.h>
 #include "Inc/mekf.h"
 
-
+// used for testing only
 int main(void) {
 
     
