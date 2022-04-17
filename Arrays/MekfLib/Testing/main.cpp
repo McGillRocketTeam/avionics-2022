@@ -2,15 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Inc/mekf.h"
+#include <iostream>
 
 // used for testing only
 int main(void) {
 
     
-	printf(" %s \n", "test C");
-
-
+	std::cout << "test" << std::endl;
 
 	return(0);
 }
