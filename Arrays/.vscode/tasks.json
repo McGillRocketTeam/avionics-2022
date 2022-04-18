@@ -6,6 +6,8 @@
             "command": "C:\\MinGW\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
+                "-I",
+                "C:/Users/Dell/CPP_libraries/eigen-3.4.0/Eigen",
                 "-g",
                 "${workspaceFolder}/MekfLib/Src/mekf_CPP.cpp", "${workspaceFolder}/MekfLib/Testing/main.cpp",
                 "-o",
