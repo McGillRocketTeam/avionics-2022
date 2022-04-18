@@ -11,11 +11,13 @@ MEKF::MEKF() { //user defined default constructor
 
 void MEKF::kf_predict(){
     Eigen::Matrix3d r;
-    r << 1, 0, 0,
-         0, 1, 0,
-         0, 0, 1;
+    r << 1, 2, 3,
+         4, 5, 6,
+         7, 8, 9;
     std::cout << "cpp predict" << std::endl;
     std::cout << r << std::endl;
+    std::cout << r(1, 2) << std::endl;
+    std::cout << this->a << std::endl;
 }
 
 void MEKF::kf_correct() {
