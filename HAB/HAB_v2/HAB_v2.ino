@@ -73,15 +73,16 @@ void ms8607_poll(struct ms8607_data *data_s);
 void adxl345_poll(struct adxl345_data *data_s);
 void pcf8523_poll(struct pcf8523_data *data_s);
 
-void ft_init(void);
+void  ft_init(void);
 float read_FT_continuity(int pin);
-void ft_terminate(void);
+void  ft_terminate(void);
 uint8_t ft_check_for_ft_alt(void);
 uint8_t ft_check_for_landing(void);
+void  ft_test_on_ground(void);
 
 float get_altitude(void);
 float get_altitude(float pressure_hPa);
-void save_previous_altitudes(float alt);
+void  save_previous_altitudes(float alt);
 
 void do_save_telemetry(void);
 
@@ -141,7 +142,8 @@ void setup() {
   vr_is_recording = 1;
 
   #ifdef TESTING_BYPASS_ALL
-  
+  ft_test_on_ground();
+  while (1);
   #endif  
   
 }
@@ -151,8 +153,12 @@ void loop() {
 
   do_save_telemetry();
   update_flight_state();
-  
-  delay(LOOP_TIME - loop_start);
+
+  if (flight_state == FS_LANDED) {
+    unsigned long delay_time = 10000 - (millis() - loop_start);
+    delay(delay_time);
+  }
+  // otherwise run main loop as fast as possible
 }
 
 
@@ -172,11 +178,17 @@ void do_save_telemetry(void) {
       ms8607_ds.pressure, ms8607_ds.temperature, ms8607_ds.humidity,
       pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second
   );
-  
-  Serial.println(telemetry_buffer);
   datafile.println(telemetry_buffer); // save to SD card
   datafile.flush();
-  Serial.println("finish do save telemetry");
+
+  // in more readable form for serial terminal
+  sprintf(telemetry_buffer, "ACCx = %.4f\tACCy = %.4f\tACCz = %.4f\nPRESSURE = %.4f\tTEMP = %.3f\tREL HUM = %.3f\nDAY = %d\tHOUR = %d\tMIN = %d\tSEC = %d",
+      adxl345_ds.acc_x, adxl345_ds.acc_y, adxl345_ds.acc_z,
+      ms8607_ds.pressure, ms8607_ds.temperature, ms8607_ds.humidity,
+      pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second
+  );
+  Serial.println(telemetry_buffer);
+  Serial.println("");
 }
 
 void update_flight_state(void) {
@@ -213,7 +225,6 @@ void update_flight_state(void) {
       break;
 
     case FS_LANDED:
-      delay(10000);
       if (vr_is_recording) {
         video_recorder_stop_recording();
         vr_is_recording = 0;
@@ -298,14 +309,14 @@ void sd_card_init(void) {
   }
 
   // dynamic file name: inspect SD card contents and automatically create filename
-//  char filename[13] = {0};
-  char filename = "HAB001.txt";
-//  sd_find_dynamic_file_name("HAB", filename);
+  char filename[13] = {0};
+//  char filename = "HAB1.txt";
+  sd_find_dynamic_file_name("HAB", filename);
   datafile = SD.open(filename, FILE_WRITE);
 
   // write header to file
   if (datafile) {
-    datafile.println(datafile_header_string);
+    datafile.println("S,ACCx_m/s2,ACCy,ACCz,PRESSURE_hPa,TEMPERATURE_C,HUMIDITY_rH,TIME,E");
     datafile.flush();
   }
   else {
@@ -333,7 +344,7 @@ void ft_init(void) {
   analogReadResolution(10);
 
   // read continuity and see if channels are armed
-  for (uint8_t i = FT_C1; i < FT_C4; i++) {
+  for (uint8_t i = FT_C1; i <= FT_C4; i++) {
     float voltage = read_FT_continuity(i);
     if (voltage < 0.7 * 3.3) {
       Serial.print("Warning: No continuity detected on FT Channel ");
@@ -364,16 +375,22 @@ void ft_init(void) {
 
 void sd_find_dynamic_file_name(char *prefix, char *filename) {
   char temp_filename[13];
-  for (unsigned int i = 0; ; i++) {
-    sprintf(temp_filename, "%s%05du.txt", prefix, i); 
+  for (unsigned int i = 0; i < 1000 ; i++) {
+    sprintf(temp_filename, "%s%03d.txt", prefix, i); 
     if (SD.exists(temp_filename)) {
       continue;
     }
     else {
+      Serial.print("Filename will be = ");
+      Serial.println(temp_filename);
       strcpy(filename, temp_filename);
-      break;
+      return;
     }
   }
+
+  // if get here, then reached i > 100
+  strcpy(filename, "HAB001.txt");
+  Serial.println("Filename will be HAB001.txt");
 }
 
 void ms8607_poll(struct ms8607_data *data_s) {
@@ -440,6 +457,17 @@ void video_recorder_stop_recording(void) {
   digitalWrite(VR_CTRL, LOW);
 }
 
+void ft_test_on_ground(void) {
+  Serial.println("Testing Flight Termination channels on the ground!");
+  delay(1000);
+  Serial.print("Starting test...");
+  blink_beep(2, 100);
+  delay(1000);
+  ft_terminate();
+  Serial.println("finished.");
+  blink_beep(3, 100);
+}
+
 void init_pinModes(void) {
   pinMode(FT_GATE_1, OUTPUT);
   pinMode(FT_GATE_2, OUTPUT);
@@ -483,9 +511,9 @@ void blink_beep(int beeps, long duration) {
 
   for (int i = 0 ; i < beeps; i++) { // beep thrice, long
     tone(BUZZER, BUZZER_FREQ);
-    digitalWrite(LED3, HIGH);
+    digitalWrite(LED2, HIGH);
     delay(duration);
-    digitalWrite(LED3, LOW);
+    digitalWrite(LED2, LOW);
     noTone(BUZZER);
     if (beeps > 1) {
       delay(duration);
@@ -524,6 +552,7 @@ void Error_Handler(enum error_states err) {
 
     case ERR_SD_CARD_FILE_INIT:
       Serial.println(F("Error: SD card could not open file."));
+      break;
 
     case ERR_PCF8523_INIT:
       Serial.println(F("Error: PCF8523 (real-time clock) initialization problem."));
