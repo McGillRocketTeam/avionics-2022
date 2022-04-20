@@ -16,6 +16,8 @@
 #include <Adafruit_GPS.h>
 #endif
 
+#define TESTING_BYPASS_ALL  // comment out for actual launch
+
 // types
 enum error_states {
   ERR_OK = 0,
@@ -25,6 +27,13 @@ enum error_states {
   ERR_SD_CARD_FILE_INIT,
   ERR_PCF8523_INIT,
   ERR_FT_NO_CONTINUITY,
+};
+
+enum flight_states {
+  FS_PAD,
+  FS_ASCENT,
+  FS_DESCENT,
+  FS_LANDED
 };
 
 struct ms8607_data {
@@ -50,7 +59,6 @@ struct pcf8523_data {
 // private function prototypes
 void init_pinModes(void);
 void init_pinStates(void);
-void save_telemetry(void);
 void blink_beep(int beeps, long duration);
 void blink_beep_success(void);
 void blink_beep_failure(void);
@@ -67,7 +75,18 @@ void pcf8523_poll(struct pcf8523_data *data_s);
 
 void ft_init(void);
 float read_FT_continuity(int pin);
+void ft_terminate(void);
+uint8_t ft_check_for_ft_alt(void);
+uint8_t ft_check_for_landing(void);
+
+float get_altitude(void);
 float get_altitude(float pressure_hPa);
+void save_previous_altitudes(float alt);
+
+void do_save_telemetry(void);
+
+void video_recorder_start_recording(void);
+void video_recorder_stop_recording(void);
 
 void Error_Handler(enum error_states err);
 
@@ -79,7 +98,9 @@ float pressure_current = 0;
 uint32_t count = 0;
 float alt_previous[ALT_ARRAY_SIZE] = {0};
 uint8_t alt_arr_position = 0;
-uint8_t launched = 0;
+
+uint8_t flight_state = FS_PAD;
+uint8_t vr_is_recording = 0;
 
 const char datafile_header_string = "S,ACCx_m/s2,ACCy,ACCz,PRESSURE_hPa,TEMPERATURE_C,HUMIDITY_rH,TIME,E";
 
@@ -116,56 +137,35 @@ void setup() {
   digitalWrite(LED1, HIGH);
   blink_beep_success();
 
+  video_recorder_start_recording();
+  vr_is_recording = 1;
+
+  #ifdef TESTING_BYPASS_ALL
   
-
-
+  #endif  
+  
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  unsigned long loop_start = millis();
 
-}
-
-
-void init_pinModes(void) {
-  pinMode(FT_GATE_1, OUTPUT);
-  pinMode(FT_GATE_2, OUTPUT);
-  pinMode(FT_GATE_3, OUTPUT);
-  pinMode(FT_GATE_4, OUTPUT);
-
-  pinMode(ADXL_INT1, INPUT);
-  pinMode(ADXL_INT2, INPUT);
-
-  pinMode(VR_CTRL, OUTPUT);
-  pinMode(SD_CS, OUTPUT);
+  do_save_telemetry();
+  update_flight_state();
   
-  pinMode(BUZZER, OUTPUT);
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
-  pinMode(LED3, OUTPUT);
-
-  pinMode(FT_C1, INPUT);
-  pinMode(FT_C2, INPUT);
-  pinMode(FT_C3, INPUT);
-  pinMode(FT_C4, INPUT);
-}
-
-void init_pinStates(void) {
-  digitalWrite(FT_GATE_1, LOW);
-  digitalWrite(FT_GATE_2, LOW);
-  digitalWrite(FT_GATE_3, LOW);
-  digitalWrite(FT_GATE_4, LOW);
-
-  digitalWrite(SD_CS, HIGH);  // SPI idle is high
-  digitalWrite(LED1, HIGH);   // bi-color LED, HIGH = green, LOW = red
-  digitalWrite(LED2, LOW);
-  digitalWrite(LED3, LOW);
-
-  noTone(BUZZER);
+  delay(LOOP_TIME - loop_start);
 }
 
 
-void save_telemetry(void) {
+void do_save_telemetry(void) {
+  // update sensor data
+  ms8607_poll(&ms8607_ds);
+  adxl345_poll(&adxl345_ds);
+  pcf8523_poll(&pcf8523_ds);
+
+  alt_agl = get_altitude((&ms8607_ds)->pressure) - alt_ground;
+  save_previous_altitudes(alt_agl);
+
+  // save to storage
   char telemetry_buffer[150] = {0};
   sprintf(telemetry_buffer, "S,%.4f,%.4f,%.4f,%.4f,%.3f,%.3f,%d,%d,%d,%d,E",
       adxl345_ds.acc_x, adxl345_ds.acc_y, adxl345_ds.acc_z,
@@ -176,6 +176,99 @@ void save_telemetry(void) {
   Serial.println(telemetry_buffer);
   datafile.println(telemetry_buffer); // save to SD card
   datafile.flush();
+  Serial.println("finish do save telemetry");
+}
+
+void update_flight_state(void) {
+  switch (flight_state) {
+    case FS_PAD:
+      if (alt_agl > LAUNCH_THRESHOLD) {
+        flight_state = FS_ASCENT;
+        
+        datafile.print(F("Launched! Altitude (AGL, ft) = "));
+        datafile.println(alt_agl);
+        datafile.flush();
+      }
+      break;
+
+    case FS_ASCENT:
+      if (ft_check_for_ft_alt()) {
+        flight_state = FS_DESCENT;
+
+        datafile.print(F("Starting Flight Termination! Altitude (AGL, ft) = "));
+        datafile.println(alt_agl);
+        datafile.flush();
+        
+        ft_terminate();
+      }
+      break;
+
+    case FS_DESCENT:
+      if (ft_check_for_landing()) {
+        flight_state = FS_LANDED;
+        datafile.print(F("Landed! Altitude (AGL, ft) = "));
+        datafile.println(alt_agl);
+        datafile.flush();
+      }
+      break;
+
+    case FS_LANDED:
+      delay(10000);
+      if (vr_is_recording) {
+        video_recorder_stop_recording();
+        vr_is_recording = 0;
+      }
+      break;
+    
+    default:
+      // should never use this case
+      break;
+  }
+}
+
+// check if HAB is above the flight termination altitude
+uint8_t ft_check_for_ft_alt(void) {
+  if (alt_agl > TERMINATION_ALTITUDE) {
+    count += 1;
+
+    if (count > TERMINATION_SAMPLES) {
+      count = 0;
+      return 1;
+    }
+  } else {
+    count = 0;
+  }
+
+  return 0;
+}
+
+// check if HAB has landed
+uint8_t ft_check_for_landing(void) {
+  if (alt_agl - alt_previous[ALT_ARRAY_SIZE-1] < LANDING_THRESHOLD) {
+    count += 1;
+
+    if (count > LANDING_SAMPLES) {
+      count = 0;
+      return 1;
+    }
+  } else {
+    count = 0;
+  }
+
+  return 0;
+}
+
+// terminate flight
+void ft_terminate(void) {
+  digitalWrite(FT_GATE_1, HIGH);
+  digitalWrite(FT_GATE_2, HIGH);
+  digitalWrite(FT_GATE_3, HIGH);
+  digitalWrite(FT_GATE_4, HIGH);
+  delay(FT_DELAY);
+  digitalWrite(FT_GATE_1, LOW);
+  digitalWrite(FT_GATE_2, LOW);
+  digitalWrite(FT_GATE_3, LOW);
+  digitalWrite(FT_GATE_4, LOW);
 }
 
 // sensor init functions
@@ -205,14 +298,15 @@ void sd_card_init(void) {
   }
 
   // dynamic file name: inspect SD card contents and automatically create filename
-  char filename[13] = {0};
-  sd_find_dynamic_file_name("HAB", filename);
+//  char filename[13] = {0};
+  char filename = "HAB001.txt";
+//  sd_find_dynamic_file_name("HAB", filename);
   datafile = SD.open(filename, FILE_WRITE);
 
   // write header to file
   if (datafile) {
     datafile.println(datafile_header_string);
-    datafile.flush();  
+    datafile.flush();
   }
   else {
     Error_Handler(ERR_SD_CARD_FILE_INIT);
@@ -277,6 +371,7 @@ void sd_find_dynamic_file_name(char *prefix, char *filename) {
     }
     else {
       strcpy(filename, temp_filename);
+      break;
     }
   }
 }
@@ -311,9 +406,75 @@ float read_FT_continuity(int pin) {
   return (analogRead(pin) / 1024.0 * 3.3);
 }
 
-// converts pressure in hPa to altitude in ft
+// converts pressure in hPa to altitude in ft (absolute, not AGL)
 float get_altitude(float pressure_hPa) {
   return (145442.1609 * (1.0 - pow(pressure_hPa/LOCAL_PRESSURE_HPA, 0.190266436)));
+}
+
+// overloaded function
+float get_altitude(void) {
+  ms8607_poll(&ms8607_ds);
+  return (get_altitude((&ms8607_ds)->pressure));
+}
+
+void save_previous_altitudes(float alt) {
+  alt_previous[alt_arr_position++] = alt;
+  if (alt_arr_position == (ALT_ARRAY_SIZE - 1)) { // circular array
+    alt_arr_position = 0;
+  }
+}
+
+void video_recorder_start_recording(void) {
+  digitalWrite(VR_CTRL, HIGH);
+  delay(400);
+  digitalWrite(VR_CTRL, LOW);
+  delay(400);
+  digitalWrite(VR_CTRL, HIGH);
+  delay(400);
+  digitalWrite(VR_CTRL, LOW);
+}
+
+void video_recorder_stop_recording(void) {
+  digitalWrite(VR_CTRL, HIGH);
+  delay(1000);
+  digitalWrite(VR_CTRL, LOW);
+}
+
+void init_pinModes(void) {
+  pinMode(FT_GATE_1, OUTPUT);
+  pinMode(FT_GATE_2, OUTPUT);
+  pinMode(FT_GATE_3, OUTPUT);
+  pinMode(FT_GATE_4, OUTPUT);
+
+  pinMode(ADXL_INT1, INPUT);
+  pinMode(ADXL_INT2, INPUT);
+
+  pinMode(VR_CTRL, OUTPUT);
+  pinMode(SD_CS, OUTPUT);
+  
+  pinMode(BUZZER, OUTPUT);
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+
+  pinMode(FT_C1, INPUT);
+  pinMode(FT_C2, INPUT);
+  pinMode(FT_C3, INPUT);
+  pinMode(FT_C4, INPUT);
+}
+
+void init_pinStates(void) {
+  digitalWrite(FT_GATE_1, LOW);
+  digitalWrite(FT_GATE_2, LOW);
+  digitalWrite(FT_GATE_3, LOW);
+  digitalWrite(FT_GATE_4, LOW);
+
+  digitalWrite(SD_CS, HIGH);  // SPI idle is high
+  digitalWrite(LED1, HIGH);   // bi-color LED, HIGH = green, LOW = red
+  digitalWrite(LED2, LOW);
+  digitalWrite(LED3, LOW);
+
+  noTone(BUZZER);
 }
 
 // beeps the buzzer for the number of beeps specified,
