@@ -15,7 +15,7 @@
 #define LANDING_THRESHOLD       10          // change in altitude to detect landing
 #define LANDING_SAMPLES         1000        // samples to detect landing
 
-#define LOCAL_PRESSURE          101200      // Pa
+#define LOCAL_PRESSURE_HPA      1012        // hPa
 #define THRESHOLD_ALTITUDE      10000       // ft
 #define TERMINATION_THRESHOLD   18000       // ft
 

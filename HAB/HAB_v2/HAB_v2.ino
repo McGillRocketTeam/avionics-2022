@@ -22,6 +22,7 @@ enum error_states {
   ERR_ADXL345_INIT,
   ERR_MS8607_INIT,
   ERR_SD_CARD_INIT,
+  ERR_SD_CARD_FILE_INIT,
   ERR_PCF8523_INIT,
   ERR_FT_NO_CONTINUITY,
 };
@@ -49,7 +50,7 @@ struct pcf8523_data {
 // private function prototypes
 void init_pinModes(void);
 void init_pinStates(void);
-void format_telemetry(void);
+void save_telemetry(void);
 void blink_beep(int beeps, long duration);
 void blink_beep_success(void);
 void blink_beep_failure(void);
@@ -66,6 +67,7 @@ void pcf8523_poll(struct pcf8523_data *data_s);
 
 void ft_init(void);
 float read_FT_continuity(int pin);
+float get_altitude(float pressure_hPa);
 
 void Error_Handler(enum error_states err);
 
@@ -79,9 +81,7 @@ float alt_previous[ALT_ARRAY_SIZE] = {0};
 uint8_t alt_arr_position = 0;
 uint8_t launched = 0;
 
-// other global variables
-char telemetry_buffer[150] = {0};
-const char datafile_header_string = "S,ACCx,ACCy,ACCz,PRESSURE_hPa,TEMPERATURE_C,HUMIDITY_rH,TIME,E";
+const char datafile_header_string = "S,ACCx_m/s2,ACCy,ACCz,PRESSURE_hPa,TEMPERATURE_C,HUMIDITY_rH,TIME,E";
 
 // objects for sensors
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345); // assign unique ID to sensor
@@ -90,9 +90,9 @@ RTC_PCF8523 rtc;
 File datafile;
 
 // structs for data
-struct ms8607_data ms8607_data_struct = {0};
-struct adxl345_data adxl345_data_struct = {0};
-struct pcf8523_data pcf8523_data_struct = {0};
+struct ms8607_data ms8607_ds = {0}; // ds = data struct
+struct adxl345_data adxl345_ds = {0};
+struct pcf8523_data pcf8523_ds = {0};
 
 
 void setup() {
@@ -102,7 +102,6 @@ void setup() {
   // init pins
   init_pinModes();
   init_pinStates();
-  memset(alt_previous, 0, ALT_ARRAY_SIZE*sizeof(*alt_previous));
 
   // init sensors
   adxl345_init();
@@ -117,7 +116,7 @@ void setup() {
   digitalWrite(LED1, HIGH);
   blink_beep_success();
 
-
+  
 
 
 }
@@ -166,10 +165,17 @@ void init_pinStates(void) {
 }
 
 
-void format_telemetry(void) {
-//  sprintf(telemetry_buffer, "S, ,E\r\n",
-//
-//  );
+void save_telemetry(void) {
+  char telemetry_buffer[150] = {0};
+  sprintf(telemetry_buffer, "S,%.4f,%.4f,%.4f,%.4f,%.3f,%.3f,%d,%d,%d,%d,E",
+      adxl345_ds.acc_x, adxl345_ds.acc_y, adxl345_ds.acc_z,
+      ms8607_ds.pressure, ms8607_ds.temperature, ms8607_ds.humidity,
+      pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second
+  );
+  
+  Serial.println(telemetry_buffer);
+  datafile.println(telemetry_buffer); // save to SD card
+  datafile.flush();
 }
 
 // sensor init functions
@@ -179,6 +185,7 @@ void adxl345_init(void) {
   }
 
   accel.setRange(ADXL345_RANGE_8_G);
+  accel.setDataRate(ADXL345_DATARATE_100_HZ);
   Serial.println(F("Sensor init: ADXL345 (accelerometer) ok!"));
 }
 
@@ -203,8 +210,14 @@ void sd_card_init(void) {
   datafile = SD.open(filename, FILE_WRITE);
 
   // write header to file
-  datafile.println(datafile_header_string);
-  datafile.flush();
+  if (datafile) {
+    datafile.println(datafile_header_string);
+    datafile.flush();  
+  }
+  else {
+    Error_Handler(ERR_SD_CARD_FILE_INIT);
+  }
+  
   
   Serial.println(F("Sensor init: SD card ok!"));
 }
@@ -237,13 +250,21 @@ void ft_init(void) {
   // get ground pressure and average
   float pressure = 0;
   for (uint8_t i = 0; i < ALT_MEAS_AVGING; i++) {
-//    ms8607_poll();
-//    pressure += ms8607_data.pressure;
+    ms8607_poll(&ms8607_ds);
+    pressure += ms8607_ds.pressure;
   }
   pressure /= ((float) ALT_MEAS_AVGING);
   pressure_ground = pressure;
+  alt_ground = get_altitude(pressure_ground);
+  
+  // now that ground pressure is known, reset array
+  memset(alt_previous, alt_ground, ALT_ARRAY_SIZE*sizeof(*alt_previous));
 
-  Serial.println(F("Flight termination init: ADXL345 ok!"));
+  Serial.println(F("Flight termination init: ok!"));
+  Serial.print(F("\tGround altitude (ft): "));
+  Serial.println(alt_ground);
+  Serial.print(F("\tGround pressure (hPa): "));
+  Serial.println(pressure_ground);
 }
 
 
@@ -290,6 +311,11 @@ float read_FT_continuity(int pin) {
   return (analogRead(pin) / 1024.0 * 3.3);
 }
 
+// converts pressure in hPa to altitude in ft
+float get_altitude(float pressure_hPa) {
+  return (145442.1609 * (1.0 - pow(pressure_hPa/LOCAL_PRESSURE_HPA, 0.190266436)));
+}
+
 // beeps the buzzer for the number of beeps specified,
 // for the duration specified. also blinks LED3.
 void blink_beep(int beeps, long duration) {
@@ -334,6 +360,9 @@ void Error_Handler(enum error_states err) {
     case ERR_SD_CARD_INIT:
       Serial.println(F("Error: SD card initialization problem."));
       break;
+
+    case ERR_SD_CARD_FILE_INIT:
+      Serial.println(F("Error: SD card could not open file."));
 
     case ERR_PCF8523_INIT:
       Serial.println(F("Error: PCF8523 (real-time clock) initialization problem."));
