@@ -39,7 +39,10 @@ struct adxl345_data {
 };
 
 struct pcf8523_data {
-  float time; // TODO idk what the rtc returns
+  uint8_t day;
+  uint8_t hour;
+  uint8_t minute;
+  uint8_t second;
 };
 
 
@@ -55,10 +58,11 @@ void adxl345_init(void);
 void ms8607_init(void);
 void pcf8523_init(void);
 void sd_card_init(void);
+void sd_find_dynamic_file_name(char *prefix, char *filename);
 
-void ms8607_poll(struct ms8607_data *data);
-void adxl345_poll(struct adxl345_data *data);
-void pcf8523_poll(struct pcf8523_data *data);
+void ms8607_poll(struct ms8607_data *data_s);
+void adxl345_poll(struct adxl345_data *data_s);
+void pcf8523_poll(struct pcf8523_data *data_s);
 
 void ft_init(void);
 float read_FT_continuity(int pin);
@@ -77,13 +81,23 @@ uint8_t launched = 0;
 
 // other global variables
 char telemetry_buffer[150] = {0};
+const char datafile_header_string = "S,ACCx,ACCy,ACCz,PRESSURE_hPa,TEMPERATURE_C,HUMIDITY_rH,TIME,E";
 
 // objects for sensors
-Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345); // assign unique ID to this sensor
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345); // assign unique ID to sensor
 Adafruit_MS8607 ms8607;
+RTC_PCF8523 rtc;
+File datafile;
+
+// structs for data
+struct ms8607_data ms8607_data_struct = {0};
+struct adxl345_data adxl345_data_struct = {0};
+struct pcf8523_data pcf8523_data_struct = {0};
+
 
 void setup() {
   Serial.begin(9600);
+  Wire.begin();
   
   // init pins
   init_pinModes();
@@ -179,11 +193,31 @@ void ms8607_init(void) {
 }
 
 void sd_card_init(void) {
+  if (!SD.begin(SD_CS)) {
+    Error_Handler(ERR_SD_CARD_INIT);
+  }
 
+  // dynamic file name: inspect SD card contents and automatically create filename
+  char filename[13] = {0};
+  sd_find_dynamic_file_name("HAB", filename);
+  datafile = SD.open(filename, FILE_WRITE);
+
+  // write header to file
+  datafile.println(datafile_header_string);
+  datafile.flush();
+  
   Serial.println(F("Sensor init: SD card ok!"));
 }
 
 void pcf8523_init(void) {
+  if (!rtc.begin()) {
+    Error_Handler(ERR_PCF8523_INIT);
+  }
+
+  if (!rtc.initialized()) {
+    // set rtc date/time to the date/time that this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
 
   Serial.println(F("Sensor init: PCF8523 (real-time clock) ok!"));
 }
@@ -213,9 +247,44 @@ void ft_init(void) {
 }
 
 
-void ms8607_poll(struct ms8607_data *data);
-void adxl345_poll(struct adxl345_data *data);
-void pcf8523_poll(struct pcf8523_data *data);
+void sd_find_dynamic_file_name(char *prefix, char *filename) {
+  char temp_filename[13];
+  for (unsigned int i = 0; ; i++) {
+    sprintf(temp_filename, "%s%05du.txt", prefix, i); 
+    if (SD.exists(temp_filename)) {
+      continue;
+    }
+    else {
+      strcpy(filename, temp_filename);
+    }
+  }
+}
+
+void ms8607_poll(struct ms8607_data *data_s) {
+  sensors_event_t temp, pressure, humidity;
+  ms8607.getEvent(&pressure, &temp, &humidity);
+  
+  data_s->temperature = temp.temperature;
+  data_s->pressure = pressure.pressure;
+  data_s->humidity = humidity.relative_humidity;
+}
+
+void adxl345_poll(struct adxl345_data *data_s) {
+  sensors_event_t event;
+  accel.getEvent(&event);
+
+  data_s->acc_x = event.acceleration.x;
+  data_s->acc_y = event.acceleration.y;
+  data_s->acc_z = event.acceleration.z;
+}
+
+void pcf8523_poll(struct pcf8523_data *data_s) {
+  DateTime now = rtc.now();
+  data_s->day = now.day();
+  data_s->hour = now.hour();
+  data_s->minute = now.minute();
+  data_s->second = now.second();
+}
 
 float read_FT_continuity(int pin) {
   return (analogRead(pin) / 1024.0 * 3.3);
@@ -272,6 +341,11 @@ void Error_Handler(enum error_states err) {
 
     case ERR_FT_NO_CONTINUITY:
       Serial.println(F("Error: Flight Termination unit does not detect continuity."));
+      break;
+
+    default:
+      Serial.println(F("Error: something went wrong. Not exactly sure what."));
+      break;
   }
 
   Serial.println(F("Program will block here. Please fix the error :'("));
