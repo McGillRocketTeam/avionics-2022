@@ -1736,9 +1736,6 @@ void StartPrinting(void *argument)
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 	  //GPS
-  	  /*
-  	   * TODO HOW DO WE RESET THE TIME
-  	   */
 	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
 	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",LATITUDE, LONGITUDE, time);
 	  HAL_UART_Transmit(&DEBUG_UART,gps_data,strlen(gps_data),HAL_MAX_DELAY);

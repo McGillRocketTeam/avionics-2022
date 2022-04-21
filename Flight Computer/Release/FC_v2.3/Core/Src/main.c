@@ -76,7 +76,7 @@ int main(void){
 
 	MRT_Init();
 
-	print("Starting FC");
+	println("\r\n/****Starting FC****/\r\n");
 
 	return 1;
 }
@@ -150,7 +150,7 @@ void MRT_STM_Init(void){
 	MX_USART3_UART_Init();
 	MX_USART6_UART_Init();
 	MX_RTC_Init();
-	//MX_IWDG_Init(); TODO ADD LATER
+	//MX_IWDG_Init(); TODO ADDED IN MRT_Init()
 	MX_FATFS_Init();
 }
 

@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Core/Src/MRT_helpers.c \
 ../Core/Src/MRT_setup.c \
 ../Core/Src/adc.c \
 ../Core/Src/freertos.c \
@@ -22,6 +23,7 @@ C_SRCS += \
 ../Core/Src/usart.c 
 
 C_DEPS += \
+./Core/Src/MRT_helpers.d \
 ./Core/Src/MRT_setup.d \
 ./Core/Src/adc.d \
 ./Core/Src/freertos.d \
@@ -39,6 +41,7 @@ C_DEPS += \
 ./Core/Src/usart.d 
 
 OBJS += \
+./Core/Src/MRT_helpers.o \
 ./Core/Src/MRT_setup.o \
 ./Core/Src/adc.o \
 ./Core/Src/freertos.o \

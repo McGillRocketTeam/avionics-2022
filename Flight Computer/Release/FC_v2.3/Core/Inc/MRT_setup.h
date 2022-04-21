@@ -11,6 +11,7 @@
 
 //Includes
 #include <usart.h> //For uart handler variable
+#include <i2c.h>
 
 
 //**************************************************//
@@ -19,15 +20,12 @@
 #define DEBUG_UART huart8
 
 #if DEBUG
-#define IWDG_ACTIVE 0
-#define print(s) 		HAL_UART_Transmit(&DEBUG_UART, (uint8_t*) s, strlen(s), HAL_MAX_DELAY)
-#define println(s) 	 	HAL_UART_Transmit(&DEBUG_UART, (uint8_t*) strcat(s, "\r\n"), strlen(s)+2, HAL_MAX_DELAY)
+#define IWDG_ACTIVE					0
 #else
 #define IWDG_ACTIVE 1
-#define print(s) 						0
-#define println(s) 	 					0
 #define HAL_UART_Transmit(u, b, l, d)	0
 #endif
+
 
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
 #define FORCED_EJECTION_STAGE 0 //Can take value from 0 to 1 (boolean)
@@ -90,6 +88,7 @@
 
 //**************************************************//
 //MEMORY THREAD
+#define SD_CARD_	1
 #define SD_SPI_HANDLE hspi5
 #define DATA_FREQ 10 //Times per second that you want to save data
 
@@ -153,14 +152,21 @@
 #define CHECK_I2C 0
 
 //GPS
+#define GPS_	1
 #define GPS_UART huart6
 #define GPS_DATA_BUF_DIM 100
 
 //LSM6DSR
-#define LSM_I2C hi2c3
+#define LSM6DSR_	1
+#define LSM6DSR_I2C hi2c3
+#define LSM6DSR_BOOT_TIME 100 //ms
+#define MRT_LSM6DSR_ID	0x6A //Address on i2c bus
 
 //LPS22HH
-#define LPS_I2C hi2c3
+#define LPS22HH_	1
+#define LPS22HH_I2C hi2c3
+#define LPS22HH_BOOT_TIME 100 //ms
+#define MRT_LPS22HH_ID	0xB3U //Address on i2c bus
 
 
 
@@ -178,6 +184,10 @@
 #define THREAD_KEEPER 1 //If you want to check the thread states of no
 #endif
 
+#if !IWDG_ACTIVE
+#define HAL_IWDG_Refresh(iwdg_handler)	0  //This function now does nothing
+#endif
+
 
 
 
@@ -193,8 +203,8 @@
 
 //Function Prototypes
 void MRT_Init(void);
-
 void MRT_reset_info(void);
+
 
 
 #endif /* INC_MRT_SETUP_H_ */

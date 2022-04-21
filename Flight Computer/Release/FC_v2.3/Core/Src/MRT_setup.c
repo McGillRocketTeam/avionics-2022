@@ -11,6 +11,8 @@
 
 #include <MRT_rtc.h>
 #include <MRT_external_flash.h>
+#include <MRT_i2c_sensors.h>
+#include <sd_card.h>
 
 //**************************************************//
 //PRIVATE FUNCTIONS PROTOTYPES
@@ -35,70 +37,110 @@ void MRT_Init(void){
 	print("OK\r\n");
 	#endif
 
+	//RTC
+	HAL_IWDG_Refresh(&hiwdg);
 	MRT_rtc_Init();
 
+	//TODO SD card (doesn't work)
+	#if MEMORY_THREAD
+
+		//SD card
+		#if SD_CARD_
+			HAL_IWDG_Refresh(&hiwdg);
+			sd_init_dynamic_filename("FC", "", filename);
+		#endif
+	#endif
+
+
+	//Sensors
+	#if SENSORS_THREAD
+
+		//Scan I2C buses (only for debug mode)
+		#if CHECK_I2C && DEBUG
+		  checkForI2CDevices(huart8,hi2c1);
+		  checkForI2CDevices(huart8,hi2c2);
+		  checkForI2CDevices(huart8,hi2c3);
+		#endif
+
+		//LSM6DSR
+		#if LSM6DSR_
+		HAL_IWDG_Refresh(&hiwdg);
+		hlsm6dsr = MRT_LSM6DSR_Setup(&LSM6DSR_I2C, MRT_LSM6DSR_ID);
+		#endif
+
+		//LPS22HH
+		#if LPS22HH_
+		HAL_IWDG_Refresh(&hiwdg);
+		hlps22hh = MRT_LPS22HH_Setup(&LPS22HH_I2C, MRT_LPS22HH_ID);
+		#endif
+
+		//GPS
+		#if GPS_
+		HAL_IWDG_Refresh(&hiwdg);
+		GPS_init(&GPS_UART, &DEBUG_UART);
+		#endif
+	#endif
+
+
+//FOR TESTING
+
+#define TX_BUF_DIM 256
+char buffer[TX_BUF_DIM];
 
 	while(1){
-		HAL_IWDG_Refresh(&hiwdg);
+		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
 		HAL_Delay(1000);
+
+		  //GPS
+		  GPS_Poll(&gps_latitude, &gps_longitude, &gps_time);
+
+	  	  //LSM6DSR
+	  	  MRT_LSM6DSR_getAcceleration(hlsm6dsr,acceleration_mg);
+	  	  MRT_LSM6DSR_getAngularRate(hlsm6dsr,angular_rate_mdps);
+		  MRT_LSM6DSR_getTemperature(hlsm6dsr,&lsm6dsr_temperature_degC);
+
+		  //LPS22HH
+		  MRT_LPS22HH_getTemperature(hlps22hh,&lps22hh_temperature_degC);
+		  MRT_LPS22HH_getPressure(hlps22hh, &pressure_hPa);
+		  //altitude_m = MRT_get_altitude(pressure_hPa); //Update altitude TODO put somewhere else
+
+
+
+
+		  //GPS
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",gps_latitude, gps_longitude, gps_time);
+		  HAL_UART_Transmit(&DEBUG_UART,buffer,strlen(buffer),HAL_MAX_DELAY);
+
+		  //LSM6DSR
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
+		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
+		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lsm6dsr_temperature_degC);
+		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+
+		  //LPS22HH
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",pressure_hPa);
+		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lps22hh_temperature_degC);
+		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+
+		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
+		HAL_Delay(1000);
+		HAL_IWDG_Refresh(&hiwdg);
 	}
 
 }
-
-
-
-//**************************************************//
-//PRIVATE FUNCTIONS
-
-void MRT_Reinitialize_Peripherals(void){
-	  /*
-	   * Reinitialize all peripherals
-	   */
-
-	  print("Reinitializing Peripherals...");
-
-	  // reset LEDs
-	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
-	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
-	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
-
-	  // reset recovery pyro pins
-	  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
-	  HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, RESET); //PG12 DROGUE GATE
-	  HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, RESET); //PG11 MAIN GATE
-
-	  // reset prop pyro pins
-	  HAL_GPIO_WritePin(OUT_PyroValve_Arming_GPIO_Port, OUT_PyroValve_Arming_Pin, SET); //PG1 ARMING_PROP
-	  HAL_GPIO_WritePin(OUT_PyroValve_Gate_1_GPIO_Port, OUT_PyroValve_Gate_1_Pin, RESET); //PF15 PROP GATE 1
-	  HAL_GPIO_WritePin(OUT_PyroValve_Gate_2_GPIO_Port,OUT_PyroValve_Gate_2_Pin, RESET); //PF14 PROP GATE 2
-
-	  // reset 12 V buck converter enable pin (disable converter)
-	  HAL_GPIO_WritePin(EN_12V_Buck_GPIO_Port, EN_12V_Buck_Pin, RESET); //PE2 Buck converter enable
-
-	  // TODO Couldn't find the pin of the vent gate enable
-	  //HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET); //This was in the previous code
-	  //HAL_GPIO_WritePin(OUT_Prop_ActuatedVent_Gate_GPIO_Port, OUT_Prop_ActuatedVent_Gate_Pin, RESET); //PE7 (MAY NOT BE THE RIGHT ONE)
-
-
-	  // reset payload EN signal
-	  HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET); //PE9 Payload I2C enable
-
-	  // set CS pin for thermocouple chip high
-	  //	HAL_GPIO_WritePin(TH_CS_1_GPIO_Port, TH_CS_1_Pin, SET);
-
-	  // set power off for VR
-	  HAL_GPIO_WritePin(OUT_VR_PWR_GPIO_Port, OUT_VR_PWR_Pin, RESET); //PG9
-	  HAL_GPIO_WritePin(OUT_VR_REC_GPIO_Port, OUT_VR_REC_Pin, RESET); //PD7
-
-	  // FLASH set CS, WP and IO3 pins high
-	  HAL_GPIO_WritePin(OUT_FLASH_CS_GPIO_Port, OUT_FLASH_CS_Pin, SET);
-	  HAL_GPIO_WritePin(OUT_FLASH_WP_GPIO_Port, OUT_FLASH_WP_Pin, SET);
-	  HAL_GPIO_WritePin(OUT_FLASH_IO3_GPIO_Port, OUT_FLASH_IO3_Pin, SET);
-
-	  print("OK\r\n");
-}
-
-
 
 
 void MRT_reset_info(void){
@@ -185,3 +227,63 @@ void MRT_reset_info(void){
 		  print("Landed\r\n");
 	  }
 }
+
+
+
+
+
+
+//**************************************************//
+//PRIVATE FUNCTIONS
+
+void MRT_Reinitialize_Peripherals(void){
+	  /*
+	   * Reinitialize all peripherals
+	   */
+
+	  print("Reinitializing Peripherals...");
+
+	  // reset LEDs
+	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
+	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
+	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
+
+	  // reset recovery pyro pins
+	  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
+	  HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, RESET); //PG12 DROGUE GATE
+	  HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, RESET); //PG11 MAIN GATE
+
+	  // reset prop pyro pins
+	  HAL_GPIO_WritePin(OUT_PyroValve_Arming_GPIO_Port, OUT_PyroValve_Arming_Pin, SET); //PG1 ARMING_PROP
+	  HAL_GPIO_WritePin(OUT_PyroValve_Gate_1_GPIO_Port, OUT_PyroValve_Gate_1_Pin, RESET); //PF15 PROP GATE 1
+	  HAL_GPIO_WritePin(OUT_PyroValve_Gate_2_GPIO_Port,OUT_PyroValve_Gate_2_Pin, RESET); //PF14 PROP GATE 2
+
+	  // reset 12 V buck converter enable pin (disable converter)
+	  HAL_GPIO_WritePin(EN_12V_Buck_GPIO_Port, EN_12V_Buck_Pin, RESET); //PE2 Buck converter enable
+
+	  // TODO Couldn't find the pin of the vent gate enable
+	  //HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET); //This was in the previous code
+	  //HAL_GPIO_WritePin(OUT_Prop_ActuatedVent_Gate_GPIO_Port, OUT_Prop_ActuatedVent_Gate_Pin, RESET); //PE7 (MAY NOT BE THE RIGHT ONE)
+
+
+	  // reset payload EN signal
+	  HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET); //PE9 Payload I2C enable
+
+	  // set CS pin for thermocouple chip high
+	  //	HAL_GPIO_WritePin(TH_CS_1_GPIO_Port, TH_CS_1_Pin, SET);
+
+	  // set power off for VR
+	  HAL_GPIO_WritePin(OUT_VR_PWR_GPIO_Port, OUT_VR_PWR_Pin, RESET); //PG9
+	  HAL_GPIO_WritePin(OUT_VR_REC_GPIO_Port, OUT_VR_REC_Pin, RESET); //PD7
+
+	  // FLASH set CS, WP and IO3 pins high
+	  HAL_GPIO_WritePin(OUT_FLASH_CS_GPIO_Port, OUT_FLASH_CS_Pin, SET);
+	  HAL_GPIO_WritePin(OUT_FLASH_WP_GPIO_Port, OUT_FLASH_WP_Pin, SET);
+	  HAL_GPIO_WritePin(OUT_FLASH_IO3_GPIO_Port, OUT_FLASH_IO3_Pin, SET);
+
+	  print("OK\r\n");
+}
+
+
+
+

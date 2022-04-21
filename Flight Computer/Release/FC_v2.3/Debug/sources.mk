@@ -34,6 +34,7 @@ Core/Src \
 Core/Startup \
 Drivers/MRT_MEMORY/Src \
 Drivers/MRT_MISC/Src \
+Drivers/MRT_SENSORS/Src \
 Drivers/STM32F4xx_HAL_Driver/Src \
 FATFS/App \
 FATFS/Target \

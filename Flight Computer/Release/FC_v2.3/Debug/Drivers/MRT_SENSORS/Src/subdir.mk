@@ -5,22 +5,25 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Drivers/MRT_MEMORY/Src/MRT_external_flash.c \
-../Drivers/MRT_MEMORY/Src/sd_card.c \
-../Drivers/MRT_MEMORY/Src/w25qxx.c 
+../Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.c \
+../Drivers/MRT_SENSORS/Src/gps.c \
+../Drivers/MRT_SENSORS/Src/lps22hh_reg.c \
+../Drivers/MRT_SENSORS/Src/lsm6dsr_reg.c 
 
 C_DEPS += \
-./Drivers/MRT_MEMORY/Src/MRT_external_flash.d \
-./Drivers/MRT_MEMORY/Src/sd_card.d \
-./Drivers/MRT_MEMORY/Src/w25qxx.d 
+./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.d \
+./Drivers/MRT_SENSORS/Src/gps.d \
+./Drivers/MRT_SENSORS/Src/lps22hh_reg.d \
+./Drivers/MRT_SENSORS/Src/lsm6dsr_reg.d 
 
 OBJS += \
-./Drivers/MRT_MEMORY/Src/MRT_external_flash.o \
-./Drivers/MRT_MEMORY/Src/sd_card.o \
-./Drivers/MRT_MEMORY/Src/w25qxx.o 
+./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o \
+./Drivers/MRT_SENSORS/Src/gps.o \
+./Drivers/MRT_SENSORS/Src/lps22hh_reg.o \
+./Drivers/MRT_SENSORS/Src/lsm6dsr_reg.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Drivers/MRT_MEMORY/Src/%.o: ../Drivers/MRT_MEMORY/Src/%.c Drivers/MRT_MEMORY/Src/subdir.mk
+Drivers/MRT_SENSORS/Src/%.o: ../Drivers/MRT_SENSORS/Src/%.c Drivers/MRT_SENSORS/Src/subdir.mk
 	arm-none-eabi-gcc "$<" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F437xx -c -I../Core/Inc -I../FATFS/Target -I../FATFS/App -I../USB_DEVICE/App -I../USB_DEVICE/Target -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I../Middlewares/Third_Party/FatFs/src -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Drivers/MRT_EJECTION/Inc -I../Drivers/MRT_MEMORY/Inc -I../Drivers/MRT_PROPULSION/Inc -I../Drivers/MRT_SENSORS/Inc -I../Drivers/MRT_TELEMETRY/Inc -I../Drivers/MRT_WATCHDOG/Inc -I../Drivers/MRT_MISC/Inc -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
 
