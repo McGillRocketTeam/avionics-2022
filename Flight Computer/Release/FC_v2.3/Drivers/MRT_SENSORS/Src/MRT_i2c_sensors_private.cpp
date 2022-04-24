@@ -27,11 +27,10 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	/* Check device ID */
 	lsm6dsr_device_id_get(&ctx, &whoamI);
 
-	print((char*) "Checking Sensor ID...");
-	//if (whoamI != LSM6DSR_ID){ ORIGINAL
+	print((char*) "\tChecking Sensor ID...");
 	if (whoamI != address){
 	  println((char*) "NOT OK");
-	  print((char*) "This Device is: ");
+	  print((char*) "\tThis Device is: ");
 
 	  char buffer[10];
 	  sprintf(buffer, "%X\r\n", whoamI);
@@ -49,9 +48,8 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	lsm6dsr_reset_get(&ctx, &rst);
 	} while (rst);
 
-
 	/* Disable I3C interface */
-	//TODO JASPER lsm6dsr_i3c_disable_set(&ctx, LSM6DSR_I3C_DISABLE);
+    lsm6dsr_i3c_disable_set(&ctx, LSM6DSR_I3C_DISABLE); //TODO Jasper
 
 	/* Enable Block Data Update */
 	lsm6dsr_block_data_update_set(&ctx, PROPERTY_ENABLE);
@@ -64,96 +62,69 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	/* Configure filtering chain(No aux interface)
 	* Accelerometer - LPF1 + LPF2 path
 	*/
-	//TODO JASPER lsm6dsr_xl_hp_path_on_out_set(&ctx, LSM6DSR_LP_ODR_DIV_100);
-	//TODO JASPER lsm6dsr_xl_filter_lp2_set(&ctx, PROPERTY_ENABLE);
-	println((char*) "LSM6DSR Setup Ends");
+	lsm6dsr_xl_hp_path_on_out_set(&ctx, LSM6DSR_LP_ODR_DIV_100); //TODO JASPER
+	lsm6dsr_xl_filter_lp2_set(&ctx, PROPERTY_ENABLE); //TODO JASPER
+	println((char*) "\tSetup Ends");
 
-	//return ctx;
 }
 
 
 void LSM6DSR::getAcceleration(void){
-	//lsm6dsr_reg_t reg;
-	//lsm6dsr_status_reg_get(&dev_ctx, &reg.status_reg);
-
-	uint8_t reg;
 	lsm6dsr_xl_flag_data_ready_get(&ctx, &reg);
 
-	//if (reg.status_reg.gda) {
-	if(reg){
-	/* Read magnetic field data */
-	memset(data_raw_acceleration, 0x00, 3 * sizeof(int16_t));
-	lsm6dsr_acceleration_raw_get(&ctx, data_raw_acceleration);
-	acceleration_mg[0] = lsm6dsr_from_fs2g_to_mg(
-						   data_raw_acceleration[0]);
-	acceleration_mg[1] = lsm6dsr_from_fs2g_to_mg(
-						   data_raw_acceleration[1]);
-	acceleration_mg[2] = lsm6dsr_from_fs2g_to_mg(
-						   data_raw_acceleration[2]);
+	if (reg){
+		// Read magnetic field data
+		memset(data_raw_acceleration, 0x00, 3 * sizeof(int16_t));
+		lsm6dsr_acceleration_raw_get(&ctx, data_raw_acceleration);
+		acceleration_mg[0] = lsm6dsr_from_fs2g_to_mg(data_raw_acceleration[0]);
+		acceleration_mg[1] = lsm6dsr_from_fs2g_to_mg(data_raw_acceleration[1]);
+		acceleration_mg[2] = lsm6dsr_from_fs2g_to_mg(data_raw_acceleration[2]);
 	}
 }
 
 
 void LSM6DSR::getTemperature(void){
-	//lsm6dsr_reg_t reg;
-	//lsm6dsr_status_reg_get(&dev_ctx, &reg.status_reg);
-
-    uint8_t reg;
     lsm6dsr_temp_flag_data_ready_get(&ctx, &reg);
 
-	//if (reg.status_reg.tda) {
-    if(reg){
-		//Read temperature data
+    if (reg){
+		// Read temperature data
 		memset(&data_raw_temperature, 0x00, sizeof(int16_t));
 		lsm6dsr_temperature_raw_get(&ctx, &data_raw_temperature);
 		temperature_degC = lsm6dsr_from_lsb_to_celsius(data_raw_temperature);
-
 	}
 }
-void LSM6DSR::getAngularRate(void){
-	//lsm6dsr_reg_t reg;
-	//lsm6dsr_status_reg_get(&dev_ctx, &reg.status_reg);
 
-	uint8_t reg;
+
+void LSM6DSR::getAngularRate(void){
     lsm6dsr_gy_flag_data_ready_get(&ctx, &reg);
 
-	//if (reg.status_reg.xlda) {
-    if(reg){
-	/* Read magnetic field data */
-	memset(data_raw_angular_rate, 0x00, 3 * sizeof(int16_t));
-	lsm6dsr_angular_rate_raw_get(&ctx, data_raw_angular_rate);
-	angular_rate_mdps[0] =
-			lsm6dsr_from_fs2000dps_to_mdps(data_raw_angular_rate[0]);
-	angular_rate_mdps[1] =
-			lsm6dsr_from_fs2000dps_to_mdps(data_raw_angular_rate[1]);
-	angular_rate_mdps[2] =
-			lsm6dsr_from_fs2000dps_to_mdps(data_raw_angular_rate[2]);
+    if (reg){
+		// Read magnetic field data
+		memset(data_raw_angular_rate, 0x00, 3 * sizeof(int16_t));
+		lsm6dsr_angular_rate_raw_get(&ctx, data_raw_angular_rate);
+		angular_rate_mdps[0] = lsm6dsr_from_fs2000dps_to_mdps(data_raw_angular_rate[0]);
+		angular_rate_mdps[1] = lsm6dsr_from_fs2000dps_to_mdps(data_raw_angular_rate[1]);
+		angular_rate_mdps[2] = lsm6dsr_from_fs2000dps_to_mdps(data_raw_angular_rate[2]);
 
-		/*
-	fs250dps_to_mdps
-	fs500dps_to_mdps
-	fs1000dps_to_mdps
-	fs2000dps_to_mdps
-	*/
-
+			/*
+		fs250dps_to_mdps
+		fs500dps_to_mdps
+		fs1000dps_to_mdps
+		fs2000dps_to_mdps
+		*/
 	}
 }
 
 
-//int32_t LSM6DSR::write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len) {
 int32_t LSM6DSR::write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len) {
   HAL_I2C_Mem_Write((I2C_HandleTypeDef*) handle, LSM6DSR_I2C_ADD_L, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
   return 0;
 }
 
-//int32_t LSM6DSR::read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len) {
 int32_t LSM6DSR::read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len) {
   HAL_I2C_Mem_Read((I2C_HandleTypeDef*) handle, LSM6DSR_I2C_ADD_L, reg, I2C_MEMADD_SIZE_8BIT, bufp, len, 1000);
   return 0;
 }
-
-
-
 
 
 
@@ -175,11 +146,10 @@ LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	lps22hh_device_id_get(&ctx, &whoamI);
 
 
-	print((char*) "Checking Sensor ID...");
-	//if ( whoamI != LPS22HH_ID ){ ORIGINAL
+	print((char*) "\tChecking Sensor ID...");
 	if ( whoamI != address ){
 	  println((char*) "NOT OK");
-	  print((char*) "This Device is: ");
+	  print((char*) "\tThis Device is: ");
 
 	  char buffer[10];
 	  sprintf(buffer, "%X\r\n", whoamI);
@@ -203,24 +173,18 @@ LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 
 	/* Set Output Data Rate */
 	lps22hh_data_rate_set(&ctx, LPS22HH_75_Hz_LOW_NOISE);
-	println((char*) "LPS22HH Setup Ends");
+	println((char*) "\tSetup Ends");
 
-	//return ctx;
 }
 
 
 
 void LPS22HH::getPressure(void){
 	/* Read output only if new value is available */
-	lps22hh_reg_t reg;
-	lps22hh_read_reg(&ctx, LPS22HH_STATUS, (uint8_t *)&reg, 1);
+	lps22hh_press_flag_data_ready_get(&ctx, &reg);
 
-	//uint8_t reg;
-	//lps22hh_press_flag_data_ready_get(&ctx, &reg);
-
-	if (reg.status.p_da) {
-	//if (reg) {
-	  memset(&data_raw_pressure, 0x00, sizeof(uint32_t)); //TODO CAN CAUSE AN HARDFAULT
+	if (reg) {
+	  memset(&data_raw_pressure, 0x00, sizeof(uint32_t));
 	  lps22hh_pressure_raw_get(&ctx, &data_raw_pressure);
 	  pressure_hPa = lps22hh_from_lsb_to_hpa(data_raw_pressure);
 	}
@@ -229,13 +193,8 @@ void LPS22HH::getPressure(void){
 
 void LPS22HH::getTemperature(void){
 	/* Read output only if new value is available */
-	//lps22hh_reg_t reg;
-	//lps22hh_read_reg(&ctx, LPS22HH_STATUS, (uint8_t *)&reg, 1);
-
-	uint8_t reg;
 	lps22hh_temp_flag_data_ready_get(&ctx, &reg);
 
-	//if (reg.status.t_da) {
 	if (reg) {
 	  memset(&data_raw_temperature, 0x00, sizeof(int16_t));
 	  lps22hh_temperature_raw_get(&ctx, &data_raw_temperature);
@@ -246,12 +205,12 @@ void LPS22HH::getTemperature(void){
 
 
 int32_t LPS22HH::write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len) {
-  HAL_I2C_Mem_Write((I2C_HandleTypeDef*) handle, LSM6DSR_I2C_ADD_L, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
+  HAL_I2C_Mem_Write((I2C_HandleTypeDef*) handle, LPS22HH_I2C_ADD_L, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
   return 0;
 }
 
 int32_t LPS22HH::read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len) {
-  HAL_I2C_Mem_Read((I2C_HandleTypeDef*) handle, LSM6DSR_I2C_ADD_L, reg, I2C_MEMADD_SIZE_8BIT, bufp, len, 1000);
+  HAL_I2C_Mem_Read((I2C_HandleTypeDef*) handle, LPS22HH_I2C_ADD_L, reg, I2C_MEMADD_SIZE_8BIT, bufp, len, 1000);
   return 0;
 }
 

@@ -33,6 +33,7 @@ class LSM6DSR {
 	private:
 		//Data
 		stmdev_ctx_t ctx;
+		uint8_t reg; //lsm6dsr_reg_t reg;can be implemented otherwise
 		int16_t data_raw_acceleration[3];
 		int16_t data_raw_angular_rate[3];
 		int16_t data_raw_temperature;
@@ -60,7 +61,7 @@ class LPS22HH {
 
 	private:
 		stmdev_ctx_t ctx;
-		lps22hh_reg_t reg;
+		uint8_t reg; //lps22hh_reg_t reg; can be implemented otherwise
 		uint32_t data_raw_pressure;
 		int16_t data_raw_temperature;
 		uint8_t whoamI, rst;

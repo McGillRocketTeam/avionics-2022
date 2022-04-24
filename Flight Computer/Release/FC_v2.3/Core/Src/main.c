@@ -35,6 +35,8 @@
 /* USER CODE BEGIN Includes */
 
 #include <MRT_setup.h>
+#include <MRT_helpers.h>
+#include <MRT_i2c_sensors.h> //TODO REMOVE AND PUT PROPULSION FIRST LOOP IN PROPULSION.H
 
 /* USER CODE END Includes */
 
@@ -77,6 +79,63 @@ int main(void){
 	MRT_Init();
 
 	println("\r\n/****Starting FC****/\r\n");
+
+	//FOR TESTING
+
+	#define TX_BUF_DIM 256
+	char buffer[TX_BUF_DIM];
+
+
+		while(1){
+			HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
+			HAL_Delay(1000);
+
+			  //GPS
+			  //GPS_Poll();
+
+		  	  //LSM6DSR
+		  	  hlsm6dsr.pollAll();
+
+			  //LPS22HH
+			  hlps22hh.pollAll();
+			  //altitude_m = MRT_get_altitude(pressure_hPa); //Update altitude TODO put somewhere else
+
+
+			  //GPS
+			  memset(buffer, 0, TX_BUF_DIM);
+			  //sprintf(buffer,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",GPS.dec_latitude, GPS.dec_longitude, GPS.utc_time);
+			  print(buffer);
+
+			  //LSM6DSR
+			  memset(buffer, 0, TX_BUF_DIM);
+			  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",
+					  hlsm6dsr.acceleration_mg[0], hlsm6dsr.acceleration_mg[1], hlsm6dsr.acceleration_mg[2]);
+			  print(buffer);
+
+			  memset(buffer, 0, TX_BUF_DIM);
+			  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",
+					  hlsm6dsr.angular_rate_mdps[0], hlsm6dsr.angular_rate_mdps[1], hlsm6dsr.angular_rate_mdps[2]);
+			  print(buffer);
+
+			  memset(buffer, 0, TX_BUF_DIM);
+			  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlsm6dsr.temperature_degC);
+			  print(buffer);
+
+
+			  //LPS22HH
+			  memset(buffer, 0, TX_BUF_DIM);
+			  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",hlps22hh.pressure_hPa);
+			  print(buffer);
+
+			  memset(buffer, 0, TX_BUF_DIM);
+			  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlps22hh.temperature_degC);
+			  print(buffer);
+
+			HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
+			HAL_Delay(1000);
+			HAL_IWDG_Refresh(&hiwdg);
+		}
+
 
 	return 1;
 }

@@ -60,7 +60,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/tim.h ../Core/Inc/usart.h ../USB_DEVICE/App/usb_device.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h ../Core/Inc/gpio.h \
- ../Core/Inc/MRT_setup.h
+ ../Core/Inc/MRT_setup.h ../Core/Inc/MRT_helpers.h \
+ ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
+ ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
+ ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
+ ../Drivers/MRT_SENSORS/Inc/gps.h
 
 ../Core/Inc/main.h:
 
@@ -207,3 +211,13 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/gpio.h:
 
 ../Core/Inc/MRT_setup.h:
+
+../Core/Inc/MRT_helpers.h:
+
+../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
+
+../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
+
+../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
+
+../Drivers/MRT_SENSORS/Inc/gps.h:

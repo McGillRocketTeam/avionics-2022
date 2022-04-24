@@ -68,6 +68,12 @@ void MRT_LSM6DSR_getTemperature(void){
 	hlsm6dsr.temperature_degC = lsm6dsr->temperature_degC;
 }
 
+void MRT_LSM6DSR_pollAll(void){
+	MRT_LSM6DSR_getAcceleration();
+	MRT_LSM6DSR_getAngularRate();
+	MRT_LSM6DSR_getTemperature();
+}
+
 
 
 //**************************************************//
@@ -95,6 +101,11 @@ void MRT_LPS22HH_getTemperature(void){
 	hlps22hh.temperature_degC = lps22hh->temperature_degC;
 }
 
+void MRT_LPS22HH_pollAll(void){
+	MRT_LPS22HH_getPressure();
+	MRT_LPS22HH_getTemperature();
+}
+
 
 
 
@@ -108,6 +119,7 @@ HLSM6DSR MRT_LSM6DSR_Init(void){
 	lsm6dsr_handler.getAcceleration = &MRT_LSM6DSR_getAcceleration;
 	lsm6dsr_handler.getAngularRate = &MRT_LSM6DSR_getAngularRate;
 	lsm6dsr_handler.getTemperature = &MRT_LSM6DSR_getTemperature;
+	lsm6dsr_handler.pollAll = &MRT_LSM6DSR_pollAll;
 	return lsm6dsr_handler;
 }
 
@@ -116,6 +128,7 @@ struct HLPS22HH MRT_LPS22HH_Init(void){
 	struct HLPS22HH lps22hh_handler;
 	lps22hh_handler.getPressure = &MRT_LPS22HH_getPressure;
 	lps22hh_handler.getTemperature = &MRT_LPS22HH_getTemperature;
+	lps22hh_handler.pollAll = &MRT_LPS22HH_pollAll;
 	return lps22hh_handler;
 }
 

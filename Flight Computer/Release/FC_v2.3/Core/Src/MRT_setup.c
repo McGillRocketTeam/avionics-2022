@@ -66,67 +66,6 @@ void MRT_Init(void){
 		MRT_i2c_sensors_Init();
 	#endif
 
-
-//FOR TESTING
-
-#define TX_BUF_DIM 256
-char buffer[TX_BUF_DIM];
-
-	while(1){
-		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-		HAL_Delay(1000);
-
-		/*
-		  //GPS
-		  //GPS_Poll(&gps_latitude, &gps_longitude, &gps_time);
-
-	  	  //LSM6DSR
-	  	  MRT_LSM6DSR_getAcceleration(hlsm6dsr,acceleration_mg);
-	  	  MRT_LSM6DSR_getAngularRate(hlsm6dsr,angular_rate_mdps);
-		  MRT_LSM6DSR_getTemperature(hlsm6dsr,&lsm6dsr_temperature_degC);
-
-		  //LPS22HH
-		  MRT_LPS22HH_getTemperature(hlps22hh,&lps22hh_temperature_degC);
-		  MRT_LPS22HH_getPressure(hlps22hh, &pressure_hPa);
-		  //altitude_m = MRT_get_altitude(pressure_hPa); //Update altitude TODO put somewhere else
-
-
-
-
-		  //GPS
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",gps_latitude, gps_longitude, gps_time);
-		  HAL_UART_Transmit(&DEBUG_UART,buffer,strlen(buffer),HAL_MAX_DELAY);
-
-		  //LSM6DSR
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
-		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
-		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lsm6dsr_temperature_degC);
-		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
-
-
-		  //LPS22HH
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",pressure_hPa);
-		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
-
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lps22hh_temperature_degC);
-		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
-		  */
-
-		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
-		HAL_Delay(1000);
-		HAL_IWDG_Refresh(&hiwdg);
-	}
-
 }
 
 

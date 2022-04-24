@@ -62,6 +62,8 @@ typedef struct{
 void GPS_print(char *data);
 #endif
 
+extern GPS_t GPS;
+
 void GPS_Init(UART_HandleTypeDef* data_uart);
 void GSP_USBPrint(char *data);
 void GPS_print_val(char *data, int value);
@@ -71,7 +73,6 @@ int GPS_parse(char *GPSstrParse);
 float GPS_nmea_to_dec(float deg_coord, char nsew);
 void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_lat, uint8_t *gps_fix_long);
 void GPS_Poll(float*, float*, float*);
-
 
 #ifdef __cplusplus
 }

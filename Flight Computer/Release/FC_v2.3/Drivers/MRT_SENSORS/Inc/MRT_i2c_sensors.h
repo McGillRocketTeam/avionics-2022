@@ -35,6 +35,7 @@ struct HLSM6DSR{
 	void (*getAcceleration)(void);
 	void (*getAngularRate)(void);
 	void (*getTemperature)(void);
+	void (*pollAll)(void);
 };
 
 
@@ -51,6 +52,7 @@ struct HLPS22HH{
 	//Functions
 	void (*getPressure)(void);
 	void (*getTemperature)(void);
+	void (*pollAll)(void);
 };
 
 
