@@ -8,6 +8,9 @@
 #ifndef INC_MRT_I2C_SENSORS_H_
 #define INC_MRT_I2C_SENSORS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //Includes
 #include <lsm6dsr_reg.h>
@@ -43,6 +46,8 @@ extern float gps_latitude;
 extern float gps_longitude;
 extern float gps_time;
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_MRT_I2C_SENSORS_H_ */

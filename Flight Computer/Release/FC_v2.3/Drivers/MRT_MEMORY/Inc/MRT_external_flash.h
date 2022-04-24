@@ -9,10 +9,9 @@
 #define MRT_MEMORY_INC_MRT_EXTERNAL_FLASH_H_
 
 
-
-#endif /* MRT_MEMORY_INC_MRT_EXTERNAL_FLASH_H_ */
-
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "w25qxx.h"
 
@@ -80,3 +79,10 @@ void MRT_get_flags(void);
 
 void MRT_update_external_flash_buffers(void);
 void MRT_update_flags_values(void);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MRT_MEMORY_INC_MRT_EXTERNAL_FLASH_H_ */

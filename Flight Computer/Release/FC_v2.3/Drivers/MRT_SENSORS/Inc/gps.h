@@ -4,6 +4,15 @@
  *  Created on: Nov 15, 2019
  *      Author: Bulanov Konstantin
  */
+
+#ifndef GPS_H_
+#define GPS_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #include "main.h"
 #define GPS_DEBUG	0
 #define GPSBUFSIZE  128       // GPS buffer size
@@ -62,3 +71,10 @@ int GPS_parse(char *GPSstrParse);
 float GPS_nmea_to_dec(float deg_coord, char nsew);
 void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_lat, uint8_t *gps_fix_long);
 void GPS_Poll(float*, float*, float*);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* GPS_H_ */

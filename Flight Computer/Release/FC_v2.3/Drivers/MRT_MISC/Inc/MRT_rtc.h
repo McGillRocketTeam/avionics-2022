@@ -8,9 +8,9 @@
 #ifndef MRT_MISC_INC_MRT_RTC_H_
 #define MRT_MISC_INC_MRT_RTC_H_
 
-
-
-#endif /* MRT_MISC_INC_MRT_RTC_H_ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 extern uint8_t flagA; //Dynamic
@@ -27,3 +27,11 @@ void MRT_StandByMode(uint32_t seconds);
 
 void MRT_set_rtc(uint8_t h, uint8_t m, uint8_t s);
 void MRT_set_alarmA(uint8_t h, uint8_t m, uint8_t s);
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MRT_MISC_INC_MRT_RTC_H_ */

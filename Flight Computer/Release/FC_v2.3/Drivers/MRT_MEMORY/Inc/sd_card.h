@@ -8,6 +8,11 @@
 #ifndef INC_SD_CARD_H_
 #define INC_SD_CARD_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #include "main.h"
 #include "fatfs.h"
 
@@ -31,5 +36,10 @@ FRESULT sd_open_file(char *filename);
 int8_t sd_write(FIL* fp, uint8_t* buffer);
 FRESULT scan_files(char* path, char* prefix, uint32_t* max_used_value);
 uint8_t extract_filename_suffix(char* filename, uint8_t len_prefix, uint32_t* num_value);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_SD_CARD_H_ */

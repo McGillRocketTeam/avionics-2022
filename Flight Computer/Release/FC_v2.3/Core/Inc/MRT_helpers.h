@@ -9,8 +9,10 @@
 #define INC_MRT_HELPERS_H_
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* INC_MRT_HELPERS_H_ */
 
 #include <stdint.h>
 
@@ -24,3 +26,12 @@ void buzz_failure(void);
 void buzz_startup_success(void);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 float MRT_get_altitude(float pressure);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif /* INC_MRT_HELPERS_H_ */
+

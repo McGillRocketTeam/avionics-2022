@@ -9,6 +9,11 @@
 #define INC_MRT_SETUP_H_
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //Includes
 #include <usart.h> //For uart handler variable
 #include <i2c.h>
@@ -205,6 +210,10 @@
 void MRT_Init(void);
 void MRT_reset_info(void);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* INC_MRT_SETUP_H_ */

@@ -546,7 +546,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0xba ./Core/Src/MRT_setup.o
  .debug_macro   0x0000000000000000      0x134 ./Core/Src/MRT_setup.o
  .debug_macro   0x0000000000000000      0x2bc ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000000000      0x1ed ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000000000      0x1ee ./Core/Src/MRT_setup.o
  .group         0x0000000000000000        0xc ./Core/Src/adc.o
  .group         0x0000000000000000        0xc ./Core/Src/adc.o
  .group         0x0000000000000000        0xc ./Core/Src/adc.o
@@ -855,7 +855,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x6c ./Core/Src/freertos.o
  .debug_macro   0x0000000000000000       0x74 ./Core/Src/freertos.o
  .debug_macro   0x0000000000000000       0xdd ./Core/Src/freertos.o
- .debug_macro   0x0000000000000000      0x1ed ./Core/Src/freertos.o
+ .debug_macro   0x0000000000000000      0x1ee ./Core/Src/freertos.o
  .debug_line    0x0000000000000000      0xb44 ./Core/Src/freertos.o
  .debug_str     0x0000000000000000    0xf0b91 ./Core/Src/freertos.o
  .comment       0x0000000000000000       0x54 ./Core/Src/freertos.o
@@ -2662,7 +2662,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x118 ./Drivers/MRT_MEMORY/Src/sd_card.o
  .debug_macro   0x0000000000000000      0x11f ./Drivers/MRT_MEMORY/Src/sd_card.o
  .debug_macro   0x0000000000000000      0x1ef ./Drivers/MRT_MEMORY/Src/sd_card.o
- .debug_macro   0x0000000000000000      0x1ed ./Drivers/MRT_MEMORY/Src/sd_card.o
+ .debug_macro   0x0000000000000000      0x1ee ./Drivers/MRT_MEMORY/Src/sd_card.o
  .group         0x0000000000000000        0xc ./Drivers/MRT_MEMORY/Src/w25qxx.o
  .group         0x0000000000000000        0xc ./Drivers/MRT_MEMORY/Src/w25qxx.o
  .group         0x0000000000000000        0xc ./Drivers/MRT_MEMORY/Src/w25qxx.o
@@ -3003,7 +3003,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0xba ./Drivers/MRT_MISC/Src/MRT_rtc.o
  .debug_macro   0x0000000000000000      0x134 ./Drivers/MRT_MISC/Src/MRT_rtc.o
  .debug_macro   0x0000000000000000      0x2bc ./Drivers/MRT_MISC/Src/MRT_rtc.o
- .debug_macro   0x0000000000000000      0x1ed ./Drivers/MRT_MISC/Src/MRT_rtc.o
+ .debug_macro   0x0000000000000000      0x1ee ./Drivers/MRT_MISC/Src/MRT_rtc.o
  .debug_macro   0x0000000000000000       0x22 ./Drivers/MRT_MISC/Src/MRT_rtc.o
  .debug_macro   0x0000000000000000       0x46 ./Drivers/MRT_MISC/Src/MRT_rtc.o
  .group         0x0000000000000000        0xc ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
@@ -3151,8 +3151,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0xba ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
  .debug_macro   0x0000000000000000      0x134 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
  .debug_macro   0x0000000000000000      0x2bc ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
- .debug_macro   0x0000000000000000       0x10 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
- .debug_macro   0x0000000000000000      0x1ed ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
+ .debug_macro   0x0000000000000000      0x1ee ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
  .debug_macro   0x0000000000000000       0x16 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
  .debug_macro   0x0000000000000000       0x35 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
  .debug_macro   0x0000000000000000       0x20 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
@@ -15810,7 +15809,7 @@ LOAD c:/st/stm32cubeide_1.7.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
  .debug_ranges  0x0000000000003180       0x48 ./Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
  .debug_ranges  0x00000000000031c8      0x100 ./USB_DEVICE/Target/usbd_conf.o
 
-.debug_macro    0x0000000000000000    0x31d08
+.debug_macro    0x0000000000000000    0x31d2c
  .debug_macro   0x0000000000000000      0x2a6 ./Core/Src/MRT_helpers.o
  .debug_macro   0x00000000000002a6      0xaa8 ./Core/Src/MRT_helpers.o
  .debug_macro   0x0000000000000d4e       0x22 ./Core/Src/MRT_helpers.o
@@ -15866,151 +15865,152 @@ LOAD c:/st/stm32cubeide_1.7.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
  .debug_macro   0x00000000000233fa       0xba ./Core/Src/MRT_helpers.o
  .debug_macro   0x00000000000234b4      0x134 ./Core/Src/MRT_helpers.o
  .debug_macro   0x00000000000235e8      0x2bc ./Core/Src/MRT_helpers.o
- .debug_macro   0x00000000000238a4      0x1ed ./Core/Src/MRT_helpers.o
- .debug_macro   0x0000000000023a91      0x628 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000240b9       0x22 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000240db       0x46 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024121       0x52 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024173       0x18 ./Core/Src/MRT_setup.o
- .debug_macro   0x000000000002418b       0x3c ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000241c7       0x34 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000241fb       0x16 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024211       0x43 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024254       0x34 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024288       0x10 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024298       0x58 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000242f0       0x71 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024361       0x1c ./Core/Src/MRT_setup.o
- .debug_macro   0x000000000002437d      0x12a ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000244a7      0x333 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000247da      0x1a9 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024983      0x576 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024ef9       0xdd ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024fd6       0x10 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000024fe6      0x16f ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025155      0x15a ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000252af       0xc9 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025378       0x1c ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025394       0x26 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000253ba       0x16 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000253d0       0x35 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025405      0x4bf ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000258c4       0xb5 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025979       0xaa ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025a23       0x66 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025a89       0x74 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025afd       0xdd ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025bda       0xfa ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025cd4       0xe2 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025db6       0x8e ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025e44       0x1c ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025e60       0x10 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025e70       0x10 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025e80       0x1c ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025e9c       0x52 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025eee       0x22 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025f10       0x10 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025f20       0x40 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000025f60       0xd5 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000026035       0x1c ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000026051       0x3d ./Core/Src/MRT_setup.o
- .debug_macro   0x000000000002608e       0x16 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000260a4      0x145 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000261e9       0x16 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000261ff       0x20 ./Core/Src/MRT_setup.o
- .debug_macro   0x000000000002621f       0x4c ./Core/Src/MRT_setup.o
- .debug_macro   0x000000000002626b       0x16 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000026281       0x16 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000026297       0x29 ./Core/Src/MRT_setup.o
- .debug_macro   0x00000000000262c0       0x7c ./Core/Src/MRT_setup.o
- .debug_macro   0x000000000002633c       0x17 ./Core/Src/MRT_setup.o
- .debug_macro   0x0000000000026353      0x118 ./Core/Src/MRT_setup.o
- .debug_macro   0x000000000002646b      0x11f ./Core/Src/MRT_setup.o
- .debug_macro   0x000000000002658a      0x279 ./Core/Src/adc.o
- .debug_macro   0x0000000000026803      0x279 ./Core/Src/gpio.o
- .debug_macro   0x0000000000026a7c      0x279 ./Core/Src/i2c.o
- .debug_macro   0x0000000000026cf5      0x5a6 ./Core/Src/main.o
- .debug_macro   0x000000000002729b      0x100 ./Core/Src/main.o
- .debug_macro   0x000000000002739b       0x65 ./Core/Src/main.o
- .debug_macro   0x0000000000027400      0x1ef ./Core/Src/main.o
- .debug_macro   0x00000000000275ef      0x1f3 ./Core/Src/main.o
- .debug_macro   0x00000000000277e2      0x279 ./Core/Src/rtc.o
- .debug_macro   0x0000000000027a5b      0x279 ./Core/Src/spi.o
- .debug_macro   0x0000000000027cd4      0x26f ./Core/Src/stm32f4xx_hal_msp.o
- .debug_macro   0x0000000000027f43      0x260 ./Core/Src/stm32f4xx_hal_timebase_tim.o
- .debug_macro   0x00000000000281a3      0x279 ./Core/Src/stm32f4xx_it.o
- .debug_macro   0x000000000002841c      0x260 ./Core/Src/system_stm32f4xx.o
- .debug_macro   0x000000000002867c      0x279 ./Core/Src/tim.o
- .debug_macro   0x00000000000288f5      0x279 ./Core/Src/usart.o
- .debug_macro   0x0000000000028b6e      0x29b ./Drivers/MRT_MEMORY/Src/MRT_external_flash.o
- .debug_macro   0x0000000000028e09      0x604 ./Drivers/MRT_MEMORY/Src/sd_card.o
- .debug_macro   0x000000000002940d       0x6b ./Drivers/MRT_MEMORY/Src/sd_card.o
- .debug_macro   0x0000000000029478       0x95 ./Drivers/MRT_MEMORY/Src/sd_card.o
- .debug_macro   0x000000000002950d       0x10 ./Drivers/MRT_MEMORY/Src/sd_card.o
- .debug_macro   0x000000000002951d      0x498 ./Drivers/MRT_MEMORY/Src/w25qxx.o
- .debug_macro   0x00000000000299b5       0x28 ./Drivers/MRT_MEMORY/Src/w25qxx.o
- .debug_macro   0x00000000000299dd       0x16 ./Drivers/MRT_MEMORY/Src/w25qxx.o
- .debug_macro   0x00000000000299f3      0x2c2 ./Drivers/MRT_MISC/Src/MRT_rtc.o
- .debug_macro   0x0000000000029cb5      0x3aa ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
- .debug_macro   0x000000000002a05f      0x339 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
- .debug_macro   0x000000000002a398       0xd9 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
- .debug_macro   0x000000000002a471       0x56 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
- .debug_macro   0x000000000002a4c7      0x425 ./Drivers/MRT_SENSORS/Src/gps.o
- .debug_macro   0x000000000002a8ec       0x4c ./Drivers/MRT_SENSORS/Src/gps.o
- .debug_macro   0x000000000002a938       0x94 ./Drivers/MRT_SENSORS/Src/gps.o
- .debug_macro   0x000000000002a9cc       0x57 ./Drivers/MRT_SENSORS/Src/gps.o
- .debug_macro   0x000000000002aa23       0x97 ./Drivers/MRT_SENSORS/Src/gps.o
- .debug_macro   0x000000000002aaba       0xfd ./Drivers/MRT_SENSORS/Src/gps.o
- .debug_macro   0x000000000002abb7      0x126 ./Drivers/MRT_SENSORS/Src/lps22hh_reg.o
- .debug_macro   0x000000000002acdd      0x108 ./Drivers/MRT_SENSORS/Src/lps22hh_reg.o
- .debug_macro   0x000000000002ade5      0x126 ./Drivers/MRT_SENSORS/Src/lsm6dsr_reg.o
- .debug_macro   0x000000000002af0b      0x2c0 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
- .debug_macro   0x000000000002b1cb      0x261 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o
- .debug_macro   0x000000000002b42c      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
- .debug_macro   0x000000000002b68c      0x266 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
- .debug_macro   0x000000000002b8f2      0x2a7 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.o
- .debug_macro   0x000000000002bb99      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.o
- .debug_macro   0x000000000002bdf9      0x26c ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.o
- .debug_macro   0x000000000002c065      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.o
- .debug_macro   0x000000000002c2c5      0x278 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.o
- .debug_macro   0x000000000002c53d      0x284 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
- .debug_macro   0x000000000002c7c1      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
- .debug_macro   0x000000000002ca21      0x261 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.o
- .debug_macro   0x000000000002cc82      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.o
- .debug_macro   0x000000000002cee2      0x26f ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.o
- .debug_macro   0x000000000002d151      0x261 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
- .debug_macro   0x000000000002d3b2      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
- .debug_macro   0x000000000002d612      0x261 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
- .debug_macro   0x000000000002d873      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.o
- .debug_macro   0x000000000002dad3      0x3ef ./FATFS/App/fatfs.o
- .debug_macro   0x000000000002dec2      0x419 ./FATFS/Target/user_diskio.o
- .debug_macro   0x000000000002e2db       0x10 ./FATFS/Target/user_diskio.o
- .debug_macro   0x000000000002e2eb       0x16 ./FATFS/Target/user_diskio.o
- .debug_macro   0x000000000002e301       0x7c ./FATFS/Target/user_diskio.o
- .debug_macro   0x000000000002e37d      0x46c ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
- .debug_macro   0x000000000002e7e9      0x1f5 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
- .debug_macro   0x000000000002e9de      0x476 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
- .debug_macro   0x000000000002ee54      0x472 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
- .debug_macro   0x000000000002f2c6      0x3dc ./Middlewares/Third_Party/FatFs/src/diskio.o
- .debug_macro   0x000000000002f6a2      0x7e3 ./Middlewares/Third_Party/FatFs/src/ff.o
- .debug_macro   0x000000000002fe85       0x58 ./Middlewares/Third_Party/FatFs/src/ff.o
- .debug_macro   0x000000000002fedd      0x3dc ./Middlewares/Third_Party/FatFs/src/ff_gen_drv.o
- .debug_macro   0x00000000000302b9      0x3c4 ./Middlewares/Third_Party/FatFs/src/option/syscall.o
- .debug_macro   0x000000000003067d      0x469 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
- .debug_macro   0x0000000000030ae6       0x10 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
- .debug_macro   0x0000000000030af6       0xd3 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
- .debug_macro   0x0000000000030bc9       0x91 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
- .debug_macro   0x0000000000030c5a       0x8d ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
- .debug_macro   0x0000000000030ce7       0x9a ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
- .debug_macro   0x0000000000030d81       0x22 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
- .debug_macro   0x0000000000030da3      0x199 ./Middlewares/Third_Party/FreeRTOS/Source/list.o
- .debug_macro   0x0000000000030f3c      0x228 ./Middlewares/Third_Party/FreeRTOS/Source/queue.o
- .debug_macro   0x0000000000031164       0x87 ./Middlewares/Third_Party/FreeRTOS/Source/queue.o
- .debug_macro   0x00000000000311eb      0x291 ./Middlewares/Third_Party/FreeRTOS/Source/tasks.o
- .debug_macro   0x000000000003147c       0x10 ./Middlewares/Third_Party/FreeRTOS/Source/tasks.o
- .debug_macro   0x000000000003148c      0x233 ./Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o
- .debug_macro   0x00000000000316bf      0x1c0 ./Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
- .debug_macro   0x000000000003187f      0x489 ./USB_DEVICE/Target/usbd_conf.o
+ .debug_macro   0x00000000000238a4      0x1ee ./Core/Src/MRT_helpers.o
+ .debug_macro   0x0000000000023a92      0x628 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000240ba       0x22 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000240dc       0x46 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024122       0x52 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024174       0x18 ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002418c       0x3c ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000241c8       0x34 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000241fc       0x16 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024212       0x43 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024255       0x34 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024289       0x10 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024299       0x58 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000242f1       0x71 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024362       0x1c ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002437e      0x12a ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000244a8      0x333 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000247db      0x1a9 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024984      0x576 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024efa       0xdd ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024fd7       0x16 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000024fed      0x16f ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002515c      0x15a ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000252b6       0xc9 ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002537f       0x1c ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002539b       0x26 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000253c1       0x16 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000253d7       0x35 ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002540c      0x4bf ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000258cb       0xb5 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025980       0xaa ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025a2a       0x66 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025a90       0x74 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025b04       0xdd ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025be1       0xfa ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025cdb       0xe2 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025dbd       0x8e ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025e4b       0x1c ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025e67       0x10 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025e77       0x10 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025e87       0x1c ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025ea3       0x52 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025ef5       0x22 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025f17       0x10 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025f27       0x40 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000025f67       0xd5 ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002603c       0x1c ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026058       0x3d ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026095       0x16 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000260ab      0x145 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000261f0       0x16 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026206       0x20 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026226       0x4c ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026272       0x16 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026288       0x16 ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002629e       0x29 ./Core/Src/MRT_setup.o
+ .debug_macro   0x00000000000262c7       0x7c ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026343       0x17 ./Core/Src/MRT_setup.o
+ .debug_macro   0x000000000002635a      0x118 ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026472      0x11f ./Core/Src/MRT_setup.o
+ .debug_macro   0x0000000000026591      0x279 ./Core/Src/adc.o
+ .debug_macro   0x000000000002680a      0x279 ./Core/Src/gpio.o
+ .debug_macro   0x0000000000026a83      0x279 ./Core/Src/i2c.o
+ .debug_macro   0x0000000000026cfc      0x5a6 ./Core/Src/main.o
+ .debug_macro   0x00000000000272a2      0x100 ./Core/Src/main.o
+ .debug_macro   0x00000000000273a2       0x65 ./Core/Src/main.o
+ .debug_macro   0x0000000000027407      0x1ef ./Core/Src/main.o
+ .debug_macro   0x00000000000275f6      0x1f4 ./Core/Src/main.o
+ .debug_macro   0x00000000000277ea      0x279 ./Core/Src/rtc.o
+ .debug_macro   0x0000000000027a63      0x279 ./Core/Src/spi.o
+ .debug_macro   0x0000000000027cdc      0x26f ./Core/Src/stm32f4xx_hal_msp.o
+ .debug_macro   0x0000000000027f4b      0x260 ./Core/Src/stm32f4xx_hal_timebase_tim.o
+ .debug_macro   0x00000000000281ab      0x279 ./Core/Src/stm32f4xx_it.o
+ .debug_macro   0x0000000000028424      0x260 ./Core/Src/system_stm32f4xx.o
+ .debug_macro   0x0000000000028684      0x279 ./Core/Src/tim.o
+ .debug_macro   0x00000000000288fd      0x279 ./Core/Src/usart.o
+ .debug_macro   0x0000000000028b76      0x29b ./Drivers/MRT_MEMORY/Src/MRT_external_flash.o
+ .debug_macro   0x0000000000028e11      0x604 ./Drivers/MRT_MEMORY/Src/sd_card.o
+ .debug_macro   0x0000000000029415       0x6b ./Drivers/MRT_MEMORY/Src/sd_card.o
+ .debug_macro   0x0000000000029480       0x95 ./Drivers/MRT_MEMORY/Src/sd_card.o
+ .debug_macro   0x0000000000029515       0x10 ./Drivers/MRT_MEMORY/Src/sd_card.o
+ .debug_macro   0x0000000000029525      0x498 ./Drivers/MRT_MEMORY/Src/w25qxx.o
+ .debug_macro   0x00000000000299bd       0x28 ./Drivers/MRT_MEMORY/Src/w25qxx.o
+ .debug_macro   0x00000000000299e5       0x16 ./Drivers/MRT_MEMORY/Src/w25qxx.o
+ .debug_macro   0x00000000000299fb      0x2c2 ./Drivers/MRT_MISC/Src/MRT_rtc.o
+ .debug_macro   0x0000000000029cbd      0x3b0 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
+ .debug_macro   0x000000000002a06d      0x339 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
+ .debug_macro   0x000000000002a3a6       0xd9 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
+ .debug_macro   0x000000000002a47f       0x56 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
+ .debug_macro   0x000000000002a4d5       0x10 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
+ .debug_macro   0x000000000002a4e5      0x42b ./Drivers/MRT_SENSORS/Src/gps.o
+ .debug_macro   0x000000000002a910       0x4c ./Drivers/MRT_SENSORS/Src/gps.o
+ .debug_macro   0x000000000002a95c       0x94 ./Drivers/MRT_SENSORS/Src/gps.o
+ .debug_macro   0x000000000002a9f0       0x57 ./Drivers/MRT_SENSORS/Src/gps.o
+ .debug_macro   0x000000000002aa47       0x97 ./Drivers/MRT_SENSORS/Src/gps.o
+ .debug_macro   0x000000000002aade       0xfd ./Drivers/MRT_SENSORS/Src/gps.o
+ .debug_macro   0x000000000002abdb      0x126 ./Drivers/MRT_SENSORS/Src/lps22hh_reg.o
+ .debug_macro   0x000000000002ad01      0x108 ./Drivers/MRT_SENSORS/Src/lps22hh_reg.o
+ .debug_macro   0x000000000002ae09      0x126 ./Drivers/MRT_SENSORS/Src/lsm6dsr_reg.o
+ .debug_macro   0x000000000002af2f      0x2c0 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
+ .debug_macro   0x000000000002b1ef      0x261 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o
+ .debug_macro   0x000000000002b450      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
+ .debug_macro   0x000000000002b6b0      0x266 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
+ .debug_macro   0x000000000002b916      0x2a7 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.o
+ .debug_macro   0x000000000002bbbd      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.o
+ .debug_macro   0x000000000002be1d      0x26c ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.o
+ .debug_macro   0x000000000002c089      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.o
+ .debug_macro   0x000000000002c2e9      0x278 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.o
+ .debug_macro   0x000000000002c561      0x284 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
+ .debug_macro   0x000000000002c7e5      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
+ .debug_macro   0x000000000002ca45      0x261 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.o
+ .debug_macro   0x000000000002cca6      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.o
+ .debug_macro   0x000000000002cf06      0x26f ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.o
+ .debug_macro   0x000000000002d175      0x261 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
+ .debug_macro   0x000000000002d3d6      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
+ .debug_macro   0x000000000002d636      0x261 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
+ .debug_macro   0x000000000002d897      0x260 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.o
+ .debug_macro   0x000000000002daf7      0x3ef ./FATFS/App/fatfs.o
+ .debug_macro   0x000000000002dee6      0x419 ./FATFS/Target/user_diskio.o
+ .debug_macro   0x000000000002e2ff       0x10 ./FATFS/Target/user_diskio.o
+ .debug_macro   0x000000000002e30f       0x16 ./FATFS/Target/user_diskio.o
+ .debug_macro   0x000000000002e325       0x7c ./FATFS/Target/user_diskio.o
+ .debug_macro   0x000000000002e3a1      0x46c ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
+ .debug_macro   0x000000000002e80d      0x1f5 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
+ .debug_macro   0x000000000002ea02      0x476 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
+ .debug_macro   0x000000000002ee78      0x472 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
+ .debug_macro   0x000000000002f2ea      0x3dc ./Middlewares/Third_Party/FatFs/src/diskio.o
+ .debug_macro   0x000000000002f6c6      0x7e3 ./Middlewares/Third_Party/FatFs/src/ff.o
+ .debug_macro   0x000000000002fea9       0x58 ./Middlewares/Third_Party/FatFs/src/ff.o
+ .debug_macro   0x000000000002ff01      0x3dc ./Middlewares/Third_Party/FatFs/src/ff_gen_drv.o
+ .debug_macro   0x00000000000302dd      0x3c4 ./Middlewares/Third_Party/FatFs/src/option/syscall.o
+ .debug_macro   0x00000000000306a1      0x469 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_macro   0x0000000000030b0a       0x10 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_macro   0x0000000000030b1a       0xd3 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_macro   0x0000000000030bed       0x91 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_macro   0x0000000000030c7e       0x8d ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_macro   0x0000000000030d0b       0x9a ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_macro   0x0000000000030da5       0x22 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_macro   0x0000000000030dc7      0x199 ./Middlewares/Third_Party/FreeRTOS/Source/list.o
+ .debug_macro   0x0000000000030f60      0x228 ./Middlewares/Third_Party/FreeRTOS/Source/queue.o
+ .debug_macro   0x0000000000031188       0x87 ./Middlewares/Third_Party/FreeRTOS/Source/queue.o
+ .debug_macro   0x000000000003120f      0x291 ./Middlewares/Third_Party/FreeRTOS/Source/tasks.o
+ .debug_macro   0x00000000000314a0       0x10 ./Middlewares/Third_Party/FreeRTOS/Source/tasks.o
+ .debug_macro   0x00000000000314b0      0x233 ./Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o
+ .debug_macro   0x00000000000316e3      0x1c0 ./Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
+ .debug_macro   0x00000000000318a3      0x489 ./USB_DEVICE/Target/usbd_conf.o
 
 .debug_line     0x0000000000000000    0x3f111
  .debug_line    0x0000000000000000      0x90f ./Core/Src/MRT_helpers.o
@@ -16071,120 +16071,120 @@ LOAD c:/st/stm32cubeide_1.7.0/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
  .debug_line    0x000000000003d898      0x940 ./Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
  .debug_line    0x000000000003e1d8      0xf39 ./USB_DEVICE/Target/usbd_conf.o
 
-.debug_str      0x0000000000000000   0x10c705
+.debug_str      0x0000000000000000   0x10c70d
  .debug_str     0x0000000000000000    0xe9ec9 ./Core/Src/MRT_helpers.o
                                       0xea290 (size before relaxing)
- .debug_str     0x00000000000e9ec9     0xc445 ./Core/Src/MRT_setup.o
-                                      0xf65a7 (size before relaxing)
- .debug_str     0x00000000000f630e      0x334 ./Core/Src/adc.o
+ .debug_str     0x00000000000e9ec9     0xc44d ./Core/Src/MRT_setup.o
+                                      0xf65af (size before relaxing)
+ .debug_str     0x00000000000f6316      0x334 ./Core/Src/adc.o
                                       0xe9840 (size before relaxing)
- .debug_str     0x00000000000f6642      0x56f ./Core/Src/gpio.o
+ .debug_str     0x00000000000f664a      0x56f ./Core/Src/gpio.o
                                       0xe9946 (size before relaxing)
- .debug_str     0x00000000000f6bb1       0x58 ./Core/Src/i2c.o
+ .debug_str     0x00000000000f6bb9       0x58 ./Core/Src/i2c.o
                                       0xe9919 (size before relaxing)
- .debug_str     0x00000000000f6c09      0xe72 ./Core/Src/main.o
+ .debug_str     0x00000000000f6c11      0xe72 ./Core/Src/main.o
                                       0xf4750 (size before relaxing)
- .debug_str     0x00000000000f7a7b      0x201 ./Core/Src/rtc.o
+ .debug_str     0x00000000000f7a83      0x201 ./Core/Src/rtc.o
                                       0xe9bf9 (size before relaxing)
- .debug_str     0x00000000000f7c7c       0x65 ./Core/Src/spi.o
+ .debug_str     0x00000000000f7c84       0x65 ./Core/Src/spi.o
                                       0xe9884 (size before relaxing)
- .debug_str     0x00000000000f7ce1       0x2c ./Core/Src/stm32f4xx_hal_msp.o
+ .debug_str     0x00000000000f7ce9       0x2c ./Core/Src/stm32f4xx_hal_msp.o
                                       0xe98a9 (size before relaxing)
- .debug_str     0x00000000000f7d0d       0xaa ./Core/Src/stm32f4xx_hal_timebase_tim.o
+ .debug_str     0x00000000000f7d15       0xaa ./Core/Src/stm32f4xx_hal_timebase_tim.o
                                       0xe917f (size before relaxing)
- .debug_str     0x00000000000f7db7      0x40b ./Core/Src/stm32f4xx_it.o
+ .debug_str     0x00000000000f7dbf      0x40b ./Core/Src/stm32f4xx_it.o
                                       0xe9d4f (size before relaxing)
- .debug_str     0x00000000000f81c2       0xaf ./Core/Src/system_stm32f4xx.o
+ .debug_str     0x00000000000f81ca       0xaf ./Core/Src/system_stm32f4xx.o
                                       0xe869b (size before relaxing)
- .debug_str     0x00000000000f8271      0x16b ./Core/Src/tim.o
+ .debug_str     0x00000000000f8279      0x16b ./Core/Src/tim.o
                                       0xe9a92 (size before relaxing)
- .debug_str     0x00000000000f83dc       0x79 ./Core/Src/usart.o
+ .debug_str     0x00000000000f83e4       0x79 ./Core/Src/usart.o
                                       0xe9896 (size before relaxing)
- .debug_str     0x00000000000f8455       0x36 ./Core/Startup/startup_stm32f437zitx.o
+ .debug_str     0x00000000000f845d       0x36 ./Core/Startup/startup_stm32f437zitx.o
                                          0xab (size before relaxing)
- .debug_str     0x00000000000f848b       0xa1 ./Drivers/MRT_MEMORY/Src/MRT_external_flash.o
+ .debug_str     0x00000000000f8493       0xa1 ./Drivers/MRT_MEMORY/Src/MRT_external_flash.o
                                       0xe95df (size before relaxing)
- .debug_str     0x00000000000f852c      0x9a8 ./Drivers/MRT_MEMORY/Src/sd_card.o
+ .debug_str     0x00000000000f8534      0x9a8 ./Drivers/MRT_MEMORY/Src/sd_card.o
                                       0xf54a4 (size before relaxing)
- .debug_str     0x00000000000f8ed4      0x54a ./Drivers/MRT_MEMORY/Src/w25qxx.o
+ .debug_str     0x00000000000f8edc      0x54a ./Drivers/MRT_MEMORY/Src/w25qxx.o
                                       0xf277e (size before relaxing)
- .debug_str     0x00000000000f941e       0xc5 ./Drivers/MRT_MISC/Src/MRT_rtc.o
+ .debug_str     0x00000000000f9426       0xc5 ./Drivers/MRT_MISC/Src/MRT_rtc.o
                                       0xea590 (size before relaxing)
- .debug_str     0x00000000000f94e3      0x7f8 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
-                                      0xefa2f (size before relaxing)
- .debug_str     0x00000000000f9cdb      0x350 ./Drivers/MRT_SENSORS/Src/gps.o
-                                      0xedb9c (size before relaxing)
- .debug_str     0x00000000000fa02b      0xb38 ./Drivers/MRT_SENSORS/Src/lps22hh_reg.o
+ .debug_str     0x00000000000f94eb      0x7f8 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o
+                                      0xefa37 (size before relaxing)
+ .debug_str     0x00000000000f9ce3      0x350 ./Drivers/MRT_SENSORS/Src/gps.o
+                                      0xedba4 (size before relaxing)
+ .debug_str     0x00000000000fa033      0xb38 ./Drivers/MRT_SENSORS/Src/lps22hh_reg.o
                                        0x8d30 (size before relaxing)
- .debug_str     0x00000000000fab63     0x5ceb ./Drivers/MRT_SENSORS/Src/lsm6dsr_reg.o
+ .debug_str     0x00000000000fab6b     0x5ceb ./Drivers/MRT_SENSORS/Src/lsm6dsr_reg.o
                                        0xefa4 (size before relaxing)
- .debug_str     0x000000000010084e      0x569 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
+ .debug_str     0x0000000000100856      0x569 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.o
                                       0xe920f (size before relaxing)
- .debug_str     0x0000000000100db7      0x29c ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o
+ .debug_str     0x0000000000100dbf      0x29c ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.o
                                       0xe8c34 (size before relaxing)
- .debug_str     0x0000000000101053      0x389 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
+ .debug_str     0x000000000010105b      0x389 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.o
                                       0xe8fb0 (size before relaxing)
- .debug_str     0x00000000001013dc      0x13d ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
+ .debug_str     0x00000000001013e4      0x13d ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.o
                                       0xe8842 (size before relaxing)
- .debug_str     0x0000000000101519      0xa8f ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.o
+ .debug_str     0x0000000000101521      0xa8f ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.o
                                       0xe960f (size before relaxing)
- .debug_str     0x0000000000101fa8       0x3b ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.o
+ .debug_str     0x0000000000101fb0       0x3b ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.o
                                       0xe8a96 (size before relaxing)
- .debug_str     0x0000000000101fe3      0x564 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.o
+ .debug_str     0x0000000000101feb      0x564 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.o
                                       0xe8e72 (size before relaxing)
- .debug_str     0x0000000000102547      0x13a ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.o
+ .debug_str     0x000000000010254f      0x13a ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.o
                                       0xe8a3d (size before relaxing)
- .debug_str     0x0000000000102681      0x268 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.o
+ .debug_str     0x0000000000102689      0x268 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.o
                                       0xe88fd (size before relaxing)
- .debug_str     0x00000000001028e9      0x244 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
+ .debug_str     0x00000000001028f1      0x244 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.o
                                       0xe8a9d (size before relaxing)
- .debug_str     0x0000000000102b2d      0x14d ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
+ .debug_str     0x0000000000102b35      0x14d ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.o
                                       0xe888e (size before relaxing)
- .debug_str     0x0000000000102c7a      0x233 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.o
+ .debug_str     0x0000000000102c82      0x233 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.o
                                       0xe8ad1 (size before relaxing)
- .debug_str     0x0000000000102ead      0x56f ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.o
+ .debug_str     0x0000000000102eb5      0x56f ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.o
                                       0xe8d90 (size before relaxing)
- .debug_str     0x000000000010341c      0x564 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.o
+ .debug_str     0x0000000000103424      0x564 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.o
                                       0xe8f2c (size before relaxing)
- .debug_str     0x0000000000103980      0xd65 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
+ .debug_str     0x0000000000103988      0xd65 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.o
                                       0xe99b7 (size before relaxing)
- .debug_str     0x00000000001046e5      0x4ee ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
+ .debug_str     0x00000000001046ed      0x4ee ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.o
                                       0xe9168 (size before relaxing)
- .debug_str     0x0000000000104bd3      0x5f6 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
+ .debug_str     0x0000000000104bdb      0x5f6 ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.o
                                       0xe9010 (size before relaxing)
- .debug_str     0x00000000001051c9      0x68e ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.o
+ .debug_str     0x00000000001051d1      0x68e ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.o
                                       0xe8fa9 (size before relaxing)
- .debug_str     0x0000000000105857       0x2f ./FATFS/App/fatfs.o
+ .debug_str     0x000000000010585f       0x2f ./FATFS/App/fatfs.o
                                       0xf016b (size before relaxing)
- .debug_str     0x0000000000105886       0x6b ./FATFS/Target/user_diskio.o
+ .debug_str     0x000000000010588e       0x6b ./FATFS/Target/user_diskio.o
                                       0xf14d4 (size before relaxing)
- .debug_str     0x00000000001058f1      0x1e7 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
+ .debug_str     0x00000000001058f9      0x1e7 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.o
                                       0xee424 (size before relaxing)
- .debug_str     0x0000000000105ad8      0x152 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
+ .debug_str     0x0000000000105ae0      0x152 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.o
                                       0xee3e2 (size before relaxing)
- .debug_str     0x0000000000105c2a       0xc9 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
+ .debug_str     0x0000000000105c32       0xc9 ./Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.o
                                       0xee332 (size before relaxing)
- .debug_str     0x0000000000105cf3       0x52 ./Middlewares/Third_Party/FatFs/src/diskio.o
+ .debug_str     0x0000000000105cfb       0x52 ./Middlewares/Third_Party/FatFs/src/diskio.o
                                       0xf0076 (size before relaxing)
- .debug_str     0x0000000000105d45      0xf73 ./Middlewares/Third_Party/FatFs/src/ff.o
+ .debug_str     0x0000000000105d4d      0xf73 ./Middlewares/Third_Party/FatFs/src/ff.o
                                       0xf1303 (size before relaxing)
- .debug_str     0x0000000000106cb8       0xa2 ./Middlewares/Third_Party/FatFs/src/ff_gen_drv.o
+ .debug_str     0x0000000000106cc0       0xa2 ./Middlewares/Third_Party/FatFs/src/ff_gen_drv.o
                                       0xf00c7 (size before relaxing)
- .debug_str     0x0000000000106d5a       0xc0 ./Middlewares/Third_Party/FatFs/src/option/syscall.o
+ .debug_str     0x0000000000106d62       0xc0 ./Middlewares/Third_Party/FatFs/src/option/syscall.o
                                       0xefee3 (size before relaxing)
- .debug_str     0x0000000000106e1a     0x2f36 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
+ .debug_str     0x0000000000106e22     0x2f36 ./Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.o
                                       0xf2e48 (size before relaxing)
- .debug_str     0x0000000000109d50      0x12d ./Middlewares/Third_Party/FreeRTOS/Source/list.o
+ .debug_str     0x0000000000109d58      0x12d ./Middlewares/Third_Party/FreeRTOS/Source/list.o
                                        0xaba2 (size before relaxing)
- .debug_str     0x0000000000109e7d      0x93f ./Middlewares/Third_Party/FreeRTOS/Source/queue.o
+ .debug_str     0x0000000000109e85      0x93f ./Middlewares/Third_Party/FreeRTOS/Source/queue.o
                                        0xc51f (size before relaxing)
- .debug_str     0x000000000010a7bc     0x12bc ./Middlewares/Third_Party/FreeRTOS/Source/tasks.o
+ .debug_str     0x000000000010a7c4     0x12bc ./Middlewares/Third_Party/FreeRTOS/Source/tasks.o
                                        0xd098 (size before relaxing)
- .debug_str     0x000000000010ba78      0x817 ./Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o
+ .debug_str     0x000000000010ba80      0x817 ./Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o
                                        0xa496 (size before relaxing)
- .debug_str     0x000000000010c28f      0x32d ./Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
+ .debug_str     0x000000000010c297      0x32d ./Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o
                                        0xb495 (size before relaxing)
- .debug_str     0x000000000010c5bc      0x149 ./USB_DEVICE/Target/usbd_conf.o
+ .debug_str     0x000000000010c5c4      0x149 ./USB_DEVICE/Target/usbd_conf.o
                                       0xef32c (size before relaxing)
 
 .comment        0x0000000000000000       0x53
