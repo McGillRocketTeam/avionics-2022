@@ -79,16 +79,16 @@ void loop() {
 
     gui_rx_buf[2] = 0; // remove \n if present
     xtendSerial.print(gui_rx_buf);  // send to xtend which sends to AV bay
-    
-    // reset buffer
-    gui_idx = 0;
-    memset(gui_rx_buf, 0, GUI_RX_BUF_LEN);
 
     // for debugging:
     Serial.print("\n\nReceived: ");
     Serial.println(gui_rx_buf);
     Serial.print("\n\n");
     Serial.send_now();
+    
+    // reset buffer
+    gui_idx = 0;
+    memset(gui_rx_buf, 0, GUI_RX_BUF_LEN);
   }
 
 }
