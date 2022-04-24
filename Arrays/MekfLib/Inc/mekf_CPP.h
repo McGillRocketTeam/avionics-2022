@@ -47,7 +47,7 @@ class MEKF {
         Eigen::MatrixXd C_k; //3x9 
 
         //predict step
-        void kf_predict(double gyro_input, double acc_input);
+        void kf_predict(Eigen::Vector3d gyro_input, Eigen::Vector3d acc_input);
 
         //correct step
         void kf_correct();

@@ -5,6 +5,7 @@
 #include <cmath>
 #include "../Inc/mekf_CPP.h"
 #include "C:/Users/Dell/CPP_libraries/eigen-3.4.0/Eigen/Dense"
+#include "C:/Users/Dell/CPP_libraries/eigen-3.4.0/unsupported/Eigen/MatrixFunctions"
 
 //Disclaimer: I'm aware that this code is poorly optimized and does things in a very roundabout way.
 //            I just hope it works. I don't have the energy to refactor.
@@ -71,9 +72,40 @@ MEKF::MEKF(double dt,double sigma_gyro, double sigma_acc, double sigma_gps, doub
 
 }
 
-void MEKF::kf_predict(double gyro_input, double acc_input){
-    
+void MEKF::kf_predict(Eigen::Vector3d gyro_input, Eigen::Vector3d acc_input){
+    Eigen::Matrix3d gyro_cross = crossOperator(gyro_input);
+    Eigen::Matrix3d acc_cross = crossOperator(acc_input);
+    this->Cab_k = this->Cab_k_1 * ((this->T * gyro_cross.array()).matrix()).exp();
 
+    this->Va_k = this->Va_k_1 + (this->T * (this->Cab_k_1 * acc_input + this->ga).array()).matrix();
+    this->ra_k = this->ra_k_1 + (this->T * this->Va_k_1.array()).matrix();
+
+    Eigen::MatrixXd a1 = ((this->T * gyro_cross.array()).matrix()).exp(); //temp matrix with short name
+    Eigen::MatrixXd a2 = a1.transpose();
+    Eigen::MatrixXd b = (this->T * (this->Cab_k_1 * acc_cross).array()).matrix();
+    Eigen::MatrixXd c = (Eigen::MatrixXd::Identity(3, 3).array() *this->T).matrix();
+    this->A << a2(0, 0), a2(0, 1), a2(0, 2), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, //I wish I knew an easier way...
+               a2(1, 0), a2(1, 1), a2(1, 2), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               a2(2, 0), a2(2, 1), a2(2, 2), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               b(0, 0), b(0, 1), b(0, 2), 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               b(1, 0), b(1, 1), b(1, 2), 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+               b(2, 0), b(2, 1), b(2, 2), 1.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+               0.0, 0.0, 0.0, c(0, 0), c(0, 1), c(0, 2), 1.0, 0.0, 0.0,
+               0.0, 0.0, 0.0, c(1, 0), c(1, 1), c(1, 2), 0.0, 1.0, 0.0,
+               0.0, 0.0, 0.0, c(2, 0), c(2, 1), c(2, 2), 0.0, 0.0, 1.0;
+
+    Eigen::MatrixXd d = (Eigen::MatrixXd::Identity(3, 3).array() * this->T).matrix();
+    Eigen::MatrixXd e = (-this->T * this->Cab_k_1.array()).matrix();
+    this->L << d(0, 0), d(0, 1), d(0, 2), 0.0, 0.0, 0.0,
+               d(1, 0), d(1, 1), d(1, 2), 0.0, 0.0, 0.0,
+               d(2, 0), d(2, 1), d(2, 2), 0.0, 0.0, 0.0,
+               0.0, 0.0, 0.0, e(0, 0), e(0, 1), e(0, 2),
+               0.0, 0.0, 0.0, e(1, 0), e(1, 1), e(1, 2),
+               0.0, 0.0, 0.0, e(2, 0), e(2, 1), e(2, 2),
+               0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+    this->P_k = this->A * this->P_k_1 * this->A.transpose() + this->L * this->Q * this->L.transpose();
 }
 
 void MEKF::kf_correct() {
@@ -108,6 +140,7 @@ Eigen::Matrix3d MEKF::initRotation(double roll,double yaw, double pitch) {
 //applies the cross operator on a 3d vector
 Eigen::MatrixXd MEKF::crossOperator(Eigen::Vector3d c) {
     Eigen::MatrixXd cross;
+    cross.resize(3, 3);
     cross << 0.0, -c(2), c(1),
              c(2), 0.0, -c(0),
              -c(1), c(0), 0.0;
