@@ -35,9 +35,9 @@ MEKF::MEKF(double dt,double sigma_gyro, double sigma_acc, double sigma_gps, doub
     //dynamic matrices
     this->A = Eigen::MatrixXd::Zero(9, 9); //9x9 zeros
 
-    double cov_gyro = pow(sigma_gyro, 2);
-    double cov_acc = pow(sigma_acc, 2);
-    double cov_gps = pow(sigma_gps, 2);
+    double cov_gyro = sigma_gyro * sigma_gyro;
+    double cov_acc = sigma_acc * sigma_acc;
+    double cov_gps = sigma_gps * sigma_gps;
     this->Q.resize(6, 6);
     this->Q <<  cov_gyro, 0.0, 0.0, 0.0, 0.0, 0.0,
                 0.0, cov_gyro, 0.0, 0.0, 0.0, 0.0,
@@ -49,15 +49,15 @@ MEKF::MEKF(double dt,double sigma_gyro, double sigma_acc, double sigma_gps, doub
 
     this->P_k = Eigen::MatrixXd::Identity(9, 9); //9x9
     this->P_k_1.resize(9, 9);
-    this->P_k_1 << P_init_orien, 0, 0, 0, 0, 0, 0, 0, 0, //could be done with diag matrices? 
-                   0, P_init_orien, 0, 0, 0, 0, 0, 0, 0, 
-                   0, 0, P_init_orien, 0, 0, 0, 0, 0, 0,
-                   0, 0, 0, P_init_pos, 0, 0, 0, 0, 0,
-                   0, 0, 0, 0, P_init_pos, 0, 0, 0, 0,
-                   0, 0, 0, 0, 0, P_init_pos, 0, 0, 0, 
-                   0, 0, 0, 0, 0, 0, P_init_pos, 0, 0, 
-                   0, 0, 0, 0, 0, 0, 0, P_init_pos, 0, 
-                   0, 0, 0, 0, 0, 0, 0, 0, P_init_pos; //9x9
+    this->P_k_1 << P_init_orien, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, //could be done with diag matrices? 
+                   0.0, P_init_orien, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
+                   0.0, 0.0, P_init_orien, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                   0.0, 0.0, 0.0, P_init_pos, 0.0, 0.0, 0.0, 0.0, 0.0,
+                   0.0, 0.0, 0.0, 0.0, P_init_pos, 0.0, 0.0, 0.0, 0.0,
+                   0.0, 0.0, 0.0, 0.0, 0.0, P_init_pos, 0.0, 0.0, 0.0, 
+                   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, P_init_pos, 0.0, 0.0, 
+                   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, P_init_pos, 0.0, 
+                   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, P_init_pos; //9x9
     this->L = Eigen::MatrixXd::Zero(9, 6); //9x6 
     this->S1 = Eigen::MatrixXd::Identity(9, 9); //9x9
     this->S2 = Eigen::MatrixXd::Identity(3, 3); //3x3
@@ -65,22 +65,14 @@ MEKF::MEKF(double dt,double sigma_gyro, double sigma_acc, double sigma_gps, doub
     this->K_k = Eigen::MatrixXd::Zero(9, 3); //9x3 
     this->M_k = Eigen::MatrixXd::Identity(3, 3); //3x3
     this->C_k.resize(3, 9);
-    this->C_k << 0, 0, 0, 0, 0, 0, 1, 0, 0,
-                 0, 0, 0, 0, 0, 0, 0, 1, 0,
-                 0, 0, 0, 0, 0, 0, 0, 0, 1; //3x9 
+    this->C_k << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0; //3x9 
 
 }
 
 void MEKF::kf_predict(double gyro_input, double acc_input){
-    /*
-    Eigen::Matrix3d r;
-    r << 1, 2, 3,
-         4, 5, 6,
-         7, 8, 9;
-    std::cout << "cpp predict" << std::endl;
-    std::cout << r << std::endl;
-    std::cout << r(1, 2) << std::endl;
-    */
+    
 
 }
 
@@ -113,7 +105,11 @@ Eigen::Matrix3d MEKF::initRotation(double roll,double yaw, double pitch) {
     return rotationMatrix;
 }
 
-//applies the cross operator 
-Eigen::MatrixXd MEKF::crossOperator(Eigen::Vector3d vector) {
-
+//applies the cross operator on a 3d vector
+Eigen::MatrixXd MEKF::crossOperator(Eigen::Vector3d c) {
+    Eigen::MatrixXd cross;
+    cross << 0.0, -c(2), c(1),
+             c(2), 0.0, -c(0),
+             -c(1), c(0), 0.0;
+    return cross;
 }
