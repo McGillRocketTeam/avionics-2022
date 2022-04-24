@@ -1,0 +1,11 @@
+MRT_i2c_sensors_private.cpp:18:1:LSM6DSR::LSM6DSR(I2C_HandleTypeDef*, uint8_t)	40	static
+MRT_i2c_sensors_private.cpp:75:6:void LSM6DSR::getAcceleration()	24	static
+MRT_i2c_sensors_private.cpp:97:6:void LSM6DSR::getTemperature()	24	static
+MRT_i2c_sensors_private.cpp:113:6:void LSM6DSR::getAngularRate()	24	static
+MRT_i2c_sensors_private.cpp:144:9:static int32_t LSM6DSR::write(void*, uint8_t, const uint8_t*, uint16_t)	40	static
+MRT_i2c_sensors_private.cpp:150:9:static int32_t LSM6DSR::read(void*, uint8_t, uint8_t*, uint16_t)	40	static
+MRT_i2c_sensors_private.cpp:164:1:LPS22HH::LPS22HH(I2C_HandleTypeDef*, uint8_t)	40	static
+MRT_i2c_sensors_private.cpp:213:6:void LPS22HH::getPressure()	24	static
+MRT_i2c_sensors_private.cpp:230:6:void LPS22HH::getTemperature()	24	static
+MRT_i2c_sensors_private.cpp:248:9:static int32_t LPS22HH::write(void*, uint8_t, const uint8_t*, uint16_t)	40	static
+MRT_i2c_sensors_private.cpp:253:9:static int32_t LPS22HH::read(void*, uint8_t, uint8_t*, uint16_t)	40	static

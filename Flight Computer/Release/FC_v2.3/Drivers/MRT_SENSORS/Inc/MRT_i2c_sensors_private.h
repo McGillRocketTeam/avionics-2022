@@ -6,8 +6,8 @@
  */
 //https://www.openstm32.org/forumthread6067
 
-#ifndef MRT_SENSORS_INC_MRT_I2C_SENSORS_PRIVATE_HPP_
-#define MRT_SENSORS_INC_MRT_I2C_SENSORS_PRIVATE_HPP_
+#ifndef MRT_SENSORS_INC_MRT_I2C_SENSORS_PRIVATE_H_
+#define MRT_SENSORS_INC_MRT_I2C_SENSORS_PRIVATE_H_
 
 #include <stm32f4xx_hal.h>
 #include <lsm6dsr_reg.h>
@@ -39,8 +39,6 @@ class LSM6DSR {
 		uint8_t whoamI, rst;
 
 		//Functions
-		//static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len);
-		//static int32_t read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len);
 		static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len);
 		static int32_t read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len);
 };
@@ -68,11 +66,9 @@ class LPS22HH {
 		uint8_t whoamI, rst;
 
 		//Functions
-		//static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len);
-		//static int32_t read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len);
 		static int32_t write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len);
 		static int32_t read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len);
 };
 
 
-#endif /* MRT_SENSORS_INC_MRT_I2C_SENSORS_PRIVATE_HPP_ */
+#endif /* MRT_SENSORS_INC_MRT_I2C_SENSORS_PRIVATE_H_ */

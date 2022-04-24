@@ -1,21 +1,12 @@
-MRT_i2c_sensors.cpp:18:1:LSM6DSR::LSM6DSR(I2C_HandleTypeDef*, uint8_t)	40	static
-MRT_i2c_sensors.cpp:75:6:void LSM6DSR::getAcceleration()	24	static
-MRT_i2c_sensors.cpp:97:6:void LSM6DSR::getTemperature()	24	static
-MRT_i2c_sensors.cpp:113:6:void LSM6DSR::getAngularRate()	24	static
-MRT_i2c_sensors.cpp:144:9:static int32_t LSM6DSR::write(void*, uint8_t, const uint8_t*, uint16_t)	40	static
-MRT_i2c_sensors.cpp:150:9:static int32_t LSM6DSR::read(void*, uint8_t, uint8_t*, uint16_t)	40	static
-MRT_i2c_sensors.cpp:164:1:LPS22HH::LPS22HH(I2C_HandleTypeDef*, uint8_t)	40	static
-MRT_i2c_sensors.cpp:213:6:void LPS22HH::getPressure()	24	static
-MRT_i2c_sensors.cpp:230:6:void LPS22HH::getTemperature()	24	static
-MRT_i2c_sensors.cpp:248:9:static int32_t LPS22HH::write(void*, uint8_t, const uint8_t*, uint16_t)	40	static
-MRT_i2c_sensors.cpp:253:9:static int32_t LPS22HH::read(void*, uint8_t, uint8_t*, uint16_t)	40	static
-MRT_i2c_sensors.cpp:273:6:void MRT_LSM6DSR_getAcceleration()	8	static
-MRT_i2c_sensors.cpp:276:6:void MRT_LSM6DSR_getAngularRate()	8	static
-MRT_i2c_sensors.cpp:279:6:void MRT_LSM6DSR_getTemperature()	8	static
-MRT_i2c_sensors.cpp:283:21:HLSM6DSR MRT_LSM6DSR_Init()	16	static
-MRT_i2c_sensors.cpp:303:6:void MRT_LPS22HH_getPressure()	8	static
-MRT_i2c_sensors.cpp:306:6:void MRT_LPS22HH_getTemperature()	8	static
-MRT_i2c_sensors.cpp:310:21:HLPS22HH MRT_LPS22HH_Init()	16	static
-MRT_i2c_sensors.cpp:322:17:void MRT_i2c_sensors_Init()	56	static
-MRT_i2c_sensors.cpp:343:1:void __static_initialization_and_destruction_0(int, int)	16	static
-MRT_i2c_sensors.cpp:343:1:cpp)	8	static
+MRT_i2c_sensors.cpp:42:6:void MRT_LSM6DSR_Constructor()	16	static
+MRT_i2c_sensors.cpp:48:6:void MRT_LSM6DSR_Destructor()	4	static
+MRT_i2c_sensors.cpp:54:6:void MRT_LSM6DSR_getAcceleration()	8	static
+MRT_i2c_sensors.cpp:60:6:void MRT_LSM6DSR_getAngularRate()	8	static
+MRT_i2c_sensors.cpp:66:6:void MRT_LSM6DSR_getTemperature()	8	static
+MRT_i2c_sensors.cpp:76:6:void MRT_LPS22HH_Constructor()	16	static
+MRT_i2c_sensors.cpp:82:6:void MRT_LPS22HH_Destructor()	4	static
+MRT_i2c_sensors.cpp:88:6:void MRT_LPS22HH_getPressure()	8	static
+MRT_i2c_sensors.cpp:93:6:void MRT_LPS22HH_getTemperature()	8	static
+MRT_i2c_sensors.cpp:105:10:HLSM6DSR MRT_LSM6DSR_Init()	16	static
+MRT_i2c_sensors.cpp:114:17:HLPS22HH MRT_LPS22HH_Init()	16	static
+MRT_i2c_sensors.cpp:122:6:void MRT_i2c_sensors_Init()	56	static

@@ -18,7 +18,7 @@ extern "C" {
 #define GPSBUFSIZE  128       // GPS buffer size
 
 
-UART_HandleTypeDef* GPS_USART;
+extern UART_HandleTypeDef* GPS_USART;
 
 
 typedef struct{

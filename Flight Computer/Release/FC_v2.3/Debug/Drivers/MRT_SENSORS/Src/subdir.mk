@@ -10,7 +10,8 @@ C_SRCS += \
 ../Drivers/MRT_SENSORS/Src/lsm6dsr_reg.c 
 
 CPP_SRCS += \
-../Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.cpp 
+../Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.cpp \
+../Drivers/MRT_SENSORS/Src/MRT_i2c_sensors_private.cpp 
 
 C_DEPS += \
 ./Drivers/MRT_SENSORS/Src/gps.d \
@@ -19,12 +20,14 @@ C_DEPS += \
 
 OBJS += \
 ./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o \
+./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors_private.o \
 ./Drivers/MRT_SENSORS/Src/gps.o \
 ./Drivers/MRT_SENSORS/Src/lps22hh_reg.o \
 ./Drivers/MRT_SENSORS/Src/lsm6dsr_reg.o 
 
 CPP_DEPS += \
-./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.d 
+./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.d \
+./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors_private.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

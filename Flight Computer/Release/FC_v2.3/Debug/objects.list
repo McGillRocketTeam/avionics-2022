@@ -20,6 +20,7 @@
 "./Drivers/MRT_MEMORY/Src/w25qxx.o"
 "./Drivers/MRT_MISC/Src/MRT_rtc.o"
 "./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o"
+"./Drivers/MRT_SENSORS/Src/MRT_i2c_sensors_private.o"
 "./Drivers/MRT_SENSORS/Src/gps.o"
 "./Drivers/MRT_SENSORS/Src/lps22hh_reg.o"
 "./Drivers/MRT_SENSORS/Src/lsm6dsr_reg.o"

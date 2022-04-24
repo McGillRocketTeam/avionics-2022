@@ -27,9 +27,9 @@
 struct HLSM6DSR{
 
 	//Data
-	float* acceleration_mg[3];
-	float* angular_rate_mdps[3];
-	float* temperature_degC;
+	float acceleration_mg[3];
+	float angular_rate_mdps[3];
+	float temperature_degC;
 
 	//Functions
 	void (*getAcceleration)(void);
@@ -45,8 +45,8 @@ struct HLSM6DSR{
 struct HLPS22HH{
 
 	//Data
-	float* pressure_hPa;
-	float* temperature_degC;
+	float pressure_hPa;
+	float temperature_degC;
 
 	//Functions
 	void (*getPressure)(void);
