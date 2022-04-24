@@ -208,7 +208,7 @@ extern "C" {
 
 //Function Prototypes
 void MRT_Init(void);
-void MRT_reset_info(void);
+void MRT_Deinit(void);
 
 
 #ifdef __cplusplus

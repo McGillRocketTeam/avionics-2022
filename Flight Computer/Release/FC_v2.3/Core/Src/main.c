@@ -91,7 +91,7 @@ int main(void){
 			HAL_Delay(1000);
 
 			  //GPS
-			  //GPS_Poll();
+			  hgps.pollAll();
 
 		  	  //LSM6DSR
 		  	  hlsm6dsr.pollAll();
@@ -103,7 +103,7 @@ int main(void){
 
 			  //GPS
 			  memset(buffer, 0, TX_BUF_DIM);
-			  //sprintf(buffer,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",GPS.dec_latitude, GPS.dec_longitude, GPS.utc_time);
+			  sprintf(buffer,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",hgps.latitude, hgps.longitude, hgps.time);
 			  print(buffer);
 
 			  //LSM6DSR

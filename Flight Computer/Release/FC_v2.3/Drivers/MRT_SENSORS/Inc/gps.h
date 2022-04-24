@@ -17,10 +17,6 @@ extern "C" {
 #define GPS_DEBUG	0
 #define GPSBUFSIZE  128       // GPS buffer size
 
-
-extern UART_HandleTypeDef* GPS_USART;
-
-
 typedef struct{
 
     // calculated values
@@ -56,15 +52,19 @@ typedef struct{
     char speed_k_unit;
     float speed_km; // speek km/hr
     char speed_km_unit;
+
+    //Data uart
+    UART_HandleTypeDef* uart;
+
+    //User defined functions
+    void (*print)(char*);
+    void (*tone_freq)(uint32_t duration, uint32_t repeats, uint32_t freq);
+
 } GPS_t;
 
-#if (GPS_DEBUG == 1)
-void GPS_print(char *data);
-#endif
 
-extern GPS_t GPS;
-
-void GPS_Init(UART_HandleTypeDef* data_uart);
+void GPS_Init(UART_HandleTypeDef* data_uart, void (*gps_print)(char*),
+		void (*gps_tone_freq)(uint32_t duration, uint32_t repeats, uint32_t freq));
 void GSP_USBPrint(char *data);
 void GPS_print_val(char *data, int value);
 void GPS_UART_CallBack();

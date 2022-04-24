@@ -34,11 +34,6 @@
 #include <string.h>
 #include "gps.h"
 #include "main.h"
-#include <MRT_helpers.h>
-
-#if (GPS_DEBUG == 1)
-#include <usbd_cdc_if.h>
-#endif
 
 uint8_t rx_buffer[100];
 uint8_t rx_current = 0;
@@ -48,14 +43,6 @@ extern uint8_t gps_fix_lat;
 extern uint8_t gps_fix_long; // beep when we get fix
 
 GPS_t GPS;
-
-#if (GPS_DEBUG == 1)
-void GPS_print(char *data){
-	char buf[GPSBUFSIZE] = {0,};
-	sprintf(buf, "%s\n", data);
-	CDC_Transmit_FS((unsigned char *) buf, (uint16_t) strlen(buf));
-}
-#endif
 
 
 /*
@@ -68,10 +55,6 @@ void GPS_print(char *data){
 #define LED3_GPIO_Port	((GPIO_TypeDef *) ((0x40000000UL + 0x00020000UL) + 0x0800UL))//OUT_LED3_GPIO_Port
 #define LED3_Pin	(uint16_t)0x0008//OUT_LED3_Pin
 
-UART_HandleTypeDef* GPS_USART;
-UART_HandleTypeDef* SERIAL_USART;
-
-
 
 void GPS_Poll(float *latitude, float *longitude, float *time)
 {
@@ -79,7 +62,7 @@ void GPS_Poll(float *latitude, float *longitude, float *time)
 	uint16_t loop_count = 0;
 	int done = 0;
 	while(loop_count < max_loop_count && !done){
-		HAL_UART_Receive(GPS_USART, (uint8_t*)&rx_current, 1, 100);
+		HAL_UART_Receive(GPS.uart, (uint8_t*)&rx_current, 1, 100);
 		//HAL_UART_Transmit(&huart1, (uint8_t*)&rx_current, 1, 100);
 		if (rx_current != '\n' && rx_index < sizeof(rx_buffer)) {
 			rx_buffer[rx_index++] = rx_current;
@@ -98,10 +81,10 @@ void GPS_Poll(float *latitude, float *longitude, float *time)
 
 		// f437 usart doesnt have these flags in hardware, use software to clear the flags
 		// (check docstring for __HAL_UART_CLEAR_FLAG function)
-		__HAL_UART_CLEAR_OREFLAG(GPS_USART);
-		__HAL_UART_CLEAR_NEFLAG(GPS_USART);
-		__HAL_UART_CLEAR_PEFLAG(GPS_USART);
-		__HAL_UART_CLEAR_FEFLAG(GPS_USART);
+		__HAL_UART_CLEAR_OREFLAG(GPS.uart);
+		__HAL_UART_CLEAR_NEFLAG(GPS.uart);
+		__HAL_UART_CLEAR_PEFLAG(GPS.uart);
+		__HAL_UART_CLEAR_FEFLAG(GPS.uart);
 
 		loop_count++;
 	}
@@ -197,7 +180,7 @@ void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_la
 		if (*gps_fix_lat == 1)
 		{
 			*gps_fix_lat = 0;
-			tone_freq(200, 2, 1046);
+			GPS.tone_freq(200, 2, 1046);
 		}
 	}
 	else
@@ -206,7 +189,7 @@ void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_la
 		if (*gps_fix_lat == 0)
 		{
 			*gps_fix_lat = 1;
-			tone_freq(200, 4, 1046);
+			GPS.tone_freq(200, 4, 1046);
 		}
 	}
 
@@ -216,7 +199,7 @@ void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_la
 		if (*gps_fix_long == 1)
 		{
 			*gps_fix_long = 0;
-			tone_freq(200, 2, 1046);
+			GPS.tone_freq(200, 2, 1046);
 		}
 	}
 	else
@@ -225,13 +208,17 @@ void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_la
 		if (*gps_fix_long == 0)
 		{
 			*gps_fix_long = 1;
-			tone_freq(200, 4, 1046);
+			GPS.tone_freq(200, 4, 1046);
 		}
 	}
 }
 
 
-void GPS_Init(UART_HandleTypeDef* data_uart){
-	GPS_USART = data_uart;
-	print("GPS Init\r\n");
+void GPS_Init(UART_HandleTypeDef* data_uart, void (*gps_print)(char*),
+		void (*gps_tone_freq)(uint32_t duration, uint32_t repeats, uint32_t freq)){
+	GPS.print = gps_print;
+	GPS.print((char*) "GPS Init...");
+	GPS.uart = data_uart;
+	GPS.tone_freq = gps_tone_freq;
+	GPS.print((char*) "OK\r\n");
 }

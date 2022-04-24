@@ -57,8 +57,24 @@ struct HLPS22HH{
 
 
 
+//**************************************************//
+/*****GPS*****/
+
+struct HGPS{
+
+	//Data
+	float latitude;
+	float longitude;
+	float time;
+
+	//Functions
+	void (*pollAll)(void);
+};
+
+
 
 void MRT_i2c_sensors_Init(void);
+void MRT_i2c_sensors_Deinit(void);
 
 struct HLSM6DSR MRT_LSM6DSR_Init(void);
 extern struct HLSM6DSR hlsm6dsr;
@@ -66,6 +82,8 @@ extern struct HLSM6DSR hlsm6dsr;
 struct HLPS22HH MRT_LPS22HH_Init(void);
 extern struct HLPS22HH hlps22hh;
 
+struct HGPS MRT_GPS_Init(void);
+extern struct HGPS hgps;
 
 
 #ifdef __cplusplus

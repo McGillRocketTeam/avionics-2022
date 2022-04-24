@@ -14,7 +14,9 @@ extern "C" {
 
 #include <MRT_i2c_sensors.h>
 #include <MRT_i2c_sensors_private.h>
+#include <gps.h>
 #include <MRT_setup.h>
+#include <MRT_helpers.h>
 
 //Private functions prototypes
 void MRT_LSM6DSR_Constructor();
@@ -34,6 +36,7 @@ static LPS22HH* lps22hh = NULL;
 //Declare c structs
 struct HLSM6DSR hlsm6dsr;
 struct HLPS22HH hlps22hh;
+struct HGPS hgps;
 
 
 //**************************************************//
@@ -108,6 +111,14 @@ void MRT_LPS22HH_pollAll(void){
 
 
 
+//**************************************************//
+/*****GPS STATIC FUNCTIONS*****/
+
+void MRT_GPS_pollAll(void){
+	GPS_Poll(&hgps.latitude, &hgps.longitude, &hgps.time);
+}
+
+
 
 
 //**************************************************//
@@ -132,6 +143,13 @@ struct HLPS22HH MRT_LPS22HH_Init(void){
 	return lps22hh_handler;
 }
 
+struct HGPS MRT_GPS_Init(void){
+	struct HGPS gps_handler;
+	gps_handler.pollAll = &MRT_GPS_pollAll;
+	GPS_Init(&GPS_UART, print, tone_freq);
+	return gps_handler;
+}
+
 void MRT_i2c_sensors_Init(void){
 
 	//LSM6DSR
@@ -149,9 +167,26 @@ void MRT_i2c_sensors_Init(void){
 	//GPS
 	#if GPS_
 	HAL_IWDG_Refresh(&hiwdg);
-	//GPS_Init(&GPS_UART, &DEBUG_UART);TODO change to that?
-	GPS_Init(&GPS_UART);
+	hgps = MRT_GPS_Init();
 	#endif
+
+}
+
+
+void MRT_i2c_sensors_Denit(void){
+
+	//LSM6DSR
+	#if LSM6DSR_
+	MRT_LSM6DSR_Destructor();
+	#endif
+
+	//LPS22HH
+	#if LPS22HH_
+	MRT_LPS22HH_Destructor();
+	#endif
+
+	//GPS
+	//NO DEINIT NEEDED HERE
 
 }
 

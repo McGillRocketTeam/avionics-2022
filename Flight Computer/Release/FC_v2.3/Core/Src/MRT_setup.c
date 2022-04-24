@@ -6,6 +6,7 @@
  */
 
 #include <MRT_setup.h>
+#include <MRT_helpers.h>
 #include <main.h>
 #include <iwdg.h>
 
@@ -18,6 +19,7 @@
 //PRIVATE FUNCTIONS PROTOTYPES
 
 void MRT_Reinitialize_Peripherals(void);
+void MRT_reset_info(void);
 
 
 
@@ -25,16 +27,16 @@ void MRT_Reinitialize_Peripherals(void);
 //PUBLIC FUNCTIONS
 
 void MRT_Init(void){
-	print("\r\n\r\n/********MRT Init********/\r\n");
+	print((char*) "\r\n\r\n/********MRT Init********/\r\n");
 
 	MRT_Reinitialize_Peripherals();
 	MRT_external_flash_Init();
 	MRT_reset_info();
 
 	#if IWDG_ACTIVE
-	print("IWDG Init...");
+	print((char*) "IWDG Init...");
 	MX_IWDG_Init();
-	print("OK\r\n");
+	print((char*) "OK\r\n");
 	#endif
 
 	//RTC
@@ -69,6 +71,44 @@ void MRT_Init(void){
 }
 
 
+
+
+void MRT_Deinit(void){
+	print((char*) "\r\n\r\n/********MRT Deinit********/\r\n");
+
+	MRT_Reinitialize_Peripherals();
+	//MRT_external_flash_Deinit(); TODO
+
+
+	//IWDG
+	//NO DEINIT NEEDED HERE
+
+	//RTC
+	//NO DEINIT NEEDED HERE
+
+
+	#if MEMORY_THREAD
+
+		//SD card
+		//TODO deinit? "or last save/close it?"
+	#endif
+
+
+	//Sensors
+	#if SENSORS_THREAD
+		MRT_i2c_sensors_Deinit();
+	#endif
+
+
+}
+
+
+
+
+//**************************************************//
+//PRIVATE FUNCTIONS
+
+
 void MRT_reset_info(void){
 
 	  char buffer[100];
@@ -77,7 +117,7 @@ void MRT_reset_info(void){
 
 	  //Check if IWDG is being deactivated
 	  if (iwdg_flag==1){
-		  print("Deactivating IWDG\r\n");
+		  print((char*) "Deactivating IWDG\r\n");
 
 		  iwdg_flag = 0; //Flip flag
 
@@ -99,7 +139,7 @@ void MRT_reset_info(void){
 		  sprintf(buf, "FC wake up %i\r\n", wu_flag);
 		  print(buf);
 
-		  print("Resetting RTC time\r\n");
+		  print((char*) "Resetting RTC time\r\n");
 
 		  //Clear RTC time (last recorded)
 		  W25qxx_EraseSector(2);
@@ -115,7 +155,7 @@ void MRT_reset_info(void){
 
 	  //Check if we start from the beginning
 	  if (reset_flag==0){
-		  print("FC restarted\r\n");
+		  print((char*) "FC restarted\r\n");
 
 		  reset_flag = 1; //Flip flag
 
@@ -128,46 +168,39 @@ void MRT_reset_info(void){
 
 	  //Check if before or after apogee
 	  if (apogee_flag == 0){
-		  print("Pre-apogee\r\n");
+		  print((char*) "Pre-apogee\r\n");
 	  }
 	  else if(apogee_flag==1){
-		  print("Post-apogee\r\n");
+		  print((char*) "Post-apogee\r\n");
 	  }
 
 
 	  //Check ejection stage
-	  print("Ejection Stage: ");
+	  print((char*)"Ejection Stage: ");
 	  if (ejection_state_flag==0){
-		  print("Pad\r\n");
+		  print((char*)"Pad\r\n");
 	  }
 	  else if(ejection_state_flag==1){
-		  print("Boost\r\n");
+		  print((char*)"Boost\r\n");
 	  }
 	  else if(ejection_state_flag==2){
-		  print("Drogue descent\r\n");
+		  print((char*)"Drogue descent\r\n");
 	  }
 	  else if(ejection_state_flag==3){
-		  print("Main descent\r\n");
+		  print((char*)"Main descent\r\n");
 	  }
 	  else if(ejection_state_flag==4){
-		  print("Landed\r\n");
+		  print((char*)"Landed\r\n");
 	  }
 }
 
-
-
-
-
-
-//**************************************************//
-//PRIVATE FUNCTIONS
 
 void MRT_Reinitialize_Peripherals(void){
 	  /*
 	   * Reinitialize all peripherals
 	   */
 
-	  print("Reinitializing Peripherals...");
+	  print((char*)"Reinitializing Peripherals...");
 
 	  // reset LEDs
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
@@ -207,7 +240,7 @@ void MRT_Reinitialize_Peripherals(void){
 	  HAL_GPIO_WritePin(OUT_FLASH_WP_GPIO_Port, OUT_FLASH_WP_Pin, SET);
 	  HAL_GPIO_WritePin(OUT_FLASH_IO3_GPIO_Port, OUT_FLASH_IO3_Pin, SET);
 
-	  print("OK\r\n");
+	  print((char*)"OK\r\n");
 }
 
 

@@ -46,7 +46,7 @@ Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
  ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors_private.h \
  ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
- ../Core/Inc/i2c.h
+ ../Core/Inc/i2c.h ../Core/Inc/MRT_helpers.h
 
 ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
 
@@ -147,3 +147,5 @@ Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o: \
 ../Core/Inc/main.h:
 
 ../Core/Inc/i2c.h:
+
+../Core/Inc/MRT_helpers.h:

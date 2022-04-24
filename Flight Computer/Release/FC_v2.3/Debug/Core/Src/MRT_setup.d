@@ -40,8 +40,8 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Core/Inc/i2c.h ../Core/Inc/main.h ../Core/Inc/iwdg.h \
- ../Drivers/MRT_MISC/Inc/MRT_rtc.h \
+ ../Core/Inc/i2c.h ../Core/Inc/MRT_helpers.h ../Core/Inc/main.h \
+ ../Core/Inc/iwdg.h ../Drivers/MRT_MISC/Inc/MRT_rtc.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
  ../Drivers/MRT_MEMORY/Inc/w25qxx.h \
  ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
@@ -152,6 +152,8 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
 
 ../Core/Inc/i2c.h:
+
+../Core/Inc/MRT_helpers.h:
 
 ../Core/Inc/main.h:
 
