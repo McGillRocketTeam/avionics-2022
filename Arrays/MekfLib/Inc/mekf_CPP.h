@@ -12,7 +12,6 @@ class MEKF {
         MEKF (double dt,double sigma_gyro, double sigma_acc, double sigma_gps, double P_init_orien, double P_init_pos);
 
         //variables
-        int a = 0;
         Eigen::Matrix3d Cab_k_1;
         Eigen::Vector3d Va_k_1;
         Eigen::Vector3d ra_k_1;
@@ -29,8 +28,8 @@ class MEKF {
         Eigen::Vector3d gps; //3x1
 
         Eigen::Matrix3d Cab_k;
-        Eigen::Matrix3d Va_k;
-        Eigen::Matrix3d ra_k;
+        Eigen::Vector3d Va_k;
+        Eigen::Vector3d ra_k;
 
         Eigen::MatrixXd P_k; //9x9
         Eigen::MatrixXd P_k_1;
