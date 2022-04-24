@@ -34,6 +34,7 @@
 #include <string.h>
 #include "gps.h"
 #include "main.h"
+#include <MRT_helpers.h>
 
 #if (GPS_DEBUG == 1)
 #include <usbd_cdc_if.h>
@@ -230,7 +231,7 @@ void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_la
 }
 
 
-void GPS_init(UART_HandleTypeDef* data_uart){
+void GPS_Init(UART_HandleTypeDef* data_uart){
 	GPS_USART = data_uart;
 	print("GPS Init\r\n");
 }

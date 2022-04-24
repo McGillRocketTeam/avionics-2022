@@ -15,6 +15,8 @@ extern "C" {
 
 
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h> //memset
 
 
 //Function prototypes

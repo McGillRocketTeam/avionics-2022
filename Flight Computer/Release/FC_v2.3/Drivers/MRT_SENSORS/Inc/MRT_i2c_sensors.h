@@ -8,46 +8,68 @@
 #ifndef INC_MRT_I2C_SENSORS_H_
 #define INC_MRT_I2C_SENSORS_H_
 
+
 #ifdef __cplusplus
-extern "C" {
+	extern "C"
+	{
 #endif
 
-//Includes
 #include <lsm6dsr_reg.h>
 #include <lps22hh_reg.h>
 #include <gps.h>
 #include <stm32f4xx_hal.h>
 
 
-//LSM6DSR
-extern stmdev_ctx_t hlsm6dsr;
-extern float acceleration_mg[3];
-extern float angular_rate_mdps[3];
-extern float lsm6dsr_temperature_degC;
 
-stmdev_ctx_t MRT_LSM6DSR_Setup(I2C_HandleTypeDef* SENSOR_BUS, uint8_t LSM_ID);
-void MRT_LSM6DSR_getAcceleration(stmdev_ctx_t lsm_ctx,float acceleration_mg[3]);
-void MRT_LSM6DSR_getAngularRate(stmdev_ctx_t lsm_ctx,float angular_rate_mdps[3]);
-void MRT_LSM6DSR_getTemperature(stmdev_ctx_t lsm_ctx,float temperature_degC[1]);
+//**************************************************//
+/*****LSM6DSR*****/
 
+struct HLSM6DSR{
 
-//LPS22HH
-extern stmdev_ctx_t hlps22hh;
-extern float pressure_hPa;
-extern float lps22hh_temperature_degC;
+	//Data
+	float* acceleration_mg[3];
+	float* angular_rate_mdps[3];
+	float* temperature_degC;
 
-stmdev_ctx_t MRT_LPS22HH_Setup(I2C_HandleTypeDef* SENSOR_BUS, uint8_t LPS_ID);
-void MRT_LPS22HH_getPressure(stmdev_ctx_t lps_ctx,float* pressure);
-void MRT_LPS22HH_getTemperature(stmdev_ctx_t lps_ctx,float* lps_temperature_degC);
+	//Functions
+	void (*getAcceleration)(void);
+	void (*getAngularRate)(void);
+	void (*getTemperature)(void);
+};
 
 
-//GPS
-extern float gps_latitude;
-extern float gps_longitude;
-extern float gps_time;
+
+//**************************************************//
+/*****LPS22HH*****/
+
+struct HLPS22HH{
+
+	//Data
+	float* pressure_hPa;
+	float* temperature_degC;
+
+	//Functions
+	void (*getPressure)(void);
+	void (*getTemperature)(void);
+};
+
+
+
+
+void MRT_i2c_sensors_Init(void);
+
+struct HLSM6DSR MRT_LSM6DSR_Init(void);
+extern struct HLSM6DSR hlsm6dsr;
+
+struct HLPS22HH MRT_LPS22HH_Init(void);
+extern struct HLPS22HH hlps22hh;
+
+
 
 #ifdef __cplusplus
-}
+	}
 #endif
 
 #endif /* INC_MRT_I2C_SENSORS_H_ */
+
+

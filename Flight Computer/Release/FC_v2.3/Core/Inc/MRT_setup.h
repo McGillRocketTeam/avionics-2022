@@ -165,13 +165,13 @@ extern "C" {
 #define LSM6DSR_	1
 #define LSM6DSR_I2C hi2c3
 #define LSM6DSR_BOOT_TIME 100 //ms
-#define MRT_LSM6DSR_ID	0x6A //Address on i2c bus
+#define MRT_LSM6DSR_ADDRESS	0x6A //Address on i2c bus
 
 //LPS22HH
 #define LPS22HH_	1
 #define LPS22HH_I2C hi2c3
 #define LPS22HH_BOOT_TIME 100 //ms
-#define MRT_LPS22HH_ID	0xB3U //Address on i2c bus
+#define MRT_LPS22HH_ADDRESS	0xB3U //Address on i2c bus
 
 
 

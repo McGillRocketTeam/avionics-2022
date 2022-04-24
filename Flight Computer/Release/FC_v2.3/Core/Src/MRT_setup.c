@@ -52,6 +52,7 @@ void MRT_Init(void){
 	#endif
 
 
+
 	//Sensors
 	#if SENSORS_THREAD
 
@@ -62,23 +63,7 @@ void MRT_Init(void){
 		  checkForI2CDevices(huart8,hi2c3);
 		#endif
 
-		//LSM6DSR
-		#if LSM6DSR_
-		HAL_IWDG_Refresh(&hiwdg);
-		hlsm6dsr = MRT_LSM6DSR_Setup(&LSM6DSR_I2C, MRT_LSM6DSR_ID);
-		#endif
-
-		//LPS22HH
-		#if LPS22HH_
-		HAL_IWDG_Refresh(&hiwdg);
-		hlps22hh = MRT_LPS22HH_Setup(&LPS22HH_I2C, MRT_LPS22HH_ID);
-		#endif
-
-		//GPS
-		#if GPS_
-		HAL_IWDG_Refresh(&hiwdg);
-		GPS_init(&GPS_UART, &DEBUG_UART);
-		#endif
+		MRT_i2c_sensors_Init();
 	#endif
 
 
@@ -91,8 +76,9 @@ char buffer[TX_BUF_DIM];
 		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
 		HAL_Delay(1000);
 
+		/*
 		  //GPS
-		  GPS_Poll(&gps_latitude, &gps_longitude, &gps_time);
+		  //GPS_Poll(&gps_latitude, &gps_longitude, &gps_time);
 
 	  	  //LSM6DSR
 	  	  MRT_LSM6DSR_getAcceleration(hlsm6dsr,acceleration_mg);
@@ -134,6 +120,7 @@ char buffer[TX_BUF_DIM];
 		  memset(buffer, 0, TX_BUF_DIM);
 		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lps22hh_temperature_degC);
 		  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+		  */
 
 		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
 		HAL_Delay(1000);

@@ -7,7 +7,9 @@
 
 
 #include <MRT_setup.h>
+#include <MRT_helpers.h>
 #include <MRT_external_flash.h>
+#include <MRT_rtc.h>
 #include <rtc.h>
 
 
