@@ -7,6 +7,7 @@
 
 #include <MRT_helpers.h>
 #include <MRT_setup.h>
+#include <math.h>
 #include <tim.h>
 
 void println(char* s){
@@ -50,6 +51,6 @@ void buzz_startup_success(void) {
  * Gets the altitude using temperature, pressure and sea-level pressure
  *https://www.mide.com/air-pressure-at-altitude-calculator
  */
-float MRT_get_altitude(float pressure){
+float MRT_getAltitude(float pressure){
 	return BASE_HEIGHT+(SEA_LEVEL_TEMPERATURE/-0.0065)*(pow(pressure/SEA_LEVEL_PRESSURE,0.190263236)-1); //(-R*-0.0065/(go*M)) = 0.190263236
 }

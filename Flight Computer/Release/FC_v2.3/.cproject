@@ -66,6 +66,7 @@
 									<listOptionValue builtIn="false" value="../Drivers/MRT_TELEMETRY/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/MRT_WATCHDOG/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/MRT_MISC/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.284526036" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -100,6 +101,7 @@
 									<listOptionValue builtIn="false" value="../Drivers/MRT_TELEMETRY/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/MRT_WATCHDOG/Inc"/>
 									<listOptionValue builtIn="false" value="../Drivers/MRT_MISC/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.1364339479" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp"/>
 							</tool>

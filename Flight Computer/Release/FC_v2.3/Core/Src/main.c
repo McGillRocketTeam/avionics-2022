@@ -36,7 +36,8 @@
 
 #include <MRT_setup.h>
 #include <MRT_helpers.h>
-#include <MRT_i2c_sensors.h> //TODO REMOVE AND PUT PROPULSION FIRST LOOP IN PROPULSION.H
+#include <MRT_i2c_sensors.h> //TODO REMOVE AND PUT IN PROPULSION FIRST LOOP IN PROPULSION.H
+#include <MRT_iridium.h> //TODO REMOVE AND PUT IN PROPULSION FIRST LOOP IN PROPULSION.H
 
 /* USER CODE END Includes */
 
@@ -98,7 +99,7 @@ int main(void){
 
 			  //LPS22HH
 			  hlps22hh.pollAll();
-			  //altitude_m = MRT_get_altitude(pressure_hPa); //Update altitude TODO put somewhere else
+			  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //Update altitude TODO put somewhere else
 
 
 			  //GPS
@@ -130,6 +131,10 @@ int main(void){
 			  memset(buffer, 0, TX_BUF_DIM);
 			  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlps22hh.temperature_degC);
 			  print(buffer);
+
+
+			  //Iridium
+			  hiridium.getTime();
 
 			HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
 			HAL_Delay(1000);

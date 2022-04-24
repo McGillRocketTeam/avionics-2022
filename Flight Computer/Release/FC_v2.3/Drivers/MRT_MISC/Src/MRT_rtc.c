@@ -138,8 +138,8 @@ void MRT_StandByMode(uint32_t seconds){
 	}
 	*/
 
-	char* msg[30+sizeof(uint32_t)];
-	sprintf(msg,"Going to sleep for %i seconds",seconds);
+	char msg[30+sizeof(uint32_t)];
+	sprintf(msg,"Going to sleep for %i seconds",(int) seconds);
 	println(msg);
 
 	if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc,seconds, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)

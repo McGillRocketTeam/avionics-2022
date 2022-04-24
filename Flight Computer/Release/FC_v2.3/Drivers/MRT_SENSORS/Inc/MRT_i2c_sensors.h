@@ -72,6 +72,8 @@ struct HGPS{
 };
 
 
+//**************************************************//
+/*****PUBLIC FUNCTIONS DECLARATIONS*****/
 
 void MRT_i2c_sensors_Init(void);
 void MRT_i2c_sensors_Deinit(void);

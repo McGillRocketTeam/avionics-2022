@@ -1,0 +1,4 @@
+MRT_telemetry.c:17:6:MRT_radio_tx	16	static
+MRT_telemetry.c:29:6:MRT_radio_rx	16	static
+MRT_telemetry.c:44:6:MRT_radio_Init	4	static
+MRT_telemetry.c:59:6:MRT_TELEMETRY_Init	40	static

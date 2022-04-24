@@ -47,8 +47,10 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
  ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
  ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
- ../Drivers/MRT_SENSORS/Inc/gps.h ../Drivers/MRT_MEMORY/Inc/sd_card.h \
- ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
+ ../Drivers/MRT_SENSORS/Inc/gps.h \
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
+ ../Drivers/MRT_MEMORY/Inc/sd_card.h ../FATFS/App/fatfs.h \
+ ../Middlewares/Third_Party/FatFs/src/ff.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
@@ -172,6 +174,8 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
 ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
 
 ../Drivers/MRT_SENSORS/Inc/gps.h:
+
+../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
 
 ../Drivers/MRT_MEMORY/Inc/sd_card.h:
 

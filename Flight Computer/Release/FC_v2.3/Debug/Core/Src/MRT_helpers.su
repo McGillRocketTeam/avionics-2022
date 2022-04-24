@@ -1,7 +1,7 @@
-MRT_helpers.c:12:6:println	16	static
-MRT_helpers.c:17:6:print	16	static
-MRT_helpers.c:22:6:tone_freq	32	static
-MRT_helpers.c:38:6:buzz_success	8	static
-MRT_helpers.c:39:6:buzz_failure	8	static
-MRT_helpers.c:40:6:buzz_startup_success	16	static
-MRT_helpers.c:53:7:MRT_get_altitude	16	static
+MRT_helpers.c:13:6:println	16	static
+MRT_helpers.c:18:6:print	16	static
+MRT_helpers.c:23:6:tone_freq	32	static
+MRT_helpers.c:39:6:buzz_success	8	static
+MRT_helpers.c:40:6:buzz_failure	8	static
+MRT_helpers.c:41:6:buzz_startup_success	16	static
+MRT_helpers.c:54:7:MRT_getAltitude	16	static

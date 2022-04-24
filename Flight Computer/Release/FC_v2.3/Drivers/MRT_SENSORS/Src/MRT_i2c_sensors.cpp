@@ -187,7 +187,6 @@ void MRT_i2c_sensors_Denit(void){
 
 	//GPS
 	//NO DEINIT NEEDED HERE
-
 }
 
 

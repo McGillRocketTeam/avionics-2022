@@ -13,6 +13,7 @@
 #include <MRT_rtc.h>
 #include <MRT_external_flash.h>
 #include <MRT_i2c_sensors.h>
+#include <MRT_telemetry.h>
 #include <sd_card.h>
 
 //**************************************************//
@@ -54,7 +55,6 @@ void MRT_Init(void){
 	#endif
 
 
-
 	//Sensors
 	#if SENSORS_THREAD
 
@@ -68,6 +68,11 @@ void MRT_Init(void){
 		MRT_i2c_sensors_Init();
 	#endif
 
+
+	//Telemetry
+	#if TELEMETRY_THREAD
+		MRT_TELEMETRY_Init();
+	#endif
 }
 
 

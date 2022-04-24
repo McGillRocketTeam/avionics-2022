@@ -82,7 +82,7 @@ extern "C" {
 //THREADS
 #define MEMORY_THREAD 1
 #define EJECTION_THREAD 1
-#define TELEMETRY_THREAD 0
+#define TELEMETRY_THREAD 1
 #define SENSORS_THREAD 1
 #define WATCHDOG_THREAD 1
 
@@ -141,7 +141,7 @@ extern "C" {
 //Iridium
 #define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
-#define IRIDIUM_TIMEOUT 5 //Timeout in seconds
+#define IRIDIUM_TIMEOUT 3 //Timeout in seconds
 
 
 

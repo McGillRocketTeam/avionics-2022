@@ -27,7 +27,7 @@ void buzz_success(void);
 void buzz_failure(void);
 void buzz_startup_success(void);
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
-float MRT_get_altitude(float pressure);
+float MRT_getAltitude(float pressure);
 
 
 #ifdef __cplusplus

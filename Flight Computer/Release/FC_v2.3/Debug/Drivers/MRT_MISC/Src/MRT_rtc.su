@@ -1,6 +1,6 @@
 MRT_rtc.c:35:6:MRT_rtc_Init	8	static
 MRT_rtc.c:55:6:MRT_check_for_wake_up	8	static
 MRT_rtc.c:79:6:MRT_clear_alarms_flags	8	static
-MRT_rtc.c:119:6:MRT_StandByMode	152	static
+MRT_rtc.c:119:6:MRT_StandByMode	56	static
 MRT_rtc.c:156:6:MRT_set_rtc	40	static
 MRT_rtc.c:183:6:MRT_set_alarmA	16	static
