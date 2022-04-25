@@ -1,7 +1,6 @@
 Drivers/MRT_TELEMETRY/Src/MRT_telemetry.o: \
- ../Drivers/MRT_TELEMETRY/Src/MRT_telemetry.c \
- ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h ../Core/Inc/MRT_helpers.h \
- ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h \
+ ../Drivers/MRT_TELEMETRY/Src/MRT_telemetry.c ../Core/Inc/MRT_setup.h \
+ ../Core/Inc/usart.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -42,15 +41,17 @@ Drivers/MRT_TELEMETRY/Src/MRT_telemetry.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
- ../Core/Inc/i2c.h ../Core/Inc/iwdg.h \
- ../Drivers/MRT_TELEMETRY/Inc/sx126x.h ../Core/Inc/main.h
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/MRT_helpers.h \
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h \
+ ../Core/Inc/iwdg.h ../Drivers/MRT_TELEMETRY/Inc/sx126x.h \
+ ../Core/Inc/main.h
 
-../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
+../Core/Inc/MRT_setup.h:
 
-../Core/Inc/MRT_helpers.h:
+../Core/Inc/usart.h:
 
-../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h:
+../Core/Inc/main.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -132,13 +133,15 @@ Drivers/MRT_TELEMETRY/Src/MRT_telemetry.o: \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
 
-../Core/Inc/MRT_setup.h:
-
-../Core/Inc/usart.h:
-
-../Core/Inc/main.h:
-
 ../Core/Inc/i2c.h:
+
+../Core/Inc/adc.h:
+
+../Core/Inc/MRT_helpers.h:
+
+../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
+
+../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h:
 
 ../Core/Inc/iwdg.h:
 

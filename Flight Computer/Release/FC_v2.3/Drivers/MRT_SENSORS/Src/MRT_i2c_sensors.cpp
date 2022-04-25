@@ -12,11 +12,13 @@
 extern "C" {
 #endif
 
+#include <MRT_setup.h>
+#include <MRT_helpers.h>
+#include <iwdg.h>
 #include <MRT_i2c_sensors.h>
 #include <MRT_i2c_sensors_private.h>
 #include <gps.h>
-#include <MRT_setup.h>
-#include <MRT_helpers.h>
+
 
 //Private functions prototypes
 void MRT_LSM6DSR_Constructor();
@@ -173,7 +175,7 @@ void MRT_i2c_sensors_Init(void){
 }
 
 
-void MRT_i2c_sensors_Denit(void){
+void MRT_i2c_sensors_Deinit(void){
 
 	//LSM6DSR
 	#if LSM6DSR_

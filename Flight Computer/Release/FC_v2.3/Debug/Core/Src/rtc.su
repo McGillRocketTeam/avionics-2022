@@ -1,3 +1,9 @@
-rtc.c:30:6:MX_RTC_Init	72	static
-rtc.c:105:6:HAL_RTC_MspInit	64	static
-rtc.c:135:6:HAL_RTC_MspDeInit	16	static
+rtc.c:48:6:MX_RTC_Init	72	static
+rtc.c:123:6:HAL_RTC_MspInit	64	static
+rtc.c:153:6:HAL_RTC_MspDeInit	16	static
+rtc.c:178:6:MRT_rtc_Init	8	static
+rtc.c:199:6:MRT_check_for_wake_up	8	static
+rtc.c:223:6:MRT_clear_alarms_flags	8	static
+rtc.c:263:6:MRT_StandByMode	56	static
+rtc.c:300:6:MRT_set_rtc	40	static
+rtc.c:327:6:MRT_set_alarmA	16	static

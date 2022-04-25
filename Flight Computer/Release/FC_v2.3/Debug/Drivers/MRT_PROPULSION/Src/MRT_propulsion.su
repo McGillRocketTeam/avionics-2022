@@ -1,0 +1,5 @@
+MRT_propulsion.c:26:6:MRT_pollPropulsion	8	static
+MRT_propulsion.c:32:6:MRT_getThermoTemp	8	static
+MRT_propulsion.c:36:6:MRT_getTransducerVoltage	8	static
+MRT_propulsion.c:40:6:MRT_getValveStatus	8	static
+MRT_propulsion.c:50:7:MRT_prop_poll_pressure_transducer	24	static

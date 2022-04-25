@@ -28,6 +28,8 @@
 /* USER CODE BEGIN Includes */
 
 #include <MRT_setup.h>
+#include <MRT_helpers.h>
+#include <iwdg.h>
 
 /* USER CODE END Includes */
 
@@ -116,6 +118,12 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
+	println("FREERTOS Init");
+	print("\tInitializing the kernel...");
+	osKernelInitialize();
+	println("OK");
+
+	print("\tCreating the threads...");
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -155,6 +163,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  println("OK");
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -255,6 +264,7 @@ void StartWatchDog(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	HAL_IWDG_Refresh(&hiwdg);
     osDelay(1);
   }
   /* USER CODE END StartWatchDog */

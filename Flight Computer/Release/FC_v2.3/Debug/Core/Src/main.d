@@ -61,6 +61,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  ../USB_DEVICE/Target/usbd_conf.h ../Core/Inc/gpio.h \
  ../Core/Inc/MRT_setup.h ../Core/Inc/MRT_helpers.h \
+ ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
+ ../Drivers/MRT_MEMORY/Inc/w25qxx.h \
+ ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h \
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
  ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
  ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
@@ -214,6 +218,14 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/MRT_setup.h:
 
 ../Core/Inc/MRT_helpers.h:
+
+../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h:
+
+../Drivers/MRT_MEMORY/Inc/w25qxx.h:
+
+../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h:
+
+../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
 
 ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
 

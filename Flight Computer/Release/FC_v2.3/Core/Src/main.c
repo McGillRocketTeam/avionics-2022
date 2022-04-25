@@ -36,6 +36,12 @@
 
 #include <MRT_setup.h>
 #include <MRT_helpers.h>
+
+//For the wait for launch
+#include <MRT_external_flash.h>
+#include <MRT_propulsion.h>
+#include <MRT_telemetry.h>
+
 #include <MRT_i2c_sensors.h> //TODO REMOVE AND PUT IN PROPULSION FIRST LOOP IN PROPULSION.H
 #include <MRT_iridium.h> //TODO REMOVE AND PUT IN PROPULSION FIRST LOOP IN PROPULSION.H
 
@@ -67,6 +73,9 @@ void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 void MRT_STM_Init(void);
+void MRT_waitForLaunch(void);
+
+void TESTING_LOOP(void); //TODO remove
 
 /* USER CODE END PFP */
 
@@ -79,70 +88,27 @@ int main(void){
 
 	MRT_Init();
 
-	println("\r\n/****Starting FC****/\r\n");
+	println("\r\n\r\n/****Starting FC****/\r\n\r\n");
+	HAL_IWDG_Refresh(&hiwdg);
+	buzz_startup_success();
 
-	//FOR TESTING
+	MRT_waitForLaunch();
 
-	#define TX_BUF_DIM 256
-	char buffer[TX_BUF_DIM];
+	//if (DEBUG) TESTING_LOOP(); //TODO remove
 
+	//TODO I2C SENSORS SOMETIMES DON'T WANT TO WORK ANYMORE -> NEED TO RESET THE POWER (Enter quick standByMode?)
 
-		while(1){
-			HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-			HAL_Delay(1000);
+	//Initialize the os
+	MX_FREERTOS_Init();
 
-			  //GPS
-			  hgps.pollAll();
+	//Starting the os
+	println("\r\n/****Starting the OS****/\r\n");
+	osKernelStart();
 
-		  	  //LSM6DSR
-		  	  hlsm6dsr.pollAll();
-
-			  //LPS22HH
-			  hlps22hh.pollAll();
-			  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //Update altitude TODO put somewhere else
-
-
-			  //GPS
-			  memset(buffer, 0, TX_BUF_DIM);
-			  sprintf(buffer,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",hgps.latitude, hgps.longitude, hgps.time);
-			  print(buffer);
-
-			  //LSM6DSR
-			  memset(buffer, 0, TX_BUF_DIM);
-			  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",
-					  hlsm6dsr.acceleration_mg[0], hlsm6dsr.acceleration_mg[1], hlsm6dsr.acceleration_mg[2]);
-			  print(buffer);
-
-			  memset(buffer, 0, TX_BUF_DIM);
-			  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",
-					  hlsm6dsr.angular_rate_mdps[0], hlsm6dsr.angular_rate_mdps[1], hlsm6dsr.angular_rate_mdps[2]);
-			  print(buffer);
-
-			  memset(buffer, 0, TX_BUF_DIM);
-			  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlsm6dsr.temperature_degC);
-			  print(buffer);
-
-
-			  //LPS22HH
-			  memset(buffer, 0, TX_BUF_DIM);
-			  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",hlps22hh.pressure_hPa);
-			  print(buffer);
-
-			  memset(buffer, 0, TX_BUF_DIM);
-			  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlps22hh.temperature_degC);
-			  print(buffer);
-
-
-			  //Iridium
-			  hiridium.getTime();
-
-			HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
-			HAL_Delay(1000);
-			HAL_IWDG_Refresh(&hiwdg);
-		}
-
-
-	return 1;
+	println("SOMETHING WENT HORRIBLY WRONG, WAITING FOR WATCH DOG RESET");
+	HAL_IWDG_Refresh(&hiwdg);
+	MRT_Deinit();
+	while (1){}
 }
 
 /* USER CODE END 0 */
@@ -216,6 +182,133 @@ void MRT_STM_Init(void){
 	MX_RTC_Init();
 	//MX_IWDG_Init(); TODO ADDED IN MRT_Init()
 	MX_FATFS_Init();
+}
+
+void MRT_waitForLaunch(void){
+
+	println("Waiting for launch command from ground station\r\n");
+
+	char buffer[RADIO_BUFFER_SIZE];
+
+	//Poll propulsion until launch command sent
+	while((XTEND_ || SRADIO_) && ejection_state_flag == 0 && wu_flag == 0){
+		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
+
+		HAL_IWDG_Refresh(&hiwdg);
+
+		//Poll propulsion sensors
+		MRT_pollPropulsion();
+
+		//Send propulsion data
+		memset(buffer, 0, RADIO_BUFFER_SIZE);
+		sprintf(buffer,"P,%.2f,%.2f, %i,E",transducer_voltage,thermocouple_temperature,(int) valve_status);
+		MRT_radio_tx(buffer);
+
+
+		//Check for launch command
+		memset(buffer, 0, RADIO_BUFFER_SIZE);
+		MRT_radio_rx(buffer, 6, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
+		if (strcmp(buffer, "launch") == 0){
+			ejection_state_flag = 1;
+			flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
+			W25qxx_EraseSector(1);
+			W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		}
+
+		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
+
+
+		//Reset IWDG timer
+		HAL_IWDG_Refresh(&hiwdg);
+
+		HAL_Delay(1000/PRE_APOGEE_SEND_FREQ);
+	}
+
+
+	//Send acknowledgement
+	MRT_radio_tx((char*) "LAUNCH COMMAND RECEIVED"); //TODO CHECK AT WHAT JASPER DID
+
+	//Update ejection state
+	if (ejection_state_flag < 1){
+		ejection_state_flag = 1;
+
+		flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
+		if (ejection_state_flag == 2){
+			apogee_flag = 1;
+			flash_flags_buffer[APOGEE_FLAG_OFFSET] = apogee_flag;
+		}
+		W25qxx_EraseSector(1);
+		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+	}
+}
+
+
+
+
+
+
+
+//TODO REMOVE
+void TESTING_LOOP(void){
+	//FOR TESTING
+
+	#define TX_BUF_DIM 256
+	char buffer[TX_BUF_DIM];
+
+
+	while(1){
+		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
+		HAL_Delay(1000);
+
+		  //GPS
+		  hgps.pollAll();
+
+		  //LSM6DSR
+		  hlsm6dsr.pollAll();
+
+		  //LPS22HH
+		  hlps22hh.pollAll();
+		  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //Update altitude TODO put somewhere else
+
+
+		  //GPS
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",hgps.latitude, hgps.longitude, hgps.time);
+		  print(buffer);
+
+		  //LSM6DSR
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",
+				  hlsm6dsr.acceleration_mg[0], hlsm6dsr.acceleration_mg[1], hlsm6dsr.acceleration_mg[2]);
+		  print(buffer);
+
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",
+				  hlsm6dsr.angular_rate_mdps[0], hlsm6dsr.angular_rate_mdps[1], hlsm6dsr.angular_rate_mdps[2]);
+		  print(buffer);
+
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlsm6dsr.temperature_degC);
+		  print(buffer);
+
+
+		  //LPS22HH
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",hlps22hh.pressure_hPa);
+		  print(buffer);
+
+		  memset(buffer, 0, TX_BUF_DIM);
+		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlps22hh.temperature_degC);
+		  print(buffer);
+
+
+		  //Iridium
+		  hiridium.getTime();
+
+		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
+		HAL_Delay(1000);
+		HAL_IWDG_Refresh(&hiwdg);
+	}
 }
 
 /* USER CODE END 4 */

@@ -51,7 +51,8 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
- ../Core/Inc/i2c.h
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/MRT_helpers.h \
+ ../Core/Inc/iwdg.h
 
 ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 
@@ -164,3 +165,9 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
 ../Core/Inc/main.h:
 
 ../Core/Inc/i2c.h:
+
+../Core/Inc/adc.h:
+
+../Core/Inc/MRT_helpers.h:
+
+../Core/Inc/iwdg.h:

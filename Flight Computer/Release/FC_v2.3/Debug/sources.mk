@@ -32,8 +32,9 @@ CPP_DEPS :=
 SUBDIRS := \
 Core/Src \
 Core/Startup \
+Drivers/MRT_EJECTION/Src \
 Drivers/MRT_MEMORY/Src \
-Drivers/MRT_MISC/Src \
+Drivers/MRT_PROPULSION/Src \
 Drivers/MRT_SENSORS/Src \
 Drivers/MRT_TELEMETRY/Src/MRT_Iridium_f4xx/Src \
 Drivers/MRT_TELEMETRY/Src \

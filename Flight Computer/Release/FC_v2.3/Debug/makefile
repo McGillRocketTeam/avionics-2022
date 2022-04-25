@@ -25,8 +25,9 @@ RM := rm -rf
 -include Drivers/MRT_TELEMETRY/Src/MRT_Iridium_f4xx/Src/subdir.mk
 -include Drivers/MRT_TELEMETRY/Src/subdir.mk
 -include Drivers/MRT_SENSORS/Src/subdir.mk
--include Drivers/MRT_MISC/Src/subdir.mk
+-include Drivers/MRT_PROPULSION/Src/subdir.mk
 -include Drivers/MRT_MEMORY/Src/subdir.mk
+-include Drivers/MRT_EJECTION/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include subdir.mk

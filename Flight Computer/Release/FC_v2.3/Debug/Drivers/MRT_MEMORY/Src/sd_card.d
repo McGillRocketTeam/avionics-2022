@@ -65,7 +65,7 @@ Drivers/MRT_MEMORY/Src/sd_card.o: ../Drivers/MRT_MEMORY/Src/sd_card.c \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
  ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
  ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
- ../Core/Inc/i2c.h
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h
 
 ../Drivers/MRT_MEMORY/Inc/sd_card.h:
 
@@ -212,3 +212,5 @@ Drivers/MRT_MEMORY/Src/sd_card.o: ../Drivers/MRT_MEMORY/Src/sd_card.c \
 ../Core/Inc/main.h:
 
 ../Core/Inc/i2c.h:
+
+../Core/Inc/adc.h:

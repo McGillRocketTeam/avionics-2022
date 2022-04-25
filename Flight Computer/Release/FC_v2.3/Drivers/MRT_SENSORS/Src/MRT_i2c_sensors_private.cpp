@@ -16,7 +16,7 @@
 /*****LSM6DSR*****/
 
 LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
-	println((char*) "LSM6DSR Setup Starts");
+	println((char*) "\r\nLSM6DSR Init");
 
 	/* Initialize mems driver interface */
 	ctx.write_reg = write;
@@ -42,14 +42,16 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	println((char*) "OK");
 
 	/* Restore default configuration */
+	print((char*) "\tRestore default configuration...");
 	lsm6dsr_reset_set(&ctx, PROPERTY_ENABLE);
 	HAL_Delay(500);
 	do {
 	lsm6dsr_reset_get(&ctx, &rst);
 	} while (rst);
+	println((char*) "OK");
 
 	/* Disable I3C interface */
-    lsm6dsr_i3c_disable_set(&ctx, LSM6DSR_I3C_DISABLE); //TODO Jasper
+    lsm6dsr_i3c_disable_set(&ctx, LSM6DSR_I3C_DISABLE);
 
 	/* Enable Block Data Update */
 	lsm6dsr_block_data_update_set(&ctx, PROPERTY_ENABLE);
@@ -62,10 +64,8 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	/* Configure filtering chain(No aux interface)
 	* Accelerometer - LPF1 + LPF2 path
 	*/
-	lsm6dsr_xl_hp_path_on_out_set(&ctx, LSM6DSR_LP_ODR_DIV_100); //TODO JASPER
-	lsm6dsr_xl_filter_lp2_set(&ctx, PROPERTY_ENABLE); //TODO JASPER
-	println((char*) "\tSetup Ends");
-
+	lsm6dsr_xl_hp_path_on_out_set(&ctx, LSM6DSR_LP_ODR_DIV_100);
+	lsm6dsr_xl_filter_lp2_set(&ctx, PROPERTY_ENABLE);
 }
 
 
@@ -133,7 +133,7 @@ int32_t LSM6DSR::read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len) {
 
 
 LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
-	println((char*) "LPS22HH Setup Starts");
+	println((char*) "\r\nLPS22HH Init");
 
 	/* Initialize mems driver interface */
 	ctx.write_reg = write;
@@ -161,20 +161,19 @@ LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	println((char*) "OK");
 
 	/* Restore default configuration */
+	print((char*) "\tRestore default configuration...");
 	lps22hh_reset_set(&ctx, PROPERTY_ENABLE);
 	HAL_Delay(500);
 	do {
 	lps22hh_reset_get(&ctx, &rst);
 	} while (rst);
-
+	println((char*) "OK");
 
 	/* Enable Block Data Update */
 	lps22hh_block_data_update_set(&ctx, PROPERTY_ENABLE);
 
 	/* Set Output Data Rate */
 	lps22hh_data_rate_set(&ctx, LPS22HH_75_Hz_LOW_NOISE);
-	println((char*) "\tSetup Ends");
-
 }
 
 

@@ -217,7 +217,7 @@ void GPS_check_nonzero_data(float latitude, float longitude, uint8_t *gps_fix_la
 void GPS_Init(UART_HandleTypeDef* data_uart, void (*gps_print)(char*),
 		void (*gps_tone_freq)(uint32_t duration, uint32_t repeats, uint32_t freq)){
 	GPS.print = gps_print;
-	GPS.print((char*) "GPS Init...");
+	GPS.print((char*) "\r\nGPS Init...");
 	GPS.uart = data_uart;
 	GPS.tone_freq = gps_tone_freq;
 	GPS.print((char*) "OK\r\n");

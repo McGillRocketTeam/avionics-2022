@@ -1,5 +1,6 @@
-Drivers/MRT_MISC/Src/MRT_rtc.o: ../Drivers/MRT_MISC/Src/MRT_rtc.c \
- ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
+Drivers/MRT_EJECTION/Src/MRT_ejection.o: \
+ ../Drivers/MRT_EJECTION/Src/MRT_ejection.c ../Core/Inc/MRT_setup.h \
+ ../Core/Inc/usart.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -40,10 +41,8 @@ Drivers/MRT_MISC/Src/MRT_rtc.o: ../Drivers/MRT_MISC/Src/MRT_rtc.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Core/Inc/i2c.h ../Core/Inc/MRT_helpers.h \
- ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
- ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Core/Inc/main.h \
- ../Drivers/MRT_MISC/Inc/MRT_rtc.h ../Core/Inc/rtc.h
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h \
+ ../Drivers/MRT_EJECTION/Inc/MRT_ejection.h ../Core/Inc/gpio.h
 
 ../Core/Inc/MRT_setup.h:
 
@@ -133,14 +132,8 @@ Drivers/MRT_MISC/Src/MRT_rtc.o: ../Drivers/MRT_MISC/Src/MRT_rtc.c \
 
 ../Core/Inc/i2c.h:
 
-../Core/Inc/MRT_helpers.h:
+../Core/Inc/adc.h:
 
-../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h:
+../Drivers/MRT_EJECTION/Inc/MRT_ejection.h:
 
-../Drivers/MRT_MEMORY/Inc/w25qxx.h:
-
-../Core/Inc/main.h:
-
-../Drivers/MRT_MISC/Inc/MRT_rtc.h:
-
-../Core/Inc/rtc.h:
+../Core/Inc/gpio.h:

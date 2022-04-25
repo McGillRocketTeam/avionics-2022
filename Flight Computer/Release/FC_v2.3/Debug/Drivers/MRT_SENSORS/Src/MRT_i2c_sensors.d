@@ -1,9 +1,6 @@
 Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o: \
- ../Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.cpp \
- ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
- ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
- ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
- ../Drivers/MRT_SENSORS/Inc/gps.h ../Core/Inc/main.h \
+ ../Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.cpp ../Core/Inc/MRT_setup.h \
+ ../Core/Inc/usart.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -44,17 +41,16 @@ Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors_private.h \
- ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
- ../Core/Inc/i2c.h ../Core/Inc/MRT_helpers.h
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/MRT_helpers.h \
+ ../Core/Inc/iwdg.h ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
+ ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
+ ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
+ ../Drivers/MRT_SENSORS/Inc/gps.h ../Core/Inc/main.h \
+ ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors_private.h
 
-../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
+../Core/Inc/MRT_setup.h:
 
-../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
-
-../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
-
-../Drivers/MRT_SENSORS/Inc/gps.h:
+../Core/Inc/usart.h:
 
 ../Core/Inc/main.h:
 
@@ -138,14 +134,22 @@ Drivers/MRT_SENSORS/Src/MRT_i2c_sensors.o: \
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
 
-../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors_private.h:
+../Core/Inc/i2c.h:
 
-../Core/Inc/MRT_setup.h:
+../Core/Inc/adc.h:
 
-../Core/Inc/usart.h:
+../Core/Inc/MRT_helpers.h:
+
+../Core/Inc/iwdg.h:
+
+../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
+
+../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
+
+../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
+
+../Drivers/MRT_SENSORS/Inc/gps.h:
 
 ../Core/Inc/main.h:
 
-../Core/Inc/i2c.h:
-
-../Core/Inc/MRT_helpers.h:
+../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors_private.h:

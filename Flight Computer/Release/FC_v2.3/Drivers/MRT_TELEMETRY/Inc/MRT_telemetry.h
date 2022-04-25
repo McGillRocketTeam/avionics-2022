@@ -16,7 +16,7 @@ extern "C" {
 
 void MRT_radio_Init(void);
 void MRT_radio_tx(char* buffer);
-void MRT_radio_rx(char* buffer, uint8_t size);
+void MRT_radio_rx(char* buffer, uint8_t size, uint16_t timeout);
 
 void MRT_TELEMETRY_Init(void);
 void MRT_TELEMETRY_Deinit(void);

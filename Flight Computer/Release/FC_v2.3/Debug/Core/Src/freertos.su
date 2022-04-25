@@ -1,7 +1,7 @@
-freertos.c:116:6:MX_FREERTOS_Init	8	static
-freertos.c:173:6:StartMemory0	16	static
-freertos.c:193:6:StartEjection1	16	static
-freertos.c:211:6:StartTelemetry2	16	static
-freertos.c:229:6:StartSensors3	16	static
-freertos.c:247:6:StartWatchDog	16	static
-freertos.c:270:6:StartPropulsion4	16	static
+freertos.c:118:6:MX_FREERTOS_Init	8	static
+freertos.c:182:6:StartMemory0	16	static
+freertos.c:202:6:StartEjection1	16	static
+freertos.c:220:6:StartTelemetry2	16	static
+freertos.c:238:6:StartSensors3	16	static
+freertos.c:256:6:StartWatchDog	16	static
+freertos.c:280:6:StartPropulsion4	16	static

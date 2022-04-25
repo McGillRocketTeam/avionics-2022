@@ -17,25 +17,19 @@ extern "C" {
 //Includes
 #include <usart.h> //For uart handler variable
 #include <i2c.h>
+#include <adc.h>
 
 
 //**************************************************//
 //DEBUGGING
-#define DEBUG 1
+#define DEBUG 1 //If in debug mode, no IWDG
 #define DEBUG_UART huart8
+#define PRINT 1
 
-#if DEBUG
-#define IWDG_ACTIVE					0
-#else
-#define IWDG_ACTIVE 1
-#define HAL_UART_Transmit(u, b, l, d)	0
-#endif
-
-
+//Forced state
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
 #define FORCED_EJECTION_STAGE 0 //Can take value from 0 to 1 (boolean)
 #define FORCED_STAGE 1 //Can take value from 0 to 4 (only happens if FORCED_EJECTION_STAGE is 1)
-
 
 //Buzzer
 #define BUZZ_SUCCESS_DURATION	75		// ms
@@ -47,8 +41,20 @@ extern "C" {
 #define	BUZZ_FAILURE_FREQ		220		// Hz
 
 
+
+#if DEBUG
+#define IWDG_ACTIVE	0
+#else
+#define IWDG_ACTIVE 1
+#endif
+
+#if !PRINT
+#define HAL_UART_Transmit(u, b, l, d)	0
+#endif
+
+
 //**************************************************//
-//Constants
+//CONSTANTS
 #define SEA_LEVEL_TEMPERATURE 25+273.15 //Sea level temperature in Kelvin
 #define SEA_LEVEL_PRESSURE 1014 //Sea level pressure hPa
 #define  BASE_HEIGHT 100 //In meters
@@ -128,6 +134,7 @@ extern "C" {
 									//(can only be equal or slower). Divides the XXXX_APOGEE_SEND_FREQ after it has been divided
 									//by SENSORS_SEND_FREQ_DIVIDER
 
+
 //SRadio
 #define SRADIO_ 0
 #define SRADIO_SPI hspi2
@@ -137,6 +144,14 @@ extern "C" {
 #define XTEND_ 0
 #define XTEND_UART huart3
 #define XTEND_BUFFER_SIZE 256
+
+#if XTEND_
+#define RADIO_BUFFER_SIZE	XTEND_BUFFER_SIZE
+#elif SRADIO_
+#define RADIO_BUFFER_SIZE	SRADIO_BUFFER_SIZE
+#else
+#define RADIO_BUFFER_SIZE	0
+#endif
 
 //Iridium
 #define IRIDIUM_ 1
@@ -198,7 +213,7 @@ extern "C" {
 
 //**************************************************//
 //PROPULSION THREAD
-
+#define TRANSDUCER_ADC	hadc1
 
 
 
@@ -206,10 +221,9 @@ extern "C" {
 
 
 
-//Function Prototypes
+//Public Function Prototypes
 void MRT_Init(void);
 void MRT_Deinit(void);
-
 
 #ifdef __cplusplus
 }

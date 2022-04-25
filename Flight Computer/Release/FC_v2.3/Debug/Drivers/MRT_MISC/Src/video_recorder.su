@@ -1,0 +1,4 @@
+video_recorder.c:12:6:VR_Power_On	8	static
+video_recorder.c:18:6:VR_Power_Off	8	static
+video_recorder.c:22:6:VR_Start_Rec	8	static
+video_recorder.c:28:6:VR_Stop_Rec	8	static

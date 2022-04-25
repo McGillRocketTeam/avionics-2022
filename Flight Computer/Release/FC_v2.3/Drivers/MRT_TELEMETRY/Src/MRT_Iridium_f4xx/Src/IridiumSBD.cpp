@@ -892,7 +892,7 @@ bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char 
 {
    diagprint(F("Waiting for response "));
    diagprint(terminator);
-   this->print((char*) terminator); //TODO doesn't print otherwise
+   //this->print((char*) terminator); //TODO doesn't print otherwise
    diagprint(F("\r\n"));
 
    if (response)
@@ -1243,7 +1243,7 @@ void IridiumSBD::sendlong(const char *str)
 // Send a long string that might need to be broken up for the I2C port
 {
    consoleprint(F(">> "));
-   this->print((char*) str);//TODO doesn't print otherwise
+   //this->print((char*) str);//TODO doesn't print otherwise
    consoleprint(str);
    consoleprint(F("\r\n"));
 
@@ -1312,7 +1312,7 @@ void IridiumSBD::diagprint(FlashString str)
    }
 
    //TODO
-   this->print((char*) str);
+   //this->print((char*) str);
 }
 
 void IridiumSBD::diagprint(const char *str)
@@ -1321,7 +1321,7 @@ void IridiumSBD::diagprint(const char *str)
       ISBDDiagsCallback(this, *str++);
 
    //TODO
-   this->print((char*) str);
+   //this->print((char*) str);
 }
 
 void IridiumSBD::diagprint(uint16_t n)
@@ -1329,7 +1329,7 @@ void IridiumSBD::diagprint(uint16_t n)
    char str[10];
    sprintf(str, "%u", n);
    diagprint(str); //TODO
-   this->print((char*) str);
+   //this->print((char*) str);
 }
 
 void IridiumSBD::consoleprint(FlashString str)
@@ -1343,7 +1343,7 @@ void IridiumSBD::consoleprint(FlashString str)
    }
 
    //TODO
-   this->print((char*) str);
+   //this->print((char*) str);
 }
 
 void IridiumSBD::consoleprint(const char *str)
@@ -1352,7 +1352,7 @@ void IridiumSBD::consoleprint(const char *str)
       ISBDConsoleCallback(this, *str++);
 
    //TODO
-   this->print((char*) str);
+   //this->print((char*) str);
 }
 
 void IridiumSBD::consoleprint(uint16_t n)
@@ -1361,7 +1361,7 @@ void IridiumSBD::consoleprint(uint16_t n)
    sprintf(str, "%u", n);
    consoleprint(str); //TODO
    //consoleprint((const char*) str);
-   this->print((char*) str);
+   //this->print((char*) str);
 }
 
 void IridiumSBD::consoleprint(char c)
@@ -1717,8 +1717,8 @@ int IridiumSBD::internalGetIMEI(char *IMEI, size_t bufferSize)
 /*
  * TODO HOMEMADE FUNCTIONS BELOW
  */
+#if DIAGNOSTICS
 static void diagnostic(void){
-	#if DIAGNOSTICS
 	void ISBDConsoleCallback(IridiumSBD *device, char c)
 	{
 		HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
@@ -1728,14 +1728,14 @@ static void diagnostic(void){
 	{
 	  HAL_UART_Transmit(&(this->uart),(uint8_t*) c, sizeof(char), HAL_MAX_DELAY);
 	}
-	#endif
 }
+#endif
 
 
 //uint8_t IridiumSBD::MRT_Iridium_setup(UART_HandleTypeDef huart,POWERPROFILE profile){ TODO??
 uint8_t IridiumSBD::MRT_Iridium_setup(uint8_t timeout, uint8_t i2c_bus, void (*iridium_print)(char*)){
 	this->print = iridium_print;
-	this->print((char*) "Iridium 9603N Init\r\n");
+	this->print((char*) "\r\nIridium 9603N Init\r\n");
 
 	this->print((char*) "\tSetting I2C bus...");
 	if (i2c_bus == 1){
@@ -1801,15 +1801,13 @@ uint8_t IridiumSBD::MRT_Iridium_setup(uint8_t timeout, uint8_t i2c_bus, void (*i
 	this->print((char*) "OK\r\n");
 
 	//Setup default IMEI to 000000000000000 (no IMEI)
-	IMEI="000000000000000";
+	IMEI= (char*) "000000000000000";
 
-	char str[30];
+	char str[50];
 	sprintf(str, "\tSetting timeout of %i seconds...", timeout);
 	this->print((char*) str);
 	adjustATTimeout(timeout);
 	this->print((char*) "OK\r\n");
-
-	this->print((char*) "\tEnd of setup\r\n");
 
 	return HAL_OK;
 }
@@ -1969,7 +1967,7 @@ int IridiumSBD::MRT_Iridium_CSQ(){
 	}
 
 	char str[56+sizeof(int)];
-	sprintf(str, "t\On a scale of 0 to 5, signal quality is currently  %i\r\n", signalQuality);
+	sprintf(str, "\tOn a scale of 0 to 5, signal quality is currently  %i\r\n", signalQuality);
 	this->print((char*) str);
 
 	return signalQuality;
@@ -2048,7 +2046,7 @@ boolean IridiumSBD::MRT_Iridium_sendMessage(char* msg){
 	//int err = ISBD_SENDRECEIVE_TIMEOUT;
 
 	if (err != ISBD_SUCCESS){
-		char str[27+sizeof(int)];
+		char str[50];
 		sprintf(str, "\tsendSBDText failed: error -> %i\r\n", err);
 		this->print((char*) str);
 	    if (err == ISBD_SENDRECEIVE_TIMEOUT){
@@ -2066,7 +2064,7 @@ boolean IridiumSBD::MRT_Iridium_sendMessage(char* msg){
 	this->print((char*) "\tClearing the MO buffer.\r\n");
 	err = this->clearBuffers(ISBD_CLEAR_MO); // Clear MO buffer
 	if (err != ISBD_SUCCESS){
-		char str[27+sizeof(int)];
+		char str[50];
 		sprintf(str, "clearBuffers failed: error -> %i\r\n", err);
 		this->print((char*) str);
 		this->MRT_Iridium_ErrorMessage((uint8_t) err);
@@ -2123,7 +2121,7 @@ boolean IridiumSBD::MRT_Iridium_sendReceive(void){
 	    	sprintf(str, "\tInbound buffer size is %i\r\n", bufferSize);
 	    	this->print((char*) str);
 
-	    	for (int i=0; i<bufferSize; ++i)
+	    	for (int i=0; i< (int) bufferSize; ++i)
 	    	{
 	    		char hexstr[32];
 	    		sprintf(hexstr, "0x%08x", buffer[i]);

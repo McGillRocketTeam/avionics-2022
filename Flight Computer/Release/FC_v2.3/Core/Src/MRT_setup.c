@@ -9,11 +9,11 @@
 #include <MRT_helpers.h>
 #include <main.h>
 #include <iwdg.h>
-
-#include <MRT_rtc.h>
+#include <rtc.h>
 #include <MRT_external_flash.h>
 #include <MRT_i2c_sensors.h>
 #include <MRT_telemetry.h>
+#include <MRT_propulsion.h>
 #include <sd_card.h>
 
 //**************************************************//
@@ -30,19 +30,21 @@ void MRT_reset_info(void);
 void MRT_Init(void){
 	print((char*) "\r\n\r\n/********MRT Init********/\r\n");
 
-	MRT_Reinitialize_Peripherals();
-	MRT_external_flash_Init();
-	MRT_reset_info();
-
+	//IWDG
 	#if IWDG_ACTIVE
 	print((char*) "IWDG Init...");
 	MX_IWDG_Init();
 	print((char*) "OK\r\n");
 	#endif
 
+	MRT_Reinitialize_Peripherals();
+	MRT_external_flash_Init();
+	MRT_reset_info();
+
 	//RTC
 	HAL_IWDG_Refresh(&hiwdg);
 	MRT_rtc_Init();
+
 
 	//TODO SD card (doesn't work)
 	#if MEMORY_THREAD
@@ -57,7 +59,6 @@ void MRT_Init(void){
 
 	//Sensors
 	#if SENSORS_THREAD
-
 		//Scan I2C buses (only for debug mode)
 		#if CHECK_I2C && DEBUG
 		  checkForI2CDevices(huart8,hi2c1);
@@ -72,6 +73,18 @@ void MRT_Init(void){
 	//Telemetry
 	#if TELEMETRY_THREAD
 		MRT_TELEMETRY_Init();
+	#endif
+
+
+	//TODO DISABLE EXTERNAL BUTTON INTERRUPT ONCE ROCKET IS ARMED (or find other way to completely reset the board)
+
+
+	#if FORCED_APOGEE
+		  apogee_flag = 2; //Flag set to 'forced'. The value of 2 makes it such that it doesn't affect the external flash
+	#endif
+
+	#if FORCED_EJECTION_STAGE
+		  ejection_stage_flag = FORCED_STAGE;
 	#endif
 }
 
@@ -104,7 +117,7 @@ void MRT_Deinit(void){
 		MRT_i2c_sensors_Deinit();
 	#endif
 
-
+    //TODO
 }
 
 
