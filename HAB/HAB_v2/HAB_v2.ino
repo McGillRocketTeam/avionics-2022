@@ -2,6 +2,9 @@
 #include <Wire.h>
 #include <SPI.h>
 
+#define GPSECHO false       // print raw GPS sentences to Serial terminal
+#define TESTING_BYPASS_ALL  // comment out for actual launch
+
 #include <Adafruit_Sensor.h>
 #include <Adafruit_MS8607.h>
 #include <Adafruit_ADXL345_U.h>
@@ -12,11 +15,10 @@
 #include "HAB_v2_pins.h"
 #include "HAB_v2_config.h"
 
-#ifdef USING_GPS
 #include <Adafruit_GPS.h>
-#endif
+#include <TinyGPS++.h>
 
-#define TESTING_BYPASS_ALL  // comment out for actual launch
+#define GPSSerial Serial2
 
 // types
 enum error_states {
@@ -55,6 +57,15 @@ struct pcf8523_data {
   uint8_t second;
 };
 
+struct gps_data {
+  uint32_t sats;
+  double speed;
+  double alt;
+  float latitude;
+  float longitude;
+  float heading;
+};
+
 
 // private function prototypes
 void init_pinModes(void);
@@ -66,12 +77,14 @@ void blink_beep_failure(void);
 void adxl345_init(void);
 void ms8607_init(void);
 void pcf8523_init(void);
+void gps_init(void);
 void sd_card_init(void);
 void sd_find_dynamic_file_name(char *prefix, char *filename);
 
 void ms8607_poll(struct ms8607_data *data_s);
 void adxl345_poll(struct adxl345_data *data_s);
 void pcf8523_poll(struct pcf8523_data *data_s);
+void gps_poll(struct gps_data *data_s);
 
 void  ft_init(void);
 float read_FT_continuity(int pin);
@@ -110,11 +123,14 @@ Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345); // assign uniq
 Adafruit_MS8607 ms8607;
 RTC_PCF8523 rtc;
 File datafile;
+Adafruit_GPS GPS(&GPSSerial);
+TinyGPSPlus gps;
 
 // structs for data
 struct ms8607_data ms8607_ds = {0}; // ds = data struct
 struct adxl345_data adxl345_ds = {0};
 struct pcf8523_data pcf8523_ds = {0};
+struct gps_data gps_ds = {0};
 
 
 void setup() {
@@ -130,6 +146,7 @@ void setup() {
   ms8607_init();
   pcf8523_init();
   sd_card_init();
+  gps_init();
 
   // init flight termination logic
   ft_init();
@@ -167,6 +184,7 @@ void do_save_telemetry(void) {
   ms8607_poll(&ms8607_ds);
   adxl345_poll(&adxl345_ds);
   pcf8523_poll(&pcf8523_ds);
+  gps_poll(&gps_ds);
 
   alt_agl = get_altitude((&ms8607_ds)->pressure) - alt_ground;
   save_previous_altitudes(alt_agl);
@@ -179,10 +197,18 @@ void do_save_telemetry(void) {
       pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second
   );
   datafile.println(telemetry_buffer); // save to SD card
-  datafile.flush();
+
+  // gps data
+  sprintf(telemetry_buffer, "GPS,%l,%f,%f,%f,%f,%f,E",
+      gps_ds.sats, gps_ds.speed, gps_ds.alt, 
+      gps_ds.latitude, gps_ds.longitude, gps_ds.heading
+  );
+  datafile.println(telemetry_buffer);
+  datafile.flush(); // actually write to SD without closing file
 
   // in more readable form for serial terminal
-  sprintf(telemetry_buffer, "ACCx = %.4f\tACCy = %.4f\tACCz = %.4f\nPRESSURE = %.4f\tTEMP = %.3f\tREL HUM = %.3f\nDAY = %d\tHOUR = %d\tMIN = %d\tSEC = %d",
+  sprintf(telemetry_buffer, 
+      "ACCx = %.4f\tACCy = %.4f\tACCz = %.4f\nPRESSURE = %.4f\tTEMP = %.3f\tREL HUM = %.3f\nDAY = %d\tHOUR = %d\tMIN = %d\tSEC = %d",
       adxl345_ds.acc_x, adxl345_ds.acc_y, adxl345_ds.acc_z,
       ms8607_ds.pressure, ms8607_ds.temperature, ms8607_ds.humidity,
       pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second
@@ -340,6 +366,14 @@ void pcf8523_init(void) {
   Serial.println(F("Sensor init: PCF8523 (real-time clock) ok!"));
 }
 
+void gps_init(void) {
+  GPSSerial.begin(9600);
+  GPS.begin(9600);
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // turn on RMC and GGA data
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ);    // 5 Hz update rate
+  
+}
+
 void ft_init(void) {
   analogReadResolution(10);
 
@@ -417,6 +451,20 @@ void pcf8523_poll(struct pcf8523_data *data_s) {
   data_s->hour = now.hour();
   data_s->minute = now.minute();
   data_s->second = now.second();
+}
+
+void gps_poll(struct gps_data *data_s) {
+  while (GPSSerial.available()) {
+    gps.encode(GPSSerial.read());
+  }
+  uint32_t chars_processed = gps.charsProcessed(); // not sure what this is for
+  
+  data_s->sats = gps.satellites.value();
+  data_s->longitude = gps.location.lng();
+  data_s->latitude = gps.location.lat();
+  data_s->heading = gps.course.deg();
+  data_s->speed = gps.speed.kmph();
+  data_s->alt = gps.altitude.meters();
 }
 
 float read_FT_continuity(int pin) {
