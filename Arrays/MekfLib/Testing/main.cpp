@@ -16,14 +16,15 @@ int main(void) {
 		std::cout << "ra_k" << std::endl;
 		std::cout << mekf.ra_k << std::endl;
 		Eigen::Vector3d gyro_input;
-		gyro_input << 1.0,
+		gyro_input << 0.0,
 					  0.0, 
 					  0.0;
 		Eigen::Vector3d acc_input;
-		acc_input << 0.0,
+		acc_input << 1.0,
 					 0.0,
 					 0.0;
 		mekf.kf_predict(gyro_input, acc_input);
+		mekf.kf_update();
 	}
 	std::cout << "end main" << std::endl;
 
