@@ -1,0 +1,7 @@
+radio_commands.c:20:15:radio_parse_command	16	static
+radio_commands.c:56:6:execute_parsed_command	16	static
+radio_commands.c:109:6:rocket_launch	8	static
+radio_commands.c:118:6:arming_propulsion	8	static
+radio_commands.c:125:6:arming_recovery	8	static
+radio_commands.c:132:6:disarm_propulsion	8	static
+radio_commands.c:144:6:disarm_recovery	8	static

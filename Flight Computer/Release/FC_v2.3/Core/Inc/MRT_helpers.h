@@ -26,7 +26,6 @@ void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq);
 void buzz_success(void);
 void buzz_failure(void);
 void buzz_startup_success(void);
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 
 
 #ifdef __cplusplus

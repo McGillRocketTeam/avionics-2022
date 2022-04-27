@@ -8,3 +8,4 @@ stm32f4xx_it.c:168:6:EXTI0_IRQHandler	8	static
 stm32f4xx_it.c:182:6:RTC_Alarm_IRQHandler	8	static
 stm32f4xx_it.c:196:6:TIM6_DAC_IRQHandler	8	static
 stm32f4xx_it.c:210:6:OTG_FS_IRQHandler	8	static
+stm32f4xx_it.c:223:6:HAL_GPIO_EXTI_Callback	16	static

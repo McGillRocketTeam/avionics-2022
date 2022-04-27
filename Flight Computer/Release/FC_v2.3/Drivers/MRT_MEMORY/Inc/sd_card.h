@@ -12,7 +12,6 @@
 extern "C" {
 #endif
 
-
 #include "main.h"
 #include "fatfs.h"
 
@@ -23,10 +22,12 @@ extern "C" {
 #include <limits.h>
 #include <ctype.h> // for toupper()
 
-
-//Variables
-char filename[13];
-
+extern FATFS FatFs;
+extern FIL fil;
+extern uint8_t msg_buffer[1000];
+extern FRESULT fres; //Result after operations
+extern char filename[13];
+extern uint8_t writeBuf[1000];
 
 // functions
 void myprintf(const char *fmt, ...);
@@ -36,7 +37,6 @@ FRESULT sd_open_file(char *filename);
 int8_t sd_write(FIL* fp, uint8_t* buffer);
 FRESULT scan_files(char* path, char* prefix, uint32_t* max_used_value);
 uint8_t extract_filename_suffix(char* filename, uint8_t len_prefix, uint32_t* num_value);
-
 
 #ifdef __cplusplus
 }

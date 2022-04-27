@@ -1,8 +1,8 @@
-sd_card.c:25:6:myprintf	16	static
-sd_card.c:43:9:sd_init	24	static
-sd_card.c:83:9:sd_init_dynamic_filename	48	static
-sd_card.c:126:9:sd_open_file	24	static
-sd_card.c:142:8:sd_write	24	static
-sd_card.c:164:9:scan_files	120	dynamic
-sd_card.c:231:9:extract_filename_suffix	48	dynamic
-sd_card.c:264:6:str2upper	32	static
+sd_card.c:24:6:myprintf	16	static
+sd_card.c:42:9:sd_init	24	static
+sd_card.c:82:9:sd_init_dynamic_filename	48	static
+sd_card.c:125:9:sd_open_file	24	static
+sd_card.c:141:8:sd_write	24	static
+sd_card.c:163:9:scan_files	120	dynamic
+sd_card.c:230:9:extract_filename_suffix	48	dynamic
+sd_card.c:263:6:str2upper	32	static

@@ -129,7 +129,7 @@ UART_HandleTypeDef huart8;
 #define XTEND_BUFFER_SIZE 256
 
 //Iridium
-#define IRIDIUM_ 1
+#define IRIDIUM_ 0
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_TIMEOUT 5 //Timeout in seconds
 

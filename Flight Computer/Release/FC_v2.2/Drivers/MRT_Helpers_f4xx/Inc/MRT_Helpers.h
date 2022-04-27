@@ -37,22 +37,25 @@ uint8_t* flash_flags[NB_OF_FLAGS];
 
 
 /*RTC time (last recorded)*/
+#define RTC_NB_OF_VAR 4
 #define RTC_TIME_OFFSET 0 //RTC time offset in sector 2
 //Map hours, minutes and seconds to their offsets
 #define RTC_HOURS_OFFSET 0
 #define RTC_MIN_OFFSET 1
 #define RTC_SEC_OFFSET 2
+#define RTC_SUBSEC_OFFSET 3
 
 //Time constants (determined at each reset)
-uint8_t prev_hours; //Last recorded hours
-uint8_t prev_min; //Last recorded minutes
-uint8_t prev_sec; //Last recorded seconds
+extern uint8_t prev_hours; //Last recorded hours
+extern uint8_t prev_min; //Last recorded minutes
+extern uint8_t prev_sec; //Last recorded seconds
+extern uint8_t prev_subsec; //Last recorded subseconds
 
 //Time read/write buffer
-uint8_t flash_time_buffer[3];
+uint8_t flash_time_buffer[RTC_NB_OF_VAR];
 
 //Reference list to each flag
-uint8_t* flash_time[3];
+uint8_t* flash_time[RTC_NB_OF_VAR];
 
 
 //RTC

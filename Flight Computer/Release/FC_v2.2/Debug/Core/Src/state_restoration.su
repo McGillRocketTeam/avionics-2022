@@ -1,0 +1,4 @@
+state_restoration.c:27:6:init_backup_regs	16	static
+state_restoration.c:39:6:restore_fc_states	8	static
+state_restoration.c:80:10:get_backup_state	24	static
+state_restoration.c:88:6:set_backup_state	16	static

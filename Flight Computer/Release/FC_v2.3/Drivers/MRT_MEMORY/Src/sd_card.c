@@ -5,18 +5,17 @@
  *      Author: JO
  */
 
+#include "MRT_helpers.h"
 #include "sd_card.h"
-#include "usbd_cdc_if.h"
 #include "string.h"
 #include "main.h"
-#include "MRT_setup.h"
 
-
-FATFS FatFs; 	//Fatfs handle
-FIL fil; 		//File handle
-FRESULT fres; //Result after operations
-uint8_t writeBuf[1000];
+FATFS FatFs;
+FIL fil;
 uint8_t msg_buffer[1000];
+FRESULT fres; //Result after operations
+char filename[13];
+uint8_t writeBuf[1000];
 
 
 uint8_t extract_filename_suffix(char* filename, uint8_t len_prefix, uint32_t* num_value);
@@ -30,8 +29,8 @@ void myprintf(const char *fmt, ...) { // currently does nothing, was copied from
   va_end(args);
 
   //CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
-  HAL_UART_Transmit(&DEBUG_UART, (uint8_t*)buffer, strlen(buffer), -1);
-
+  //HAL_UART_Transmit(&DEBUG_UART, (uint8_t*)buffer, strlen(buffer), -1);
+  print(buffer);
 }
 
 /*

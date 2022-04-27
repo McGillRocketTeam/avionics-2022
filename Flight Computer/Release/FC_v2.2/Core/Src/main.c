@@ -26,8 +26,6 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "fatfs.h"
-#include "usb_device.h"
-#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -38,6 +36,8 @@
 #include <gps.h>
 #include <sx126x.h>
 #include <MAX31855.h>
+#include <sd_card.h>
+#include <radio_commands.h>
 
 //#include <MRT_setup.h> included in main.h
 
@@ -146,11 +146,11 @@ uint8_t wd_ejection_flag = 0; //Used to saved the new ejection state in the exte
 //**************************************************//
 //MEMORY
 // sd card
-FATFS FatFs; 	//Fatfs handle
-FIL fil; 		//File handle
-FRESULT fres; //Result after operations
-char filename[13];
-uint8_t writeBuf[1000];
+//FATFS FatFs; 	//Fatfs handle
+//FIL fil; 		//File handle
+//FRESULT fres; //Result after operations
+//char filename[13];
+//uint8_t writeBuf[1000];
 
 
 //**************************************************//
@@ -283,7 +283,6 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
   MX_RTC_Init();
-  //MX_IWDG_Init(); TODO remove
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
@@ -387,6 +386,7 @@ int main(void)
 
 		//SD card
 		sd_init_dynamic_filename("FC", "", filename);
+		sd_open_file(&filename); //Open now and sync later
 #endif
 
 
@@ -505,7 +505,12 @@ int main(void)
 		  	//Check for launch command
 		  	memset(xtend_rx_buffer, 0, XTEND_BUFFER_SIZE);
 		  	HAL_UART_Receive(&XTEND_UART, xtend_rx_buffer, sizeof(char) * 6, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
-		  	if (strcmp(xtend_rx_buffer, "launch") == 0){
+
+			// go check what the command is
+			radio_command cmd = radio_parse_command(xtend_rx_buffer);
+			execute_parsed_command(cmd);
+
+			if (cmd == LAUNCH){
 				ejection_state_flag = 1;
 				flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
 				W25qxx_EraseSector(1);
@@ -520,8 +525,12 @@ int main(void)
 	    	//Check for launch command todo
 		  	memset(sradio_rx_buffer, 0, SRADIO_BUFFER_SIZE);
 
+			// go check what the command is
+			radio_command cmd = radio_parse_command(sradio_rx_buffer);
+			execute_parsed_command(cmd);
+
 		  	//TODO RX
-		  	if (strcmp(sradio_rx_buffer, "launch") == 0){
+		  	if (cmd == LAUNCH){
 				ejection_state_flag = 1;
 				flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
 				W25qxx_EraseSector(1);
@@ -638,7 +647,7 @@ void SystemClock_Config(void)
   /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -648,10 +657,16 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 72;
+  RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
+  RCC_OscInitStruct.PLL.PLLQ = 8;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Activate the Over-Drive mode
+  */
+  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
@@ -659,12 +674,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
     Error_Handler();
   }
@@ -1242,12 +1257,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : SD_CS_Pin OUT_PyroValve_Gate_2_Pin OUT_PyroValve_Gate_1_Pin */
-  GPIO_InitStruct.Pin = SD_CS_Pin|OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin;
+  /*Configure GPIO pin : SD_CS_Pin */
+  GPIO_InitStruct.Pin = SD_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(SD_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : IN_Button_Pin */
   GPIO_InitStruct.Pin = IN_Button_Pin;
@@ -1269,11 +1284,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(OUT_LEDF_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : IN_Prop_PyroTurboValve_LimitSwitch_Pin IN_SD_CARD_DETECT_Pin */
-  GPIO_InitStruct.Pin = IN_Prop_PyroTurboValve_LimitSwitch_Pin|IN_SD_CARD_DETECT_Pin;
+  /*Configure GPIO pin : IN_Prop_PyroTurboValve_LimitSwitch_Pin */
+  GPIO_InitStruct.Pin = IN_Prop_PyroTurboValve_LimitSwitch_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(IN_Prop_PyroTurboValve_LimitSwitch_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : IN_Prop_ActuatedVent_Feedback_Pin */
   GPIO_InitStruct.Pin = IN_Prop_ActuatedVent_Feedback_Pin;
@@ -1286,6 +1301,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(IN_PyroValve_Cont_2_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : OUT_PyroValve_Gate_2_Pin OUT_PyroValve_Gate_1_Pin */
+  GPIO_InitStruct.Pin = OUT_PyroValve_Gate_2_Pin|OUT_PyroValve_Gate_1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
   /*Configure GPIO pins : IN_PyroValve_Cont_1_Pin SX_BUSY_Pin SX_DIO_Pin IN_EJ_Main_Cont_Pin
                            IN_EJ_Drogue_Cont_Pin */
@@ -1340,6 +1362,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : IN_SD_CARD_DETECT_Pin */
+  GPIO_InitStruct.Pin = IN_SD_CARD_DETECT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(IN_SD_CARD_DETECT_GPIO_Port, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
@@ -1369,8 +1397,6 @@ static void XTend_Transmit(char* Msg){
 /* USER CODE END Header_StartMemory0 */
 void StartMemory0(void *argument)
 {
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
 
 	//Add thread id to the list
@@ -1387,11 +1413,19 @@ void StartMemory0(void *argument)
 	  for(;;)
 	  {
 		  //Write data to sd and flash
-		  if(counter==1) sd_open_file(&filename);
 		  sprintf((char*)writeBuf, "Data: %f, %f, %f, %f\r\n", PRESSURE, MIN, SEC, SUBSEC);
-		  sd_write(&fil, writeBuf);
-		  if (counter == 50) {
+		  if (sd_write(&fil, writeBuf) < 0){
+
+			  //TODO when the sd card bug, it seems that only removing power from it works to reset it.
+			  //Otherwise it always give an error. Trying to close and open doesn't work
+			  HAL_UART_Transmit(&DEBUG_UART,"TEST\tTEST\tTEST\tTEST\r\n",17,HAL_MAX_DELAY);
 			  f_close(&fil);
+			  sd_open_file(&filename);
+			  sd_write(&fil, writeBuf);
+		  }
+
+		  if (counter == 50) {
+			  f_sync(&fil);
 			  counter = 0;
 		  }
 		  counter++;
@@ -1827,9 +1861,11 @@ void StartWatchDog(void *argument)
 	 prev_hours = sTime.Hours;
 	 prev_min = sTime.Minutes;
 	 prev_sec = sTime.Seconds;
+	 if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++;
+	 prev_subsec = sTime.SubSeconds;
 
 	 memset(buffer, 0, TX_BUF_DIM);
-	 sprintf(buffer, "Time: %i:%i:%i	Date: \r\n %f\r\n", prev_hours,prev_min,prev_sec, altitude_m);
+	 sprintf(buffer, "Time: %i:%i:%i ::%i	Date: \r\n %f\r\n", prev_hours,prev_min,prev_sec,prev_subsec , altitude_m);
 	 HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 

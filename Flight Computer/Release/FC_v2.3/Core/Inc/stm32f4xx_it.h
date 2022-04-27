@@ -56,8 +56,9 @@ void DebugMon_Handler(void);
 void EXTI0_IRQHandler(void);
 void RTC_Alarm_IRQHandler(void);
 void TIM6_DAC_IRQHandler(void);
-void OTG_FS_IRQHandler(void);
 /* USER CODE BEGIN EFP */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 
 /* USER CODE END EFP */
 

@@ -52,6 +52,7 @@ void MRT_Init(void){
 		//SD card
 		#if SD_CARD_
 			HAL_IWDG_Refresh(&hiwdg);
+
 			sd_init_dynamic_filename("FC", "", filename);
 		#endif
 	#endif
@@ -109,6 +110,7 @@ void MRT_Deinit(void){
 
 		//SD card
 		//TODO deinit? "or last save/close it?"
+		// YES THERE IS A FUNCTION FOR THAT
 	#endif
 
 

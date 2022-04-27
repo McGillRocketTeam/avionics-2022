@@ -64,12 +64,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
  ../Drivers/MRT_MEMORY/Inc/w25qxx.h \
  ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h \
- ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
- ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
- ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
- ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
- ../Drivers/MRT_SENSORS/Inc/gps.h \
- ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h
 
 ../Core/Inc/main.h:
 
@@ -226,13 +221,3 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h:
 
 ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
-
-../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
-
-../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
-
-../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
-
-../Drivers/MRT_SENSORS/Inc/gps.h:
-
-../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h:

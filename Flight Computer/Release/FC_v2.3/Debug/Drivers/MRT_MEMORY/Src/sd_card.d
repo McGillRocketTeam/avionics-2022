@@ -1,6 +1,6 @@
 Drivers/MRT_MEMORY/Src/sd_card.o: ../Drivers/MRT_MEMORY/Src/sd_card.c \
- ../Drivers/MRT_MEMORY/Inc/sd_card.h ../Core/Inc/main.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
+ ../Core/Inc/MRT_helpers.h ../Drivers/MRT_MEMORY/Inc/sd_card.h \
+ ../Core/Inc/main.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h \
@@ -55,17 +55,9 @@ Drivers/MRT_MEMORY/Src/sd_card.o: ../Drivers/MRT_MEMORY/Src/sd_card.c \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
- ../USB_DEVICE/App/usbd_cdc_if.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
- ../USB_DEVICE/Target/usbd_conf.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
- ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h \
- ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
- ../Core/Inc/i2c.h ../Core/Inc/adc.h
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h
+
+../Core/Inc/MRT_helpers.h:
 
 ../Drivers/MRT_MEMORY/Inc/sd_card.h:
 
@@ -188,29 +180,3 @@ Drivers/MRT_MEMORY/Src/sd_card.o: ../Drivers/MRT_MEMORY/Src/sd_card.c \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 
 ../FATFS/Target/user_diskio.h:
-
-../USB_DEVICE/App/usbd_cdc_if.h:
-
-../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h:
-
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
-
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h:
-
-../USB_DEVICE/Target/usbd_conf.h:
-
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h:
-
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h:
-
-../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h:
-
-../Core/Inc/MRT_setup.h:
-
-../Core/Inc/usart.h:
-
-../Core/Inc/main.h:
-
-../Core/Inc/i2c.h:
-
-../Core/Inc/adc.h:

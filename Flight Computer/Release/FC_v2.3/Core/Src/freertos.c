@@ -107,7 +107,6 @@ void StartSensors3(void *argument);
 void StartWatchDog(void *argument);
 void StartPropulsion4(void *argument);
 
-extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
@@ -181,8 +180,6 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartMemory0 */
 void StartMemory0(void *argument)
 {
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartMemory0 */
   /* Infinite loop */
   for(;;)

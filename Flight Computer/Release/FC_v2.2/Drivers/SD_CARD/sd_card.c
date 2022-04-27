@@ -6,13 +6,15 @@
  */
 
 #include "sd_card.h"
-#include "usbd_cdc_if.h"
 #include "string.h"
 #include "main.h"
 
-extern FATFS FatFs;
-extern FIL fil;
+FATFS FatFs;
+FIL fil;
 uint8_t msg_buffer[1000];
+FRESULT fres; //Result after operations
+char filename[13];
+uint8_t writeBuf[1000];
 
 
 uint8_t extract_filename_suffix(char* filename, uint8_t len_prefix, uint32_t* num_value);
