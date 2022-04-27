@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <radio_commands.h>//Not needed here put nice to import along telemetry
 
 void MRT_radio_Init(void);
 void MRT_radio_tx(char* buffer);

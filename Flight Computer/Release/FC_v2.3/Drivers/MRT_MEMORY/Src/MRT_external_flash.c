@@ -7,7 +7,7 @@
 
 
 #include <MRT_external_flash.h>
-#include <rtc.h>
+#include <rtc.h> //Check for wake up function
 
 
 //**************************************************//
@@ -37,7 +37,7 @@ uint8_t FLAGS_NULL_BUFFER[NB_OF_FLAGS];
 uint8_t prev_hours = 0; //Last recorded hours
 uint8_t prev_min = 0; //Last recorded minutes
 uint8_t prev_sec = 0; //Last recorded seconds
-uint8_t prev_subsec = 0; //Last recorded subseconds
+uint32_t prev_subsec = 0; //Last recorded subseconds
 
 //Time read/write buffer
 uint8_t flash_time_buffer[RTC_NB_OF_VAR];
@@ -72,17 +72,17 @@ void MRT_external_flash_Init(void){
 void MRT_get_flags(void){
 
 	//Retrieve flags
-	W25qxx_ReadSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+	W25qxx_ReadSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 
 	//Retrieve RTC time (last recorded)
-	W25qxx_ReadSector(flash_time_buffer, 2, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
+	W25qxx_ReadSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
 
 	//If RTC detected a wake up, update the flash memory
 	if (wu_flag == 1){
 		//Write the new number of wake up to external flash
 		flash_flags_buffer[WU_FLAG_OFFSET] = flash_flags_buffer[WU_FLAG_OFFSET] + 1; //Update number of wake up
-		W25qxx_EraseSector(1);
-		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		W25qxx_EraseSector(FLAGS_SECTOR);
+		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
 
 	//Assign each value read to their variable
@@ -94,40 +94,40 @@ void MRT_get_flags(void){
 	if (reset_flag != 0 && reset_flag !=1){ //If random value (none was written)
 		reset_flag = 0;
 		flash_flags_buffer[RESET_FLAG_OFFSET] = reset_flag;
-		W25qxx_EraseSector(1);
-		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		W25qxx_EraseSector(FLAGS_SECTOR);
+		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
 
 	//Wake up flag
 	if (wu_flag != 0 && wu_flag !=1 && wu_flag !=2){ //If random value (none was written)
 		wu_flag = 0;
 		flash_flags_buffer[WU_FLAG_OFFSET] = wu_flag;
-		W25qxx_EraseSector(1);
-		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		W25qxx_EraseSector(FLAGS_SECTOR);
+		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
 
 	//IWDG flag
 	if (iwdg_flag != 0 && iwdg_flag !=1){ //If random value (none was written)
 		iwdg_flag = 0;
 		flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
-		W25qxx_EraseSector(1);
-		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		W25qxx_EraseSector(FLAGS_SECTOR);
+		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
 
 	//Apogee flag
 	if (apogee_flag != 0 && apogee_flag !=1){ //If random value (none was written)
 		apogee_flag = 0;
 		flash_flags_buffer[APOGEE_FLAG_OFFSET] = apogee_flag;
-		W25qxx_EraseSector(1);
-		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		W25qxx_EraseSector(FLAGS_SECTOR);
+		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
 
 	//Ejection state flag
 	if (!(ejection_state_flag >= 0 && ejection_state_flag <=4)){ //If random value (none was written)
 		ejection_state_flag = 0;
 		flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
-		W25qxx_EraseSector(1);
-		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		W25qxx_EraseSector(FLAGS_SECTOR);
+		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 	}
 
 
@@ -136,32 +136,32 @@ void MRT_get_flags(void){
 	if (!(prev_hours >= 0 && prev_hours < 24)){ //If random value (none was written)
 		prev_hours = 0;
 		flash_time_buffer[RTC_HOURS_OFFSET] = prev_hours;
-		W25qxx_EraseSector(2);
-		W25qxx_WriteSector(flash_time_buffer, 2, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
+		W25qxx_EraseSector(RTC_SECTOR);
+		W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
 	}
 
 	//Minutes
 	if (!(prev_min >= 0 && prev_min < 60)){ //If random value (none was written)
 		prev_min = 0;
 		flash_time_buffer[RTC_MIN_OFFSET] = prev_min;
-		W25qxx_EraseSector(2);
-		W25qxx_WriteSector(flash_time_buffer, 2, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
+		W25qxx_EraseSector(RTC_SECTOR);
+		W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
 	}
 
 	//Seconds
 	if (!(prev_sec >= 0 && prev_sec < 60)){ //If random value (none was written)
 		prev_sec = 0;
 		flash_time_buffer[RTC_SEC_OFFSET] = prev_sec;
-		W25qxx_EraseSector(2);
-		W25qxx_WriteSector(flash_time_buffer, 2, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
+		W25qxx_EraseSector(RTC_SECTOR);
+		W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
 	}
 
 	//Sub-Seconds
-	if (!(prev_subsec >= 0 && prev_subsec < 240)){ //If random value (none was written)
+	if (!(prev_subsec >= 0 && prev_subsec < 1000)){ //If random value (none was written)
 		prev_subsec = 0;
 		flash_time_buffer[RTC_SEC_OFFSET] = prev_subsec;
-		W25qxx_EraseSector(2);
-		W25qxx_WriteSector(flash_time_buffer, 2, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
+		W25qxx_EraseSector(RTC_SECTOR);
+		W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
 	}
 }
 

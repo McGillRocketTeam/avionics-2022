@@ -559,17 +559,19 @@ int main(void)
 		TxProtocol(sradio_tx_buffer, strlen(sradio_tx_buffer));
 	#endif
 
+		/* To start kernel faster, save when threads are started
 	  //Update ejection state (saved state in WatchDog thread)
 	  if (ejection_state_flag < 1){
 		  ejection_state_flag = 1;
 		  wd_ejection_flag = 1;
 	  }
+	  */
 
 
 //TODO I2C SENSORS SOMETIMES DON'T WANT TO WORK ANYMORE -> NEED TO RESET THE POWER (Enter quick standByMode?)
 
 	  HAL_IWDG_Refresh(&hiwdg);
-	  buzz_startup_success();
+	  buzz_startup_success(); //put before first loop?
 
 
   /* USER CODE END 2 */
@@ -1494,7 +1496,7 @@ void StartEjection1(void *argument)
 				  altitude_m = MRT_getAltitude(pressure_hPa);
 
 				  //We reached main deployment altitude
-				  if ((altitude_m>DEPLOY_ALT_MIN && altitude_m<DEPLOY_ALT_MAX) || ejection_state_flag >= 3){
+				  if (altitude_m<DEPLOY_ALT_MAX || ejection_state_flag >= 3){
 
 
 					  if (ejection_state_flag < 3){
@@ -1865,7 +1867,7 @@ void StartWatchDog(void *argument)
 	 prev_subsec = sTime.SubSeconds;
 
 	 memset(buffer, 0, TX_BUF_DIM);
-	 sprintf(buffer, "Time: %i:%i:%i ::%i	Date: \r\n %f\r\n", prev_hours,prev_min,prev_sec,prev_subsec , altitude_m);
+	 sprintf(buffer, "Time: %i:%i:%i ::%i	Altitude: \r\n %f\r\n", prev_hours,prev_min,prev_sec,prev_subsec , altitude_m);
 	 HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 

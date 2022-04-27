@@ -69,7 +69,7 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 }
 
 
-void LSM6DSR::getAcceleration(void){
+float* LSM6DSR::getAcceleration(void){
 	lsm6dsr_xl_flag_data_ready_get(&ctx, &reg);
 
 	if (reg){
@@ -80,10 +80,11 @@ void LSM6DSR::getAcceleration(void){
 		acceleration_mg[1] = lsm6dsr_from_fs2g_to_mg(data_raw_acceleration[1]);
 		acceleration_mg[2] = lsm6dsr_from_fs2g_to_mg(data_raw_acceleration[2]);
 	}
+	return acceleration_mg;
 }
 
 
-void LSM6DSR::getTemperature(void){
+float LSM6DSR::getTemperature(void){
     lsm6dsr_temp_flag_data_ready_get(&ctx, &reg);
 
     if (reg){
@@ -92,10 +93,11 @@ void LSM6DSR::getTemperature(void){
 		lsm6dsr_temperature_raw_get(&ctx, &data_raw_temperature);
 		temperature_degC = lsm6dsr_from_lsb_to_celsius(data_raw_temperature);
 	}
+    return temperature_degC;
 }
 
 
-void LSM6DSR::getAngularRate(void){
+float* LSM6DSR::getAngularRate(void){
     lsm6dsr_gy_flag_data_ready_get(&ctx, &reg);
 
     if (reg){
@@ -113,6 +115,7 @@ void LSM6DSR::getAngularRate(void){
 		fs2000dps_to_mdps
 		*/
 	}
+    return angular_rate_mdps;
 }
 
 
@@ -178,7 +181,7 @@ LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 
 
 
-void LPS22HH::getPressure(void){
+float LPS22HH::getPressure(void){
 	/* Read output only if new value is available */
 	lps22hh_press_flag_data_ready_get(&ctx, &reg);
 
@@ -187,10 +190,11 @@ void LPS22HH::getPressure(void){
 	  lps22hh_pressure_raw_get(&ctx, &data_raw_pressure);
 	  pressure_hPa = lps22hh_from_lsb_to_hpa(data_raw_pressure);
 	}
+	return pressure_hPa;
 }
 
 
-void LPS22HH::getTemperature(void){
+float LPS22HH::getTemperature(void){
 	/* Read output only if new value is available */
 	lps22hh_temp_flag_data_ready_get(&ctx, &reg);
 
@@ -199,6 +203,7 @@ void LPS22HH::getTemperature(void){
 	  lps22hh_temperature_raw_get(&ctx, &data_raw_temperature);
 	  temperature_degC = lps22hh_from_lsb_to_celsius(data_raw_temperature);
 	}
+	return temperature_degC;
 }
 
 

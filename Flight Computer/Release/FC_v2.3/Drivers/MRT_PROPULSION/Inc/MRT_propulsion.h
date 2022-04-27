@@ -14,7 +14,7 @@ extern "C" {
 
 extern float thermocouple_temperature;
 extern float transducer_voltage;
-extern float valve_status;
+extern uint8_t valve_status;
 
 void MRT_pollPropulsion(void);
 void MRT_getThermoTemp(void);

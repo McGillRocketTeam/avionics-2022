@@ -37,9 +37,6 @@ Drivers/MRT_TELEMETRY/Src/sx126x.o: ../Drivers/MRT_TELEMETRY/Src/sx126x.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
  ../Drivers/MRT_TELEMETRY/Inc/sx126x_regs.h
 
 ../Drivers/MRT_TELEMETRY/Inc/sx126x.h:
@@ -119,11 +116,5 @@ Drivers/MRT_TELEMETRY/Src/sx126x.o: ../Drivers/MRT_TELEMETRY/Src/sx126x.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
-
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h:
-
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
-
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
 
 ../Drivers/MRT_TELEMETRY/Inc/sx126x_regs.h:

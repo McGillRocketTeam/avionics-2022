@@ -86,15 +86,17 @@ extern "C" {
 
 //**************************************************//
 //THREADS
-#define MEMORY_THREAD 1
-#define EJECTION_THREAD 1
+#define MEMORY_THREAD 0
+#define EJECTION_THREAD 0
 #define TELEMETRY_THREAD 1
 #define SENSORS_THREAD 1
-#define WATCHDOG_THREAD 1
+#define PROPULSION_THREAD 0
+#define WATCHDOG_THREAD 0
 
 #define PRINTING_THREAD 0
 
 
+#define NUMBER_OF_THREADS 5
 
 
 //**************************************************//
@@ -108,11 +110,9 @@ extern "C" {
 //**************************************************//
 //EJECTION THREAD
 //TODO Ejection (just invented variables for the sake of testing)
-#define MIN_APOGEE 120
-#define MAX_APOGEE 200
-#define DEPLOY_ALT_MIN 60
-#define DEPLOY_ALT_MAX 65
-#define GROUND_LEVEL 20
+#define APOGEE_ALT 120 //In meters
+#define DEPLOY_ALT 60 //In meters
+#define GROUND_LEVEL_ALT 20 //In meters
 
 
 #define PAD_STATE 0
@@ -150,11 +150,11 @@ extern "C" {
 #elif SRADIO_
 #define RADIO_BUFFER_SIZE	SRADIO_BUFFER_SIZE
 #else
-#define RADIO_BUFFER_SIZE	0
+#define RADIO_BUFFER_SIZE	256
 #endif
 
 //Iridium
-#define IRIDIUM_ 1
+#define IRIDIUM_ 0
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_TIMEOUT 3 //Timeout in seconds
 
@@ -165,8 +165,6 @@ extern "C" {
 //SENSORS THREAD
 #define PRE_APOGEE_POLL_FREQ 50 //Times per second that you want to poll data (pre apogee)
 #define POST_APOGEE_POLL_FREQ 100 //Times per second that you want to poll data (post apogee)
-#define SENSORS_POLL_FREQ_DIVIDER 10 //Number of times that you want to poll sensors data relative to propulsion data
-									//(can only be equal or slower). Divides the XXXX_APOGEE_POLL_FREQ
 
 //I2C
 #define CHECK_I2C 0
@@ -193,8 +191,8 @@ extern "C" {
 
 //**************************************************//
 //WATCHDOG THREAD
-#define NUMBER_OF_THREADS 4
 #define WD_FREQ 1 //Times per second that you want to check threads
+#define WD_BUFFER_SIZE 256//WD thread buffer size to print
 
 #if PRINTING_THREAD
 #define THREAD_KEEPER 0 //If you want to check the thread states of no, can't have it if printing thread is there

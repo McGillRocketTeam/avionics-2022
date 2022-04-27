@@ -38,6 +38,7 @@
 
 //For the wait for launch
 #include <MRT_external_flash.h>
+#include <MRT_ejection.h>
 #include <MRT_propulsion.h>
 #include <MRT_telemetry.h>
 
@@ -190,10 +191,11 @@ void MRT_waitForLaunch(void){
 
 	println("Waiting for launch command from ground station\r\n");
 
-	char buffer[RADIO_BUFFER_SIZE];
+	char radio_buffer[RADIO_BUFFER_SIZE];
+	radio_command cmd = -1;
 
 	//Poll propulsion until launch command sent
-	while((XTEND_ || SRADIO_) && ejection_state_flag == 0 && wu_flag == 0){
+	while((XTEND_ || SRADIO_) && ejection_state_flag == PAD && wu_flag == 0){
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 		HAL_IWDG_Refresh(&hiwdg);
@@ -202,19 +204,23 @@ void MRT_waitForLaunch(void){
 		MRT_pollPropulsion();
 
 		//Send propulsion data
-		memset(buffer, 0, RADIO_BUFFER_SIZE);
-		sprintf(buffer,"P,%.2f,%.2f, %i,E",transducer_voltage,thermocouple_temperature,(int) valve_status);
-		MRT_radio_tx(buffer);
+		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+		sprintf(radio_buffer,"P,%.2f,%.2f, %i,E",transducer_voltage,thermocouple_temperature,(int) valve_status);
+		MRT_radio_tx(radio_buffer);
 
 
 		//Check for launch command
-		memset(buffer, 0, RADIO_BUFFER_SIZE);
-		MRT_radio_rx(buffer, 6, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
-		if (strcmp(buffer, "launch") == 0){
-			ejection_state_flag = 1;
-			flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
-			W25qxx_EraseSector(1);
-			W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+		MRT_radio_rx(radio_buffer, 6, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
+		cmd = radio_parse_command(radio_buffer);
+		execute_parsed_command(cmd);
+
+		if (cmd == LAUNCH){
+			//Update ejection flag and save it
+			ejection_state_flag = BOOST;
+			flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = BOOST;
+			W25qxx_EraseSector(FLAGS_SECTOR);
+			W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 		}
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
@@ -229,19 +235,6 @@ void MRT_waitForLaunch(void){
 
 	//Send acknowledgement
 	MRT_radio_tx((char*) "LAUNCH COMMAND RECEIVED"); //TODO CHECK AT WHAT JASPER DID
-
-	//Update ejection state and save it
-	if (ejection_state_flag < 1){
-		ejection_state_flag = 1;
-
-		flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
-		if (ejection_state_flag == 2){
-			apogee_flag = 1;
-			flash_flags_buffer[APOGEE_FLAG_OFFSET] = apogee_flag;
-		}
-		W25qxx_EraseSector(1);
-		W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
-	}
 }
 
 

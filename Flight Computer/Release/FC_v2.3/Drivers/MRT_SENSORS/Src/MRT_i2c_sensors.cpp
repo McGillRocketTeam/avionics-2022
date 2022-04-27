@@ -57,16 +57,16 @@ void MRT_LSM6DSR_Destructor(){
 }
 
 void MRT_LSM6DSR_getAcceleration(void){
-	lsm6dsr->getAcceleration();
-	hlsm6dsr.acceleration_mg[0] = lsm6dsr->acceleration_mg[0];
-	hlsm6dsr.acceleration_mg[1] = lsm6dsr->acceleration_mg[1];
-	hlsm6dsr.acceleration_mg[2] = lsm6dsr->acceleration_mg[2];
+	float* temp_array = lsm6dsr->getAcceleration();
+	hlsm6dsr.acceleration_mg[0] = temp_array[0];
+	hlsm6dsr.acceleration_mg[1] = temp_array[1];
+	hlsm6dsr.acceleration_mg[2] = temp_array[2];
 }
 void MRT_LSM6DSR_getAngularRate(void){
-	lsm6dsr->getAngularRate();
-	hlsm6dsr.angular_rate_mdps[0] = lsm6dsr->angular_rate_mdps[0];
-	hlsm6dsr.angular_rate_mdps[1] = lsm6dsr->angular_rate_mdps[1];
-	hlsm6dsr.angular_rate_mdps[2] = lsm6dsr->angular_rate_mdps[2];
+	float* temp_array = lsm6dsr->getAngularRate();
+	hlsm6dsr.angular_rate_mdps[0] = temp_array[0];
+	hlsm6dsr.angular_rate_mdps[1] = temp_array[1];
+	hlsm6dsr.angular_rate_mdps[2] = temp_array[2];
 }
 void MRT_LSM6DSR_getTemperature(void){
 	lsm6dsr->getTemperature();
@@ -97,13 +97,11 @@ void MRT_LPS22HH_Destructor(){
 }
 
 void MRT_LPS22HH_getPressure(void){
-	lps22hh->getPressure();
-	hlps22hh.pressure_hPa = lps22hh->pressure_hPa;
+	hlps22hh.pressure_hPa = lps22hh->getPressure();
 }
 
 void MRT_LPS22HH_getTemperature(void){
-	lps22hh->getTemperature();
-	hlps22hh.temperature_degC = lps22hh->temperature_degC;
+	hlps22hh.temperature_degC = lps22hh->getTemperature();
 }
 
 void MRT_LPS22HH_pollAll(void){
@@ -133,6 +131,14 @@ HLSM6DSR MRT_LSM6DSR_Init(void){
 	lsm6dsr_handler.getAngularRate = &MRT_LSM6DSR_getAngularRate;
 	lsm6dsr_handler.getTemperature = &MRT_LSM6DSR_getTemperature;
 	lsm6dsr_handler.pollAll = &MRT_LSM6DSR_pollAll;
+
+	lsm6dsr_handler.acceleration_mg[0] = 0;
+	lsm6dsr_handler.acceleration_mg[1] = 0;
+	lsm6dsr_handler.acceleration_mg[2] = 0;
+	lsm6dsr_handler.angular_rate_mdps[0] = 0;
+	lsm6dsr_handler.angular_rate_mdps[1] = 0;
+	lsm6dsr_handler.angular_rate_mdps[2] = 0;
+	lsm6dsr_handler.temperature_degC = 0;
 	return lsm6dsr_handler;
 }
 
@@ -142,6 +148,9 @@ struct HLPS22HH MRT_LPS22HH_Init(void){
 	lps22hh_handler.getPressure = &MRT_LPS22HH_getPressure;
 	lps22hh_handler.getTemperature = &MRT_LPS22HH_getTemperature;
 	lps22hh_handler.pollAll = &MRT_LPS22HH_pollAll;
+
+	lps22hh_handler.pressure_hPa = 0;
+	lps22hh_handler.temperature_degC = 0;
 	return lps22hh_handler;
 }
 
@@ -149,6 +158,9 @@ struct HGPS MRT_GPS_Init(void){
 	struct HGPS gps_handler;
 	gps_handler.pollAll = &MRT_GPS_pollAll;
 	GPS_Init(&GPS_UART, print, tone_freq);
+	gps_handler.latitude = 0;
+	gps_handler.longitude = 0;
+	gps_handler.time = 0;
 	return gps_handler;
 }
 

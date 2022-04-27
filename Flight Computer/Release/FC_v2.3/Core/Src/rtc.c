@@ -26,9 +26,6 @@
 #include <MRT_helpers.h>
 #include <MRT_external_flash.h>
 
-uint8_t flagA = 0; //Dynamic
-uint8_t flagB = 0; //Dynamic
-
 RTC_TimeTypeDef sTime = {0};
 RTC_DateTypeDef sDate = {0};
 RTC_AlarmTypeDef sAlarm = {0};
@@ -342,6 +339,19 @@ void MRT_set_alarmA(uint8_t h, uint8_t m, uint8_t s){
 	  {
 	    Error_Handler();
 	  }
+}
+
+
+
+/*
+ * Update and save the RTC time in external flash memory
+ */
+void MRT_saveRTCTime(void){
+	MRT_update_external_flash_buffers();
+
+	//Write new RTC time to flash memory
+	W25qxx_EraseSector(RTC_SECTOR);
+	W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
 }
 
 /* USER CODE END 1 */

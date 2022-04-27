@@ -133,7 +133,13 @@ UART_HandleTypeDef huart8;
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_TIMEOUT 5 //Timeout in seconds
 
-
+#if XTEND_
+#define RADIO_BUFFER_SIZE XTEND_BUFFER_SIZE
+#elif SRADIO_
+#define RADIO_BUFFER_SIZE SRADIO_BUFFER_SIZE
+#else
+#define RADIO_BUFFER_SIZE 256
+#endif
 
 
 //**************************************************//

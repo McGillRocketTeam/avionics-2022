@@ -13,7 +13,7 @@
 //Global variables
 float thermocouple_temperature;
 float transducer_voltage;
-float valve_status;
+uint8_t valve_status;
 
 
 //Private functions prototypes

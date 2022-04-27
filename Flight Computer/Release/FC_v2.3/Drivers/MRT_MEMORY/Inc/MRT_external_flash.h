@@ -22,6 +22,7 @@ extern "C" {
 //Flags Defines
 #define NB_OF_FLAGS 5 //Number of flags used
 #define FLAGS_OFFSET 0 //Flags offset in sector 1
+#define FLAGS_SECTOR 1 //Flags sector on exernal flash
 
 //Map every variable to their offset in sector 1
 #define RESET_FLAG_OFFSET 0
@@ -48,10 +49,12 @@ extern uint8_t* flash_flags[NB_OF_FLAGS];
 
 //**************************************************//
 //RTC TIME FLAGS
-#define RTC_NB_OF_VAR 4
 
 //RTC Time Defines
+#define RTC_NB_OF_VAR 4 //Number of RTC variables
 #define RTC_TIME_OFFSET 0 //RTC time offset in sector 2
+#define RTC_SECTOR 2 //Flags sector on exernal flash
+
 //Map hours, minutes and seconds to their offsets
 #define RTC_HOURS_OFFSET 0
 #define RTC_MIN_OFFSET 1
@@ -62,7 +65,7 @@ extern uint8_t* flash_flags[NB_OF_FLAGS];
 extern uint8_t prev_hours; //Last recorded hours
 extern uint8_t prev_min; //Last recorded minutes
 extern uint8_t prev_sec; //Last recorded seconds
-extern uint8_t prev_subsec; //Last recorded subseconds
+extern uint32_t prev_subsec; //Last recorded subseconds
 
 //Time read/write buffer
 extern uint8_t flash_time_buffer[RTC_NB_OF_VAR];

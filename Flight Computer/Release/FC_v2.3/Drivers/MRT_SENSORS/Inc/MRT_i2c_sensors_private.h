@@ -26,9 +26,9 @@ class LSM6DSR {
 
 		//Functions
 		LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address);
-		void getAcceleration(void);
-		void getTemperature(void);
-		void getAngularRate(void);
+		float* getAcceleration(void);
+		float getTemperature(void);
+		float* getAngularRate(void);
 
 	private:
 		//Data
@@ -56,8 +56,8 @@ class LPS22HH {
 
 		//Functions
 		LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address);
-		void getPressure(void);
-		void getTemperature(void);
+		float getPressure(void);
+		float getTemperature(void);
 
 	private:
 		stmdev_ctx_t ctx;

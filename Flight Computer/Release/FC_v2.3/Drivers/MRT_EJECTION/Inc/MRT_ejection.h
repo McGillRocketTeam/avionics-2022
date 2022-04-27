@@ -12,6 +12,17 @@
 extern "C" {
 #endif
 
+
+typedef enum ejection_state_t {
+	PAD = 0,
+	BOOST,
+	DROGUE_DESCENT,
+	MAIN_DESCENT,
+	LANDED,
+
+} ejection_state_t;
+
+
 extern uint8_t gates_continuity;
 
 float MRT_getAltitude(float pressure);
