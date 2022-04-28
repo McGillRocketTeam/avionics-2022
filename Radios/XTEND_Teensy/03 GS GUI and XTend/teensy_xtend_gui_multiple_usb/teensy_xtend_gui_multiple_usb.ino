@@ -14,6 +14,9 @@
  * radio commands for the AV bay. the Teensy writes these strings
  * to the XTend, which sends the command to the AV bay.
  * 
+ * NOTE: this sketch must be compiled using the "Dual Serial" or 
+ * "Triple Serial" option under Tools > USB Type > (option).
+ * 
  */
 #include "string.h"
 
@@ -90,6 +93,29 @@ void loop() {
     Serial.println(gui_rx_buf);
     Serial.print("\n\n");
     Serial.send_now();
+    
+    // reset buffer
+    gui_idx = 0;
+    memset(gui_rx_buf, 0, GUI_RX_BUF_LEN);
+  }
+
+  if (SerialUSB1.available()) { // second stream if we want to manually send commands, not through the GUI
+    do {
+      gui_rx_buf[gui_idx] = SerialUSB1.read();
+    } while (gui_rx_buf[gui_idx++] != '\n' && SerialUSB1.available());
+
+    gui_rx_buf[2] = 0; // remove \n if present
+
+    for (uint8_t i = 0; i < COMMAND_REBROADCAST; i++) {
+      xtendSerial.print(gui_rx_buf);  // send to xtend which sends to AV bay
+      delay(10);
+    }
+
+    // for debugging:
+    SerialUSB1.print("\n\nReceived on SerialUSB1: ");
+    SerialUSB1.println(gui_rx_buf);
+    SerialUSB1.print("\n\n");
+    SerialUSB1.send_now();
     
     // reset buffer
     gui_idx = 0;
