@@ -34,7 +34,7 @@ uint16_t deley = 500;
 
 uint8_t loraSF = LORA_SF5;
 uint8_t loraBW = LORA_BW_500;
-uint8_t loraCR = LORA_CR_4_8;
+uint8_t loraCR = LORA_CR_4_5;
 
 uint8_t paDC = DUTY_CYCLE_22dBm;
 uint8_t paHP = HP_MAX_22dBm;

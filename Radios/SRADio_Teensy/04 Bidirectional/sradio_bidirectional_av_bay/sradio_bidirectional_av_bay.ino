@@ -22,7 +22,7 @@
 #define DIO1 18      // DIO1
 #define ANT_SW 19     // Antenna switch
 #define NSS 10        //SX126X SPI device select, active low
-#define RECEIVE_SIZE 4
+#define RECEIVE_SIZE 100
 #define irq_set_mask                                0b1000000001  // Set mask to detect TX/RX timeout and TxDone
 
 
@@ -32,12 +32,11 @@ uint16_t irq_status;
 
 uint32_t freq = 448000000;
 uint16_t deley = 500; //ms
-uint16_t timeout_s = 0.5; //s
-uint32_t timeout_cycles = timeout_s / 0.000015625; 
+uint32_t timeout = deley / 0.015625; 
 
 uint8_t loraSF = LORA_SF5;
 uint8_t loraBW = LORA_BW_500;
-uint8_t loraCR = LORA_CR_4_8;
+uint8_t loraCR = LORA_CR_4_5;
 
 uint8_t paDC = DUTY_CYCLE_22dBm;
 uint8_t paHP = HP_MAX_22dBm;
@@ -47,7 +46,7 @@ uint8_t txRAMP = SX1262_PA_RAMP_200U;
 
 char data_string[] = "123456789-123456789-223456789-323456789-423456789-523456789-"; // 59 characters
 uint8_t string_length = sizeof(data_string);
-char receive_string[RECEIVE_SIZE] = {0};
+uint8_t receive_string[RECEIVE_SIZE] = {0};
 
 void setup() {
   device.begin(NSS,BUSY,RESET,DIO1,ANT_SW); // Store pin ports for SX1262 class
@@ -79,10 +78,10 @@ void setup() {
 
 void loop() {
   device.clearIrqStatus(SX1262_IRQ_RX_DONE);
-  device.setRx(0x061A80); // 400,000 * 15.625 us = 6.25s timeout
+  device.setRx(timeout); // 400,000 * 15.625 us = 6.25s timeout
   do {
-        device.getIrqStatus(&irq);
-  } while ( (!(irq & SX126X_IRQ_RX_DONE)) && (!(irq & SX126X_IRQ_TIMEOUT)) );
+        device.getIrqStatus(&irq_status);
+  }  while( (!(irq_status & SX1262_IRQ_TIMEOUT)) && (!(irq_status & SX1262_IRQ_RX_DONE)) );
 
   if( irq_status & SX1262_IRQ_TIMEOUT ) {
       Serial.println("Did not receive anything... Trying again...");
@@ -113,7 +112,9 @@ void loop() {
      }
   }
 
-  // ----- TX ----- 
+  delay(deley);
+  // ----- TX -----
+  Serial.println(data_string); 
   device.clearIrqStatus(SX1262_IRQ_TX_DONE | SX1262_IRQ_TIMEOUT);
   device.writeBuffer(0,(uint8_t*)data_string,string_length);
   device.setLoRaPacketParams(12, 0, string_length, 1, 0);
