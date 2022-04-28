@@ -73,6 +73,7 @@ void setup() {
 
 void loop() {
   delay(deley);
+  Serial.println(data_string);
   device.clearIrqStatus(SX1262_IRQ_TX_DONE | SX1262_IRQ_TIMEOUT);
   device.writeBuffer(0,(uint8_t*)data_string,string_length);
   device.setLoRaPacketParams(12, 0, string_length, 1, 0);
