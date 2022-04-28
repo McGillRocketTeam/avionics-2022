@@ -23,7 +23,7 @@
 #define DIO1 18      // DIO1
 #define ANT_SW 19     // Antenna switch
 #define NSS 10        //SX126X SPI device select, active low
-#define DATA_SIZE 10
+#define DATA_SIZE 100
 
 SX1262 device; // Create instance of device class
 
