@@ -15,11 +15,13 @@ extern "C" {
 extern float thermocouple_temperature;
 extern float transducer_voltage;
 extern uint8_t valve_status;
+extern char msg_buffer_pr[50];
 
 void MRT_pollPropulsion(void);
 void MRT_getThermoTemp(void);
 void MRT_getTransducerVoltage(void);
 void MRT_getValveStatus(void);
+void MRT_formatPropulsion(void);
 
 #ifdef __cplusplus
 }

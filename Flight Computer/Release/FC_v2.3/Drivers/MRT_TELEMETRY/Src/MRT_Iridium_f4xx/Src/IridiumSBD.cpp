@@ -600,6 +600,7 @@ int IridiumSBD::internalBegin()
    }
 
    send(ringAlertsEnabled ? F("AT+SBDMTA=1\r") : F("AT+SBDMTA=0\r"));
+   HAL_Delay(10); //TODO Added
    if (!waitForATResponse())
       return cancelled() ? ISBD_CANCELLED : ISBD_PROTOCOL_ERROR;
 
@@ -892,7 +893,7 @@ bool IridiumSBD::waitForATResponse(char *response, int responseSize, const char 
 {
    diagprint(F("Waiting for response "));
    diagprint(terminator);
-   //this->print((char*) terminator); //TODO doesn't print otherwise
+   this->print((char*) terminator); //TODO doesn't print otherwise
    diagprint(F("\r\n"));
 
    if (response)
@@ -1210,7 +1211,7 @@ void IridiumSBD::send(FlashString str, bool beginLine, bool endLine)
    }
    else
    {
-      //lastCheck = millis(); // Update lastCheck so we enforce a full I2C_POLLING_WAIT
+      lastCheck = millis(); // Update lastCheck so we enforce a full I2C_POLLING_WAIT //TODO Uncommented this line
       wireport->beginTransmission((uint8_t)deviceaddress);
       wireport->write(DATA_REG); // Point to the 'serial register'
       wireport->print(str);
@@ -1243,7 +1244,7 @@ void IridiumSBD::sendlong(const char *str)
 // Send a long string that might need to be broken up for the I2C port
 {
    consoleprint(F(">> "));
-   //this->print((char*) str);//TODO doesn't print otherwise
+   this->print((char*) str);//TODO doesn't print otherwise
    consoleprint(str);
    consoleprint(F("\r\n"));
 
@@ -1312,7 +1313,7 @@ void IridiumSBD::diagprint(FlashString str)
    }
 
    //TODO
-   //this->print((char*) str);
+   this->print((char*) str);
 }
 
 void IridiumSBD::diagprint(const char *str)
@@ -1321,15 +1322,17 @@ void IridiumSBD::diagprint(const char *str)
       ISBDDiagsCallback(this, *str++);
 
    //TODO
-   //this->print((char*) str);
+   this->print((char*) str);
 }
 
 void IridiumSBD::diagprint(uint16_t n)
 {
    char str[10];
    sprintf(str, "%u", n);
-   diagprint(str); //TODO
-   //this->print((char*) str);
+   diagprint(str);
+
+   //TODO
+   this->print((char*) str);
 }
 
 void IridiumSBD::consoleprint(FlashString str)
@@ -1343,7 +1346,7 @@ void IridiumSBD::consoleprint(FlashString str)
    }
 
    //TODO
-   //this->print((char*) str);
+   this->print((char*) str);
 }
 
 void IridiumSBD::consoleprint(const char *str)
@@ -1352,7 +1355,7 @@ void IridiumSBD::consoleprint(const char *str)
       ISBDConsoleCallback(this, *str++);
 
    //TODO
-   //this->print((char*) str);
+   this->print((char*) str);
 }
 
 void IridiumSBD::consoleprint(uint16_t n)
@@ -1361,7 +1364,7 @@ void IridiumSBD::consoleprint(uint16_t n)
    sprintf(str, "%u", n);
    consoleprint(str); //TODO
    //consoleprint((const char*) str);
-   //this->print((char*) str);
+   this->print((char*) str);
 }
 
 void IridiumSBD::consoleprint(char c)

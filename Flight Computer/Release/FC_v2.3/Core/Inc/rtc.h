@@ -32,9 +32,6 @@ extern "C" {
 /* USER CODE END Includes */
 
 extern RTC_HandleTypeDef hrtc;
-extern RTC_TimeTypeDef sTime;
-extern RTC_DateTypeDef sDate;
-extern RTC_AlarmTypeDef sAlarm;
 
 /* USER CODE BEGIN Private defines */
 
@@ -44,6 +41,9 @@ void MX_RTC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+extern RTC_TimeTypeDef sTime;
+extern RTC_DateTypeDef sDate;
+extern RTC_AlarmTypeDef sAlarm;
 
 //**************************************************//
 //FUNCTIONS PROTOTYPES

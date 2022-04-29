@@ -53,7 +53,17 @@ void MRT_Init(void){
 		#if SD_CARD_
 			HAL_IWDG_Refresh(&hiwdg);
 
-			sd_init_dynamic_filename("FC", "", filename);
+			// check if SD card is inserted
+			if (HAL_GPIO_ReadPin(IN_SD_CARD_DETECT_GPIO_Port, IN_SD_CARD_DETECT_Pin) == GPIO_PIN_RESET) {
+			  // init sd card with dynamic filename
+			  fres = sd_init_dynamic_filename("FC", sd_file_header, filename);
+			  if (fres != FR_OK) {
+					Error_Handler();
+			  }
+			}
+			else {
+			  Error_Handler();
+			}
 		#endif
 	#endif
 

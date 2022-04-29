@@ -22,6 +22,7 @@ extern "C" {
 //Function prototypes
 void println(char* s);
 void print(char* s);
+void no_print(char* s); //Buffer function for iridium
 void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq);
 void buzz_success(void);
 void buzz_failure(void);

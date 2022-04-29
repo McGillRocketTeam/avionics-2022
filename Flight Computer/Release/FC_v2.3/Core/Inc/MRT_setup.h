@@ -48,10 +48,6 @@ extern "C" {
 #define IWDG_ACTIVE 1
 #endif
 
-#if !PRINT
-#define HAL_UART_Transmit(u, b, l, d)	0
-#endif
-
 
 //**************************************************//
 //CONSTANTS
@@ -86,7 +82,7 @@ extern "C" {
 
 //**************************************************//
 //THREADS
-#define MEMORY_THREAD 0
+#define MEMORY_THREAD 1
 #define EJECTION_THREAD 0
 #define TELEMETRY_THREAD 1
 #define SENSORS_THREAD 1
@@ -101,7 +97,7 @@ extern "C" {
 
 //**************************************************//
 //MEMORY THREAD
-#define SD_CARD_	1
+#define SD_CARD_	0
 #define SD_SPI_HANDLE hspi5
 #define DATA_FREQ 10 //Times per second that you want to save data
 
@@ -154,10 +150,11 @@ extern "C" {
 #endif
 
 //Iridium
-#define IRIDIUM_ 0
+#define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
-#define IRIDIUM_TIMEOUT 3 //Timeout in seconds
+#define IRIDIUM_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 
+#define IRIDIUM_INTERNAL_PRINT 1
 
 
 

@@ -38,6 +38,7 @@
 #include <MRT_telemetry.h>
 #include <MRT_external_flash.h>
 #include <MRT_i2c_sensors.h>
+#include <MRT_iridium.h>
 
 #include <sd_card.h>
 
@@ -210,27 +211,23 @@ void StartMemory0(void *argument)
 	#endif
 
     uint8_t counter = 0;
+	#if SD_CARD_
     sd_open_file(&filename);
+	#endif
 
   /* Infinite loop */
   for(;;)
   {
-	//Write data to sd and flash
-	//TODO sprintf((char*)writeBuf, "Data: %f, %f, %f, %f\r\n", hlps22hh.pressure_hPa, MIN, SEC, SUBSEC);
-	if (sd_write(&fil, writeBuf) < 0){
-		//TODO when the sd card bug, it seems that only removing power from it works to reset it.
-		//Otherwise it always give an error. Trying to close and open doesn't work
-		println("\tTEST\tTEST\tTEST\tTEST");
-		f_close(&fil);
-		sd_open_file(&filename);
-		sd_write(&fil, writeBuf);
-	}
 
-	if (counter == 50) {
-		f_sync(&fil);
-		counter = 0;
+	// Save to SD card
+	#if SD_CARD_
+	fres = sd_open_file(filename);
+	sd_write(&fil, msg_buffer_av);
+	if (ejection_state_flag < MAIN_DESCENT){
+		sd_write(&fil, msg_buffer_pr);
 	}
-	counter++;
+	f_close(&fil);
+	#endif
 
 	osDelay(1000/DATA_FREQ);
   }
@@ -382,12 +379,6 @@ void StartTelemetry2(void *argument)
 	uint8_t counter = 0;
 	uint8_t iridium_counter = 0;
 
-	//TODO TEMP
-	float ACC[3];
-	float ANG[3];
-	float TEMP_LSM;
-	float TEMP_LPS;
-
   /* Infinite loop */
   for(;;)
   {
@@ -397,7 +388,8 @@ void StartTelemetry2(void *argument)
 
 		  //Send propulsion data
 		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
-		  sprintf(radio_buffer, "P,%.2f,%.2f, %i,E", transducer_voltage, thermocouple_temperature, valve_status);
+		  MRT_formatPropulsion();
+		  memcpy(radio_buffer, msg_buffer_pr, strlen(msg_buffer_pr));
 		  MRT_radio_tx((char*) radio_buffer);
 	  }
 
@@ -422,21 +414,16 @@ void StartTelemetry2(void *argument)
 
 	  	  //Send sensors data
 		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
-		  sprintf(radio_buffer, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%u,%u,E",
-				hlsm6dsr.acceleration_mg[0],	hlsm6dsr.acceleration_mg[1],	hlsm6dsr.acceleration_mg[2],
-				hlsm6dsr.angular_rate_mdps[0],	hlsm6dsr.angular_rate_mdps[1],	hlsm6dsr.angular_rate_mdps[2],
-				hlps22hh.pressure_hPa,	hgps.latitude,	hgps.longitude,
-				prev_min, prev_sec, prev_subsec,
-				gates_continuity,	ejection_state_flag);
+		  MRT_formatAvionics();
+		  memcpy(radio_buffer, msg_buffer_av, strlen(msg_buffer_av));
 		  MRT_radio_tx((char*) radio_buffer);
-
 
 
 		  if(apogee_flag && iridium_counter == IRIDIUM_SEND_FREQ_DIVIDER){
 			  iridium_counter = 0;
 			  #if IRIDIUM_ //Iridium send
-			  MRT_Static_Iridium_getTime(); //TODO doesn't cost anything
-			  //MRT_Static_Iridium_sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
+			  hiridium.getTime(); //TODO doesn't cost anything
+			  //hiridium.sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 			  #endif
 		  }
 		  iridium_counter++;

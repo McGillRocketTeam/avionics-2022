@@ -24,9 +24,11 @@ typedef enum ejection_state_t {
 
 
 extern uint8_t gates_continuity;
+extern char msg_buffer_av[200];
 
 float MRT_getAltitude(float pressure);
 uint8_t MRT_getContinuity(void);
+void MRT_formatAvionics(void);
 
 
 #ifdef __cplusplus

@@ -1,6 +1,7 @@
 MRT_helpers.c:12:6:println	16	static
-MRT_helpers.c:17:6:print	16	static
-MRT_helpers.c:22:6:tone_freq	32	static
-MRT_helpers.c:38:6:buzz_success	8	static
-MRT_helpers.c:39:6:buzz_failure	8	static
-MRT_helpers.c:40:6:buzz_startup_success	16	static
+MRT_helpers.c:19:6:print	16	static
+MRT_helpers.c:25:6:no_print	16	static
+MRT_helpers.c:30:6:tone_freq	32	static
+MRT_helpers.c:46:6:buzz_success	8	static
+MRT_helpers.c:47:6:buzz_failure	8	static
+MRT_helpers.c:48:6:buzz_startup_success	16	static

@@ -7,12 +7,17 @@
 
 #include <MRT_setup.h>
 #include <MRT_ejection.h>
+#include <MRT_i2c_sensors.h>
+#include <MRT_external_flash.h>
+#include <stdio.h> //sprintf
+#include <string.h> //memset
 #include <math.h>
 #include <gpio.h>
 
 
 //Global variables
 uint8_t gates_continuity = 0;
+char msg_buffer_av[200];
 
 
 
@@ -39,4 +44,16 @@ uint8_t MRT_getContinuity(void){
 	uint8_t prop2 = HAL_GPIO_ReadPin(IN_PyroValve_Cont_2_GPIO_Port, IN_PyroValve_Cont_2_Pin);
 	uint8_t continuity = 8*drogue1 + 4*drogue2 + 2*prop1 + prop2;
 	return continuity;
+}
+
+
+// formats avionics telemetry string using sprintf
+void MRT_formatAvionics(void) {
+	memset(msg_buffer_av, 0, 200);
+	sprintf(msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E",
+		hlsm6dsr.acceleration_mg[0],	hlsm6dsr.acceleration_mg[1],	hlsm6dsr.acceleration_mg[2],
+		hlsm6dsr.angular_rate_mdps[0],	hlsm6dsr.angular_rate_mdps[1],	hlsm6dsr.angular_rate_mdps[2],
+		hlps22hh.pressure_hPa,	hgps.latitude,	hgps.longitude,
+		prev_min, prev_sec, prev_subsec,
+		gates_continuity,	ejection_state_flag);
 }

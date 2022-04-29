@@ -14,8 +14,10 @@ FATFS FatFs;
 FIL fil;
 uint8_t msg_buffer[1000];
 FRESULT fres; //Result after operations
-char filename[13];
+static char filename[13];
 uint8_t writeBuf[1000];
+const char sd_file_header[] = "S,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E\r\n"; // printed to top of SD card file
+
 
 
 uint8_t extract_filename_suffix(char* filename, uint8_t len_prefix, uint32_t* num_value);

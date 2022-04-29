@@ -76,8 +76,18 @@ void MRT_TELEMETRY_Init(void){
 	HAL_IWDG_Refresh(&hiwdg);
 
 	#if IRIDIUM_
-	HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-	hiridium = MRT_Iridium_Init(IRIDIUM_TIMEOUT, IRIDIUM_I2C, print);
+		HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
+		#if IRIDIUM_INTERNAL_PRINT
+		hiridium = MRT_Iridium_Init(IRIDIUM_TIMEOUT, IRIDIUM_I2C, print);
+		#else
+		hiridium = MRT_Iridium_Init(IRIDIUM_TIMEOUT, IRIDIUM_I2C, no_print); //Doesn't print the internal commands
+		#endif
 	#endif
 }
+
+
+
+
+
+
 
