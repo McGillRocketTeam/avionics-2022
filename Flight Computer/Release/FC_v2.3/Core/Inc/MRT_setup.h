@@ -25,6 +25,7 @@ extern "C" {
 #define DEBUG 1 //If in debug mode, no IWDG
 #define DEBUG_UART huart8
 #define PRINT 1
+#define NO_BUZZ 1
 
 //Forced state
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
@@ -87,7 +88,7 @@ extern "C" {
 #define TELEMETRY_THREAD 1
 #define SENSORS_THREAD 1
 #define PROPULSION_THREAD 0
-#define WATCHDOG_THREAD 0
+#define WATCHDOG_THREAD 1
 
 #define PRINTING_THREAD 0
 

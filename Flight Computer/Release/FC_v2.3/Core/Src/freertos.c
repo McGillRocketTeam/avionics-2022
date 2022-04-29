@@ -36,11 +36,9 @@
 #include <MRT_ejection.h>
 #include <MRT_propulsion.h>
 #include <MRT_telemetry.h>
-#include <MRT_external_flash.h>
+#include <MRT_memory.h>
 #include <MRT_i2c_sensors.h>
 #include <MRT_iridium.h>
-
-#include <sd_card.h>
 
 
 
@@ -210,7 +208,6 @@ void StartMemory0(void *argument)
     osThreadExit();
 	#endif
 
-    uint8_t counter = 0;
 	#if SD_CARD_
     sd_open_file(&filename);
 	#endif
@@ -223,7 +220,7 @@ void StartMemory0(void *argument)
 	#if SD_CARD_
 	fres = sd_open_file(filename);
 	sd_write(&fil, msg_buffer_av);
-	if (ejection_state_flag < MAIN_DESCENT){
+	if (ejection_stage_flag < MAIN_DESCENT){
 		sd_write(&fil, msg_buffer_pr);
 	}
 	f_close(&fil);
@@ -258,7 +255,7 @@ void StartEjection1(void *argument)
 	#endif
 
 	//Double check the state TODO bad? (say wakeup flag is raised but ground isn't reached yet
-	if (ejection_state_flag >= LANDED)  osThreadExit(); //Ground reached
+	if (ejection_stage_flag >= LANDED)  osThreadExit(); //Ground reached
 	if (wu_flag > 0) osThreadExit(); //WHEN WAKING UP
 
 	osDelay(5000); //Let the LPS "warm up" to have a valid pressure_hPa
@@ -268,27 +265,28 @@ void StartEjection1(void *argument)
   {
 	  altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa);
 
-	  if (APOGEE_ALT <= altitude_m || ejection_state_flag >= DROGUE_DESCENT){
+	  if (APOGEE_ALT <= altitude_m || ejection_stage_flag >= DROGUE_DESCENT){
 
-		  if (ejection_state_flag < DROGUE_DESCENT){
+		  if (ejection_stage_flag < DROGUE_DESCENT){
 
 			  //Update state (save the state in WatchDog thread)
-			  ejection_state_flag = DROGUE_DESCENT;
+			  ejection_stage_flag = DROGUE_DESCENT;
 			  apogee_flag = 1; //Apogee reached //TODO is it where we change it???
 			  wd_ejection_flag = 1; //Raise the flag
 
 			  println("Eject Drogue");
+		  }
 
-			  //TODO should I put a while loop, a foor loop or just "one time functions"?
-			  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-				  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
-			  }
-			  while(!HAL_GPIO_ReadPin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin)){
-				  HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, SET); //PG12 DROGUE GATE
-			  }
-			  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-				  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
-			  }
+		  //Put outside of "if" such that we only need to remember the ejection stage instead if it + arming state
+		  //TODO should I put a while loop, a foor loop or just "one time functions"?
+		  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+			  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
+		  }
+		  while(!HAL_GPIO_ReadPin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin)){
+			  HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, SET); //PG12 DROGUE GATE
+		  }
+		  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+			  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
 		  }
 
 		  for(;;){
@@ -296,27 +294,28 @@ void StartEjection1(void *argument)
 			  altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa);
 
 			  //We reached main deployment altitude
-			  if (altitude_m < DEPLOY_ALT || ejection_state_flag >= MAIN_DESCENT){
+			  if (altitude_m < DEPLOY_ALT || ejection_stage_flag >= MAIN_DESCENT){
 
 
-				  if (ejection_state_flag < MAIN_DESCENT){
+				  if (ejection_stage_flag < MAIN_DESCENT){
 
 					  //Update state (save the state in WatchDog thread)
-					  ejection_state_flag = MAIN_DESCENT;
+					  ejection_stage_flag = MAIN_DESCENT;
 					  wd_ejection_flag = 1; //Raise the flag
 
 					  println("Eject Main");
+				  }
 
-					  //TODO should I put a while loop, a foor loop or just "one time functions"?
-					  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-						  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
-					  }
-					  while(!HAL_GPIO_ReadPin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin)){
-						  HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, SET); //PG11 MAIN GATE
-					  }
-					  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-						  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
-					  }
+				  //Put outside of "if" such that we only need to remember the ejection stage instead if it + arming state
+				  //TODO should I put a while loop, a foor loop or just "one time functions"?
+				  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+					  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
+				  }
+				  while(!HAL_GPIO_ReadPin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin)){
+					  HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, SET); //PG11 MAIN GATE
+				  }
+				  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+					  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
 				  }
 
 				  uint8_t prev_altitude = 0;
@@ -324,7 +323,7 @@ void StartEjection1(void *argument)
 				  uint8_t counter = 0;
 				  while(counter < 5){
 					  cur_altitude = MRT_getAltitude(hlps22hh.pressure_hPa);
-					  if (cur_altitude - prev_altitude == 0){ //TODO might need a bigger range to account for errors (gotta know what we expect to be our slowest dscent speed)
+					  if (cur_altitude - prev_altitude < 1 && cur_altitude - prev_altitude > -1){ //TODO might need a bigger range to account for errors (gotta know what we expect to be our slowest descent speed)
 						  counter++;
 					  }
 					  else{
@@ -335,7 +334,7 @@ void StartEjection1(void *argument)
 				  }
 
 				  //Update state (saved state in WatchDog thread)
-				  ejection_state_flag = LANDED;
+				  ejection_stage_flag = LANDED;
 				  wd_ejection_flag = 1;
 
 				  println("Ground Level Reached");
@@ -530,42 +529,47 @@ void StartWatchDog(void *argument)
 	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
 	 //Update global variables
-	 prev_hours = sTime.Hours;
+	 prev_hour = sTime.Hours;
 	 prev_min = sTime.Minutes;
 	 prev_sec = sTime.Seconds;
-	 if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++;
+	 if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
 	 prev_subsec = sTime.SubSeconds;
 
 	 //Save the time
-	 MRT_saveRTCTime();
+	 MRT_saveTotalTime();
 
 	 //TODO remove for comp
 	 memset(buffer, 0, WD_BUFFER_SIZE);
-	 sprintf(buffer, "Time: %i:%i:%i ::%lu	Altitude: \r\n %f\r\n", prev_hours,prev_min,prev_sec,prev_subsec , altitude_m);
+	 sprintf(buffer, "Time: %i:%i:%i ::%lu	Altitude: \r\n %f\r\n", prev_hour,prev_min,prev_sec,prev_subsec , altitude_m);
 	 println((char*) buffer);
 
 
 	 //Check if new ejection stage to save on external flash
-	 if(wd_ejection_flag){
-		 wd_ejection_flag = 0;
-		 flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
+	 if(wd_ejection_flag == 1){
 
-		 if (ejection_state_flag == DROGUE_DESCENT){
-			 apogee_flag = 1;
-			 flash_flags_buffer[APOGEE_FLAG_OFFSET] = apogee_flag;
-		 }
+		wd_ejection_flag = 0;
 
-		 W25qxx_EraseSector(FLAGS_SECTOR);
-		 W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
+		//Update ejection stage flag and save it
+		rtc_bckp_reg_ejection_stage = ejection_stage_flag;
+		ext_flash_ejection_stage = ejection_stage_flag;
+		MRT_saveFlagValue(FC_STATE_FLIGHT);
+
+		//If applicable, update apogee flag
+		if (ejection_stage_flag >= DROGUE_DESCENT){
+			apogee_flag = 1;
+			rtc_bckp_reg_apogee = apogee_flag;
+			ext_flash_apogee = apogee_flag;
+			MRT_saveFlagValue(FC_STATE_APOGEE);
+		}
 	 }
 
 	  //Check if it's sleep time
 	  if (flagA==1){
 		//Update iwdg_flag
 		iwdg_flag = 1;
-		flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
-		W25qxx_EraseSector(FLAGS_SECTOR);
-		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
+		rtc_bckp_reg_apogee = iwdg_flag;
+		ext_flash_apogee = iwdg_flag;
+		MRT_saveFlagValue(FC_STATE_IWDG);
 
 		//Reset to deactivate IWDG
 		NVIC_SystemReset();
@@ -603,7 +607,7 @@ void StartPropulsion4(void *argument)
 	osThreadExit();
 	#endif
 
-	if (apogee_flag || ejection_state_flag >= DROGUE_DESCENT){
+	if (apogee_flag || ejection_stage_flag >= DROGUE_DESCENT){
 		osThreadExit();
 	}
 
@@ -648,12 +652,12 @@ void MRT_checkThreadStates(void){
 			  thread_state == osThreadTerminated){
 
 			  //Ejection thread
-			  if (i==1 && ejection_state_flag < LANDED){
+			  if (i==1 && ejection_stage_flag < LANDED){
 				 osThreadResume(threadsID[i]);
 			  }
 
 			  //Propulsion thread
-			  if (i==4 && (apogee_flag || ejection_state_flag >= DROGUE_DESCENT)){
+			  if (i==4 && (apogee_flag || ejection_stage_flag >= DROGUE_DESCENT)){
 				  osThreadTerminate(threadsID[i]);
 				  continue;
 			  }
@@ -665,7 +669,7 @@ void MRT_checkThreadStates(void){
 
 		  else if (thread_state == osThreadError){
 			  //If it's the propulsion thread
-			  if (i==4 && (apogee_flag || ejection_state_flag >= DROGUE_DESCENT)){
+			  if (i==4 && (apogee_flag || ejection_stage_flag >= DROGUE_DESCENT)){
 				  osThreadTerminate(threadsID[i]);
 				  continue;
 			  }

@@ -18,6 +18,10 @@ extern "C" {
 #include <stdio.h>
 #include <string.h> //memset
 
+//Watch out for double-evaluation
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
 
 //Function prototypes
 void println(char* s);

@@ -37,7 +37,7 @@
 #include <MRT_helpers.h>
 
 //For the wait for launch
-#include <MRT_external_flash.h>
+#include <MRT_memory.h>
 #include <MRT_ejection.h>
 #include <MRT_propulsion.h>
 #include <MRT_telemetry.h>
@@ -195,7 +195,7 @@ void MRT_waitForLaunch(void){
 	radio_command cmd = -1;
 
 	//Poll propulsion until launch command sent
-	while((XTEND_ || SRADIO_) && ejection_state_flag == PAD && wu_flag == 0){
+	while((XTEND_ || SRADIO_) && ejection_stage_flag == PAD && wu_flag == 0){
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 		HAL_IWDG_Refresh(&hiwdg);
@@ -216,11 +216,11 @@ void MRT_waitForLaunch(void){
 		execute_parsed_command(cmd);
 
 		if (cmd == LAUNCH){
-			//Update ejection flag and save it
-			ejection_state_flag = BOOST;
-			flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = BOOST;
-			W25qxx_EraseSector(FLAGS_SECTOR);
-			W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
+			//Update ejection stage flag and save it
+			ejection_stage_flag = BOOST;
+			rtc_bckp_reg_ejection_stage = BOOST;
+			ext_flash_ejection_stage = BOOST;
+			MRT_saveFlagValue(FC_STATE_FLIGHT);
 		}
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);

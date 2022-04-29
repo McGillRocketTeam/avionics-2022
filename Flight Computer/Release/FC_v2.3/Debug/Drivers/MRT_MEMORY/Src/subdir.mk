@@ -6,16 +6,19 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Drivers/MRT_MEMORY/Src/MRT_external_flash.c \
+../Drivers/MRT_MEMORY/Src/MRT_memory.c \
 ../Drivers/MRT_MEMORY/Src/sd_card.c \
 ../Drivers/MRT_MEMORY/Src/w25qxx.c 
 
 C_DEPS += \
 ./Drivers/MRT_MEMORY/Src/MRT_external_flash.d \
+./Drivers/MRT_MEMORY/Src/MRT_memory.d \
 ./Drivers/MRT_MEMORY/Src/sd_card.d \
 ./Drivers/MRT_MEMORY/Src/w25qxx.d 
 
 OBJS += \
 ./Drivers/MRT_MEMORY/Src/MRT_external_flash.o \
+./Drivers/MRT_MEMORY/Src/MRT_memory.o \
 ./Drivers/MRT_MEMORY/Src/sd_card.o \
 ./Drivers/MRT_MEMORY/Src/w25qxx.o 
 

@@ -38,18 +38,14 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/MRT_helpers.h \
- ../Core/Inc/main.h ../Core/Inc/iwdg.h ../Core/Inc/rtc.h \
- ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
- ../Drivers/MRT_MEMORY/Inc/w25qxx.h \
+ ../Core/Inc/main.h ../Core/Inc/iwdg.h \
  ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
  ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
- ../Drivers/MRT_SENSORS/Inc/gps.h \
- ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
- ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
- ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h \
- ../Drivers/MRT_MEMORY/Inc/sd_card.h ../FATFS/App/fatfs.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h \
+ ../Drivers/MRT_SENSORS/Inc/gps.h ../Drivers/MRT_MEMORY/Inc/MRT_memory.h \
+ ../Core/Inc/rtc.h ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
+ ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Drivers/MRT_MEMORY/Inc/sd_card.h \
+ ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
@@ -64,7 +60,11 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
+ ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
+ ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h \
+ ../Drivers/MRT_EJECTION/Inc/MRT_ejection.h
 
 ../Core/Inc/MRT_setup.h:
 
@@ -156,12 +156,6 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
 
 ../Core/Inc/iwdg.h:
 
-../Core/Inc/rtc.h:
-
-../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h:
-
-../Drivers/MRT_MEMORY/Inc/w25qxx.h:
-
 ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
 
 ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
@@ -170,11 +164,13 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
 
 ../Drivers/MRT_SENSORS/Inc/gps.h:
 
-../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
+../Drivers/MRT_MEMORY/Inc/MRT_memory.h:
 
-../Drivers/MRT_TELEMETRY/Inc/radio_commands.h:
+../Core/Inc/rtc.h:
 
-../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h:
+../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h:
+
+../Drivers/MRT_MEMORY/Inc/w25qxx.h:
 
 ../Drivers/MRT_MEMORY/Inc/sd_card.h:
 
@@ -215,3 +211,11 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 
 ../FATFS/Target/user_diskio.h:
+
+../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
+
+../Drivers/MRT_TELEMETRY/Inc/radio_commands.h:
+
+../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h:
+
+../Drivers/MRT_EJECTION/Inc/MRT_ejection.h:

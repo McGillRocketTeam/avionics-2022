@@ -54,19 +54,19 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
  ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h \
  ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
  ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
+ ../Drivers/MRT_MEMORY/Inc/MRT_memory.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
- ../Drivers/MRT_MEMORY/Inc/w25qxx.h \
+ ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Drivers/MRT_MEMORY/Inc/sd_card.h \
+ ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
+ ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
+ ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h \
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
  ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
  ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
  ../Drivers/MRT_SENSORS/Inc/gps.h \
- ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h \
- ../Drivers/MRT_MEMORY/Inc/sd_card.h ../FATFS/App/fatfs.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h \
- ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
- ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
- ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h
 
 ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 
@@ -192,19 +192,11 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
 
 ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h:
 
+../Drivers/MRT_MEMORY/Inc/MRT_memory.h:
+
 ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h:
 
 ../Drivers/MRT_MEMORY/Inc/w25qxx.h:
-
-../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
-
-../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
-
-../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
-
-../Drivers/MRT_SENSORS/Inc/gps.h:
-
-../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h:
 
 ../Drivers/MRT_MEMORY/Inc/sd_card.h:
 
@@ -223,3 +215,13 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 
 ../FATFS/Target/user_diskio.h:
+
+../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
+
+../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
+
+../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
+
+../Drivers/MRT_SENSORS/Inc/gps.h:
+
+../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h:

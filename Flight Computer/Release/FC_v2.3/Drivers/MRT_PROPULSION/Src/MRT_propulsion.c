@@ -8,7 +8,7 @@
 #include <MRT_setup.h>
 #include <MRT_helpers.h>
 #include <MRT_propulsion.h>
-#include <MRT_external_flash.h>
+#include <MRT_memory.h>
 #include <MAX31855.h>
 
 //Global variables

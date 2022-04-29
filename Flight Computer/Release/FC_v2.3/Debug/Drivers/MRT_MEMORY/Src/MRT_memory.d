@@ -1,6 +1,6 @@
-Drivers/MRT_EJECTION/Src/MRT_ejection.o: \
- ../Drivers/MRT_EJECTION/Src/MRT_ejection.c ../Core/Inc/MRT_setup.h \
- ../Core/Inc/usart.h ../Core/Inc/main.h \
+Drivers/MRT_MEMORY/Src/MRT_memory.o: \
+ ../Drivers/MRT_MEMORY/Src/MRT_memory.c ../Core/Inc/MRT_helpers.h \
+ ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -39,15 +39,11 @@ Drivers/MRT_EJECTION/Src/MRT_ejection.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/i2c.h ../Core/Inc/adc.h \
- ../Drivers/MRT_EJECTION/Inc/MRT_ejection.h \
- ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
- ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
- ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
- ../Drivers/MRT_SENSORS/Inc/gps.h ../Core/Inc/main.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_memory.h ../Core/Inc/rtc.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
- ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Drivers/MRT_MEMORY/Inc/sd_card.h \
- ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
+ ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Core/Inc/main.h \
+ ../Drivers/MRT_MEMORY/Inc/sd_card.h ../FATFS/App/fatfs.h \
+ ../Middlewares/Third_Party/FatFs/src/ff.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
@@ -63,7 +59,10 @@ Drivers/MRT_EJECTION/Src/MRT_ejection.o: \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
- ../Core/Inc/gpio.h
+ ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
+ ../Drivers/MRT_MISC/Inc/video_recorder.h
+
+../Core/Inc/MRT_helpers.h:
 
 ../Core/Inc/MRT_setup.h:
 
@@ -149,18 +148,6 @@ Drivers/MRT_EJECTION/Src/MRT_ejection.o: \
 
 ../Core/Inc/adc.h:
 
-../Drivers/MRT_EJECTION/Inc/MRT_ejection.h:
-
-../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
-
-../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
-
-../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
-
-../Drivers/MRT_SENSORS/Inc/gps.h:
-
-../Core/Inc/main.h:
-
 ../Drivers/MRT_MEMORY/Inc/MRT_memory.h:
 
 ../Core/Inc/rtc.h:
@@ -168,6 +155,8 @@ Drivers/MRT_EJECTION/Src/MRT_ejection.o: \
 ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h:
 
 ../Drivers/MRT_MEMORY/Inc/w25qxx.h:
+
+../Core/Inc/main.h:
 
 ../Drivers/MRT_MEMORY/Inc/sd_card.h:
 
@@ -209,4 +198,6 @@ Drivers/MRT_EJECTION/Src/MRT_ejection.o: \
 
 ../FATFS/Target/user_diskio.h:
 
-../Core/Inc/gpio.h:
+../Drivers/MRT_TELEMETRY/Inc/radio_commands.h:
+
+../Drivers/MRT_MISC/Inc/video_recorder.h:

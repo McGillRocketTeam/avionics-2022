@@ -28,6 +28,7 @@ void no_print(char* s){
 
 // buzz at particular frequency
 void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
+	#if !NO_BUZZ
 	// TIM2 base frequency is 90 MHz, PSC = 90-1
 	// can calculate required ARR value
 	TIM2->ARR = 1000000 / freq;
@@ -42,6 +43,7 @@ void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
 		if (repeats > 1)
 			HAL_Delay(duration);
 	}
+	#endif
 }
 void buzz_success(void) { tone_freq(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS, BUZZ_SUCCESS_FREQ); }
 void buzz_failure(void) { tone_freq(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS, BUZZ_FAILURE_FREQ); }

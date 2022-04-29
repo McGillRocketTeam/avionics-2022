@@ -1,0 +1,13 @@
+MRT_memory.c:68:6:MRT_saveFlagValue	16	static
+MRT_memory.c:84:6:MRT_updateFlagsValues	4	static
+MRT_memory.c:104:9:MRT_checkFlagsValues	24	static
+MRT_memory.c:126:6:MRT_resetFlags	4	static
+MRT_memory.c:160:6:MRT_saveTotalTime	8	static
+MRT_memory.c:178:6:MRT_resetTotalTime	16	static
+MRT_memory.c:205:6:MRT_saveTimeValue	16	static
+MRT_memory.c:221:6:MRT_updateTimeValues	4	static
+MRT_memory.c:239:9:MRT_checkTimeValues	24	static
+MRT_memory.c:270:6:MRT_MEMORY_Init	8	static
+MRT_memory.c:308:6:MRT_stateRestoration	8	static
+MRT_memory.c:375:6:MRT_checkWakeUp	8	static
+MRT_memory.c:411:6:restore_fc_states	8	static

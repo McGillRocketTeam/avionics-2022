@@ -56,8 +56,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Core/Inc/i2c.h ../Core/Inc/iwdg.h ../Core/Inc/rtc.h ../Core/Inc/spi.h \
  ../Core/Inc/tim.h ../Core/Inc/usart.h ../Core/Inc/gpio.h \
  ../Core/Inc/MRT_setup.h ../Core/Inc/MRT_helpers.h \
+ ../Drivers/MRT_MEMORY/Inc/MRT_memory.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
- ../Drivers/MRT_MEMORY/Inc/w25qxx.h \
+ ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Drivers/MRT_MEMORY/Inc/sd_card.h \
  ../Drivers/MRT_EJECTION/Inc/MRT_ejection.h \
  ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h \
  ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
@@ -199,9 +200,13 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 
 ../Core/Inc/MRT_helpers.h:
 
+../Drivers/MRT_MEMORY/Inc/MRT_memory.h:
+
 ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h:
 
 ../Drivers/MRT_MEMORY/Inc/w25qxx.h:
+
+../Drivers/MRT_MEMORY/Inc/sd_card.h:
 
 ../Drivers/MRT_EJECTION/Inc/MRT_ejection.h:
 

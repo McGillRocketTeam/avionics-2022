@@ -49,14 +49,68 @@ extern RTC_AlarmTypeDef sAlarm;
 //FUNCTIONS PROTOTYPES
 void MRT_rtc_Init(void);
 
-void MRT_check_for_wake_up(void);
 void MRT_clear_alarms_flags(void);
 void MRT_StandByMode(uint32_t seconds);
 
 void MRT_set_rtc(uint8_t h, uint8_t m, uint8_t s);
 void MRT_set_alarmA(uint8_t h, uint8_t m, uint8_t s);
 
-void MRT_saveRTCTime(void);
+
+//Backup registers
+
+#define NB_RTC_BCKP_REGS	9
+
+typedef enum rtc_backup_reg {
+	// for simplicity, put them all in separate backup registers
+	// if we ever need more, we can pack the bits
+
+	//FC state (essentials)
+	FC_STATE_RESET, //if 0 -> start from beginning, if 1 -> random watchdog reset (if 2-> reset after wakeup??)
+	FC_STATE_WU, //TODO used to be defined in MRT_RTOS.c
+	FC_STATE_IWDG, //if 0 -> normal, if 1 -> try to go into standbymode
+	FC_STATE_APOGEE, //if 0 -> pre-apogee, if 1 -> post-apogee
+	FC_STATE_FLIGHT, //Also known as ejection_stage_flag
+
+	//RTC time
+	RTC_HOUR,
+	RTC_MINUTE,
+	RTC_SECOND,
+	RTC_SUBSEC,
+
+	//FC state (others) //TODO ADD THESE TO EXTERNAL FLASH and GETINFO PROCEDURE (Or nah?)
+	FC_STATE_VR_POWER,
+	FC_STATE_VR_RECORDING,
+	FC_STATE_ALT_GROUND,			// floats will be rounded to int
+	FC_STATE_ALT_APOGEE,
+	FC_STATE_ALT_PREV,
+} rtc_backup_reg;
+
+//Flags
+extern uint32_t rtc_bckp_reg_reset; //In external flash memory
+extern uint32_t rtc_bckp_reg_wu; //TODO used to be defined in MRT_RTOS.c
+extern uint32_t rtc_bckp_reg_iwdg; //In external flash memory
+extern uint32_t rtc_bckp_reg_apogee; //In external flash memory
+extern uint32_t rtc_bckp_reg_ejection_stage; //In external flash memory
+
+//Time variables
+extern uint32_t rtc_bckp_reg_hour; //Last recorded hours
+extern uint32_t rtc_bckp_reg_min; //Last recorded minutes
+extern uint32_t rtc_bckp_reg_sec; //Last recorded seconds
+extern uint32_t rtc_bckp_reg_subsec; //Last recorded subseconds
+
+
+//Reference list to each time component (in the same order than typedef enum rtc_backup_reg
+uint32_t* rtc_bckp_regs[NB_RTC_BCKP_REGS];
+
+void MRT_RTC_backup_regs_Init(void);
+void MRT_RTC_resetBackupRegs(void);
+uint32_t MRT_RTC_getBackupReg(rtc_backup_reg state);
+void MRT_RTC_setBackupReg(rtc_backup_reg state, uint32_t value);
+
+void restore_fc_states(void);
+
+
+
 
 
 /* USER CODE END Prototypes */

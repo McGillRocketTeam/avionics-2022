@@ -17,6 +17,7 @@
 "./Core/Startup/startup_stm32f437zitx.o"
 "./Drivers/MRT_EJECTION/Src/MRT_ejection.o"
 "./Drivers/MRT_MEMORY/Src/MRT_external_flash.o"
+"./Drivers/MRT_MEMORY/Src/MRT_memory.o"
 "./Drivers/MRT_MEMORY/Src/sd_card.o"
 "./Drivers/MRT_MEMORY/Src/w25qxx.o"
 "./Drivers/MRT_MISC/Src/video_recorder.o"

@@ -7,23 +7,22 @@
 
 
 #include <MRT_external_flash.h>
-#include <rtc.h> //Check for wake up function
 
 
 //**************************************************//
 //FLAGS
 
-uint8_t reset_flag = 0; //In external flash memory
-uint8_t wu_flag = 0; //TODO used to be defined in MRT_RTOS.c
-uint8_t iwdg_flag = 0; //In external flash memory
-uint8_t apogee_flag = 0; //In external flash memory
-uint8_t ejection_state_flag = 0; //In external flash memory
+uint8_t ext_flash_reset = 0; //In external flash memory
+uint8_t ext_flash_wu = 0; //TODO used to be defined in MRT_RTOS.c
+uint8_t ext_flash_iwdg = 0; //In external flash memory
+uint8_t ext_flash_apogee = 0; //In external flash memory
+uint8_t ext_flash_ejection_stage = 0; //In external flash memory
 
 //Flags read/write buffer
-uint8_t flash_flags_buffer[NB_OF_FLAGS];
+uint8_t ext_flash_flags_buffer[NB_OF_FLAGS];
 
 //Reference array to each flag
-uint8_t* flash_flags[NB_OF_FLAGS] = {&reset_flag, &wu_flag, &iwdg_flag, &apogee_flag, &ejection_state_flag};
+uint8_t* ext_flash_flags[NB_OF_FLAGS] = {&ext_flash_reset, &ext_flash_wu, &ext_flash_iwdg, &ext_flash_apogee, &ext_flash_ejection_stage};
 
 //Null buffer values for when clearing flags
 uint8_t FLAGS_NULL_BUFFER[NB_OF_FLAGS];
@@ -33,17 +32,17 @@ uint8_t FLAGS_NULL_BUFFER[NB_OF_FLAGS];
 //RTC TIME FLAGS
 
 /*RTC time*/
-//Time constants (determined at each reset)
-uint8_t prev_hours = 0; //Last recorded hours
-uint8_t prev_min = 0; //Last recorded minutes
-uint8_t prev_sec = 0; //Last recorded seconds
-uint32_t prev_subsec = 0; //Last recorded subseconds
+//Time variables
+uint8_t ext_flash_hour = 0; //Last recorded hours
+uint8_t ext_flash_min = 0; //Last recorded minutes
+uint8_t ext_flash_sec = 0; //Last recorded seconds
+uint32_t ext_flash_subsec = 0; //Last recorded subseconds
 
 //Time read/write buffer
-uint8_t flash_time_buffer[RTC_NB_OF_VAR];
+uint8_t ext_flash_time_buffer[RTC_NB_OF_VAR];
 
 //Reference list to each time component
-uint8_t* flash_time[RTC_NB_OF_VAR] = {&prev_hours, &prev_min, &prev_sec, &prev_subsec};
+uint8_t* ext_flash_time[RTC_NB_OF_VAR] = {&ext_flash_hour, &ext_flash_min, &ext_flash_sec, &ext_flash_subsec}; //TODO ext_flash_subsec value will overflow
 
 //Null buffer values for when clearing time
 uint8_t RTC_TIME_NULL_BUFFER[RTC_NB_OF_VAR] = {0,0,0,0};
@@ -62,126 +61,33 @@ void MRT_external_flash_Init(void){
 	if (!W25qxx_Init()) {
 		Error_Handler(); // hangs and blinks LEDF
 	}
-	MRT_check_for_wake_up(); //Needs to be called before getFlags() and after the W25xx_Init()
-	MRT_get_flags();
-}
-
-
-
-
-void MRT_get_flags(void){
 
 	//Retrieve flags
-	W25qxx_ReadSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
+	W25qxx_ReadSector(ext_flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
 
 	//Retrieve RTC time (last recorded)
-	W25qxx_ReadSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
-
-	//If RTC detected a wake up, update the flash memory
-	if (wu_flag == 1){
-		//Write the new number of wake up to external flash
-		flash_flags_buffer[WU_FLAG_OFFSET] = flash_flags_buffer[WU_FLAG_OFFSET] + 1; //Update number of wake up
-		W25qxx_EraseSector(FLAGS_SECTOR);
-		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
-	}
+	W25qxx_ReadSector(ext_flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
 
 	//Assign each value read to their variable
-	 MRT_update_flags_values();
+	MRT_updateExternalFlashValues();
+}
 
 
-	//Check flags values
-	//Reset flag
-	if (reset_flag != 0 && reset_flag !=1){ //If random value (none was written)
-		reset_flag = 0;
-		flash_flags_buffer[RESET_FLAG_OFFSET] = reset_flag;
-		W25qxx_EraseSector(FLAGS_SECTOR);
-		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
+void MRT_updateExternalFlashBuffers(void){
+	for (int i = 0; i < NB_OF_FLAGS; i++){
+		ext_flash_flags_buffer[i] = *ext_flash_flags[i];
 	}
-
-	//Wake up flag
-	if (wu_flag != 0 && wu_flag !=1 && wu_flag !=2){ //If random value (none was written)
-		wu_flag = 0;
-		flash_flags_buffer[WU_FLAG_OFFSET] = wu_flag;
-		W25qxx_EraseSector(FLAGS_SECTOR);
-		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
-	}
-
-	//IWDG flag
-	if (iwdg_flag != 0 && iwdg_flag !=1){ //If random value (none was written)
-		iwdg_flag = 0;
-		flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
-		W25qxx_EraseSector(FLAGS_SECTOR);
-		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
-	}
-
-	//Apogee flag
-	if (apogee_flag != 0 && apogee_flag !=1){ //If random value (none was written)
-		apogee_flag = 0;
-		flash_flags_buffer[APOGEE_FLAG_OFFSET] = apogee_flag;
-		W25qxx_EraseSector(FLAGS_SECTOR);
-		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
-	}
-
-	//Ejection state flag
-	if (!(ejection_state_flag >= 0 && ejection_state_flag <=4)){ //If random value (none was written)
-		ejection_state_flag = 0;
-		flash_flags_buffer[EJECTION_STATE_FLAG_OFFSET] = ejection_state_flag;
-		W25qxx_EraseSector(FLAGS_SECTOR);
-		W25qxx_WriteSector(flash_flags_buffer, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
-	}
-
-
-	//Check RTC time values
-	//Hours
-	if (!(prev_hours >= 0 && prev_hours < 24)){ //If random value (none was written)
-		prev_hours = 0;
-		flash_time_buffer[RTC_HOURS_OFFSET] = prev_hours;
-		W25qxx_EraseSector(RTC_SECTOR);
-		W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
-	}
-
-	//Minutes
-	if (!(prev_min >= 0 && prev_min < 60)){ //If random value (none was written)
-		prev_min = 0;
-		flash_time_buffer[RTC_MIN_OFFSET] = prev_min;
-		W25qxx_EraseSector(RTC_SECTOR);
-		W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
-	}
-
-	//Seconds
-	if (!(prev_sec >= 0 && prev_sec < 60)){ //If random value (none was written)
-		prev_sec = 0;
-		flash_time_buffer[RTC_SEC_OFFSET] = prev_sec;
-		W25qxx_EraseSector(RTC_SECTOR);
-		W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
-	}
-
-	//Sub-Seconds
-	if (!(prev_subsec >= 0 && prev_subsec < 1000)){ //If random value (none was written)
-		prev_subsec = 0;
-		flash_time_buffer[RTC_SEC_OFFSET] = prev_subsec;
-		W25qxx_EraseSector(RTC_SECTOR);
-		W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
+	for (int i = 0; i < RTC_NB_OF_VAR; i++){
+		ext_flash_time_buffer[i] = *ext_flash_time[i];
 	}
 }
 
 
-
-void MRT_update_external_flash_buffers(void){
+void MRT_updateExternalFlashValues(void){
 	for (int i = 0; i < NB_OF_FLAGS; i++){
-		flash_flags_buffer[i] = *flash_flags[i];
+		*ext_flash_flags[i] = ext_flash_flags_buffer[i];
 	}
 	for (int i = 0; i < RTC_NB_OF_VAR; i++){
-		flash_time_buffer[i] = *flash_time[i];
-	}
-}
-
-
-void MRT_update_flags_values(void){
-	for (int i = 0; i < NB_OF_FLAGS; i++){
-		*flash_flags[i] = flash_flags_buffer[i];
-	}
-	for (int i = 0; i < RTC_NB_OF_VAR; i++){
-		*flash_time[i] = flash_time_buffer[i];
+		*ext_flash_time[i] = ext_flash_time_buffer[i];
 	}
 }

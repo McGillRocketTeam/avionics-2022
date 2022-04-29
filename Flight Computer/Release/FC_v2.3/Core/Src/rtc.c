@@ -24,7 +24,7 @@
 
 #include <MRT_setup.h>
 #include <MRT_helpers.h>
-#include <MRT_external_flash.h>
+#include <MRT_memory.h>
 
 RTC_TimeTypeDef sTime = {0};
 RTC_DateTypeDef sDate = {0};
@@ -176,7 +176,7 @@ void MRT_rtc_Init(void){
 	println("\r\nMRT RTC Init");
 
 	print("\tSetting RTC to previous time...");
-	MRT_set_rtc(prev_hours,prev_min,prev_sec);
+	MRT_set_rtc(prev_hour,prev_min,prev_sec);
 	println("OK");
 
 	#if ALARM_A_ACTIVE
@@ -190,29 +190,6 @@ void MRT_rtc_Init(void){
 		}
 		println("OK");
 	#endif
-}
-
-
-void MRT_check_for_wake_up(void){
-
-	//If WU flag set, wake up procedure
-	if (__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
-	{
-
-		wu_flag = 1;
-
-		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);  // clear the flag
-
-		println("Wakeup from STANDBY MODE");
-
-		/** Disable the WWAKEUP PIN **/
-		HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);  // disable PA0
-
-		/** Deactivate the RTC wakeup  **/
-		HAL_RTCEx_DeactivateWakeUpTimer(&hrtc); //TODO hrtc from rtc.h (should we pass it as an argument instead?)
-	}
-
-	MRT_clear_alarms_flags();
 }
 
 
@@ -343,15 +320,60 @@ void MRT_set_alarmA(uint8_t h, uint8_t m, uint8_t s){
 
 
 
-/*
- * Update and save the RTC time in external flash memory
- */
-void MRT_saveRTCTime(void){
-	MRT_update_external_flash_buffers();
 
-	//Write new RTC time to flash memory
-	W25qxx_EraseSector(RTC_SECTOR);
-	W25qxx_WriteSector(flash_time_buffer, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
+//**************************************************//
+//BACKUP REGISTERS
+
+//Backup registers global variables
+
+//Flags
+uint32_t rtc_bckp_reg_reset = 0; //In external flash memory
+uint32_t rtc_bckp_reg_wu = 0; //TODO used to be defined in MRT_RTOS.c
+uint32_t rtc_bckp_reg_iwdg = 0; //In external flash memory
+uint32_t rtc_bckp_reg_apogee = 0; //In external flash memory
+uint32_t rtc_bckp_reg_ejection_stage = 0; //In external flash memory
+
+//Time variables
+uint32_t rtc_bckp_reg_hour = 0; //Last recorded hours
+uint32_t rtc_bckp_reg_min = 0; //Last recorded minutes
+uint32_t rtc_bckp_reg_sec = 0; //Last recorded seconds
+uint32_t rtc_bckp_reg_subsec = 0; //Last recorded subseconds
+
+
+//Reference list to each time component (in the same order than typedef enum rtc_backup_reg
+uint32_t* rtc_bckp_regs[NB_RTC_BCKP_REGS] = {&rtc_bckp_reg_reset, &rtc_bckp_reg_wu, &rtc_bckp_reg_iwdg, &rtc_bckp_reg_apogee, &rtc_bckp_reg_ejection_stage,
+							  &rtc_bckp_reg_hour, &rtc_bckp_reg_min, &rtc_bckp_reg_sec, &rtc_bckp_reg_subsec};
+
+
+//Get all the backup regs values (initialization)
+void MRT_RTC_backup_regs_Init(void){
+	for (int i = 0; i < NB_RTC_BCKP_REGS; i++){
+		*rtc_bckp_regs[i] = MRT_RTC_getBackupReg(i);
+	}
+}
+
+// initializes backup register values to zero
+void MRT_RTC_resetBackupRegs(void) {
+	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
+	for (uint8_t i = 0; i < 20; i++) {
+		HAL_RTCEx_BKUPWrite(&hrtc, i, 0);	// set all backup register values to zero
+	}
+	__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
+}
+
+// gets the backup register value for the specified state
+uint32_t MRT_RTC_getBackupReg(rtc_backup_reg state) {
+	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
+	uint32_t val = HAL_RTCEx_BKUPRead(&hrtc, (uint32_t) state);
+	__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
+	return val;
+}
+
+// sets the backup register value for the specified state
+void MRT_RTC_setBackupReg(rtc_backup_reg state, uint32_t value) {
+	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
+	HAL_RTCEx_BKUPWrite(&hrtc, (uint32_t) state, value);
+	__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
 }
 
 /* USER CODE END 1 */

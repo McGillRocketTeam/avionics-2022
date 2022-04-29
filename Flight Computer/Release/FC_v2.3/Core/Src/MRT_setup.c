@@ -9,12 +9,11 @@
 #include <MRT_helpers.h>
 #include <main.h>
 #include <iwdg.h>
-#include <rtc.h>
-#include <MRT_external_flash.h>
 #include <MRT_i2c_sensors.h>
+#include <MRT_memory.h>
 #include <MRT_telemetry.h>
 #include <MRT_propulsion.h>
-#include <sd_card.h>
+#include <MRT_ejection.h>
 
 //**************************************************//
 //PRIVATE FUNCTIONS PROTOTYPES
@@ -38,34 +37,14 @@ void MRT_Init(void){
 	#endif
 
 	MRT_Reinitialize_Peripherals();
-	MRT_external_flash_Init();
+
+	//Memory
+	MRT_MEMORY_Init();
 	MRT_reset_info();
 
 	//RTC
 	HAL_IWDG_Refresh(&hiwdg);
 	MRT_rtc_Init();
-
-
-	//TODO SD card (doesn't work)
-	#if MEMORY_THREAD
-
-		//SD card
-		#if SD_CARD_
-			HAL_IWDG_Refresh(&hiwdg);
-
-			// check if SD card is inserted
-			if (HAL_GPIO_ReadPin(IN_SD_CARD_DETECT_GPIO_Port, IN_SD_CARD_DETECT_Pin) == GPIO_PIN_RESET) {
-			  // init sd card with dynamic filename
-			  fres = sd_init_dynamic_filename("FC", sd_file_header, filename);
-			  if (fres != FR_OK) {
-					Error_Handler();
-			  }
-			}
-			else {
-			  Error_Handler();
-			}
-		#endif
-	#endif
 
 
 	//Sensors
@@ -95,7 +74,7 @@ void MRT_Init(void){
 	#endif
 
 	#if FORCED_EJECTION_STAGE
-		  ejection_stage_flag = FORCED_STAGE;
+		   ejection_stage_flag = FORCED_STAGE;
 	#endif
 }
 
@@ -142,7 +121,8 @@ void MRT_Deinit(void){
 void MRT_reset_info(void){
 
 	  char buffer[100];
-	  sprintf(buffer,"Reset: %i,  WU: %i,  IWDG: %i\r\nPrevious RTC time: %i:%i:%i\r\n",reset_flag, wu_flag, iwdg_flag, prev_hours, prev_min, prev_sec);
+	  sprintf(buffer,"Reset: %i,  WU: %i,  IWDG: %i\r\nPrevious RTC time: %i:%i:%i ::%i\r\n",
+			  reset_flag, wu_flag, iwdg_flag, prev_hour, prev_min, prev_sec, prev_subsec);
 	  print(buffer);
 
 	  //Check if IWDG is being deactivated
@@ -151,12 +131,12 @@ void MRT_reset_info(void){
 
 		  iwdg_flag = 0; //Flip flag
 
-		  //Write new flag to flash memory
-		  flash_flags_buffer[IWDG_FLAG_OFFSET] = iwdg_flag;
-		  W25qxx_EraseSector(1);
-		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		  //Write new flag to memory
+		  rtc_bckp_reg_iwdg = iwdg_flag;
+		  ext_flash_iwdg = iwdg_flag;
+		  MRT_saveFlagValue(FC_STATE_IWDG);
 
-		  HAL_Delay(1000);
+		  HAL_Delay(500);
 
 		  //Go to sleep
 		  MRT_StandByMode(SLEEP_TIME);
@@ -164,7 +144,7 @@ void MRT_reset_info(void){
 
 
 	  //Check if we are after waking up (and at which wake up we are at)
-	  if (wu_flag>0){
+	  if (wu_flag > 0){
 		  char buf[30];
 		  sprintf(buf, "FC wake up %i\r\n", wu_flag);
 		  print(buf);
@@ -172,27 +152,17 @@ void MRT_reset_info(void){
 		  print((char*) "Resetting RTC time\r\n");
 
 		  //Clear RTC time (last recorded)
-		  W25qxx_EraseSector(2);
-		  W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, 2, RTC_TIME_OFFSET, 3);
-
-		  //Update variables (to 0)
-		  for (int i = 0; i < 3; i++){
-			  *flash_time[i] = 0x0;
-		  }
-
+		  MRT_resetTotalTime();
 	  }
 
 
 	  //Check if we start from the beginning
-	  if (reset_flag==0){
+	  if (reset_flag == 0){
 		  print((char*) "FC restarted\r\n");
 
 		  reset_flag = 1; //Flip flag
 
-		  //Write new flag to flash memory
-	      flash_flags_buffer[RESET_FLAG_OFFSET] = reset_flag;
-		  W25qxx_EraseSector(1);
-		  W25qxx_WriteSector(flash_flags_buffer, 1, FLAGS_OFFSET, NB_OF_FLAGS);
+		  MRT_saveFlagValue(FC_STATE_RESET);
 	  }
 
 
@@ -207,19 +177,19 @@ void MRT_reset_info(void){
 
 	  //Check ejection stage
 	  print((char*)"Ejection Stage: ");
-	  if (ejection_state_flag==0){
+	  if (ejection_stage_flag==PAD){
 		  print((char*)"Pad\r\n");
 	  }
-	  else if(ejection_state_flag==1){
+	  else if(ejection_stage_flag==BOOST){
 		  print((char*)"Boost\r\n");
 	  }
-	  else if(ejection_state_flag==2){
+	  else if(ejection_stage_flag==DROGUE_DESCENT){
 		  print((char*)"Drogue descent\r\n");
 	  }
-	  else if(ejection_state_flag==3){
+	  else if(ejection_stage_flag==MAIN_DESCENT){
 		  print((char*)"Main descent\r\n");
 	  }
-	  else if(ejection_state_flag==4){
+	  else if(ejection_stage_flag==LANDED){
 		  print((char*)"Landed\r\n");
 	  }
 }
