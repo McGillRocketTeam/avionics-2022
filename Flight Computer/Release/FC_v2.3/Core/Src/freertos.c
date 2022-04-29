@@ -216,6 +216,17 @@ void StartMemory0(void *argument)
   for(;;)
   {
 
+	 //Get RTC time
+	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+
+	 //Update global variables
+	 prev_hour = sTime.Hours;
+	 prev_min = sTime.Minutes;
+	 prev_sec = sTime.Seconds;
+	 if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
+	 prev_subsec = sTime.SubSeconds;
+
 	// Save to SD card
 	#if SD_CARD_
 	fres = sd_open_file(filename);
@@ -524,18 +535,7 @@ void StartWatchDog(void *argument)
 
 	 HAL_IWDG_Refresh(&hiwdg);
 
-	 //Get RTC time
-	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-
-	 //Update global variables
-	 prev_hour = sTime.Hours;
-	 prev_min = sTime.Minutes;
-	 prev_sec = sTime.Seconds;
-	 if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
-	 prev_subsec = sTime.SubSeconds;
-
-	 //Save the time
+	 //Save the RTC time
 	 MRT_saveTotalTime();
 
 	 //TODO remove for comp
