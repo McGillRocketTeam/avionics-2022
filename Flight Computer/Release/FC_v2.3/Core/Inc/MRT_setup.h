@@ -22,10 +22,10 @@ extern "C" {
 
 //**************************************************//
 //DEBUGGING
-#define DEBUG 1 //If in debug mode, no IWDG
+#define DEBUG 0 //If in debug mode, no IWDG
 #define DEBUG_UART huart8
 #define PRINT 1
-#define NO_BUZZ 1
+#define NO_BUZZ 0
 
 //Forced state
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
@@ -84,7 +84,7 @@ extern "C" {
 //**************************************************//
 //THREADS
 #define MEMORY_THREAD 1
-#define EJECTION_THREAD 0
+#define EJECTION_THREAD 1
 #define TELEMETRY_THREAD 1
 #define SENSORS_THREAD 1
 #define PROPULSION_THREAD 1
@@ -107,9 +107,9 @@ extern "C" {
 //**************************************************//
 //EJECTION THREAD
 //TODO Ejection (just invented variables for the sake of testing)
-#define APOGEE_ALT 120 //In meters
-#define DEPLOY_ALT 60 //In meters
-#define GROUND_LEVEL_ALT 20 //In meters
+#define APOGEE_ALT 3657 //In meters
+#define DEPLOY_ALT 2000 //In meters
+#define GROUND_LEVEL_ALT 100 //In meters
 
 
 #define PAD_STATE 0
@@ -151,7 +151,7 @@ extern "C" {
 #endif
 
 //Iridium
-#define IRIDIUM_ 1
+#define IRIDIUM_ 0
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 

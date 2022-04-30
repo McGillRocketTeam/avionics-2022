@@ -327,11 +327,11 @@ void MRT_set_alarmA(uint8_t h, uint8_t m, uint8_t s){
 //Backup registers global variables
 
 //Flags
-uint32_t rtc_bckp_reg_reset = 0; //In external flash memory
-uint32_t rtc_bckp_reg_wu = 0; //TODO used to be defined in MRT_RTOS.c
-uint32_t rtc_bckp_reg_iwdg = 0; //In external flash memory
-uint32_t rtc_bckp_reg_apogee = 0; //In external flash memory
-uint32_t rtc_bckp_reg_ejection_stage = 0; //In external flash memory
+uint32_t rtc_bckp_reg_reset = 0;
+uint32_t rtc_bckp_reg_wu = 0;
+uint32_t rtc_bckp_reg_iwdg = 0;
+uint32_t rtc_bckp_reg_apogee = 0;
+uint32_t rtc_bckp_reg_ejection_stage = 0;
 
 //Time variables
 uint32_t rtc_bckp_reg_hour = 0; //Last recorded hours
@@ -340,9 +340,29 @@ uint32_t rtc_bckp_reg_sec = 0; //Last recorded seconds
 uint32_t rtc_bckp_reg_subsec = 0; //Last recorded subseconds
 
 
+//FC states
+uint32_t rtc_bckp_reg_vr_power = 0;
+uint32_t rtc_bckp_reg_vr_rec = 0;
+
+uint32_t rtc_bckp_reg_alt_pad = 0; // floats will be rounded to int
+uint32_t rtc_bckp_reg_pad_time = 0;
+uint32_t rtc_bckp_reg_alt_true_apogee = 0;
+uint32_t rtc_bckp_reg_true_apogee_time = 0;
+uint32_t rtc_bckp_reg_alt_apogee = 0;
+uint32_t rtc_bckp_reg_apogee_time = 0;
+uint32_t rtc_bckp_reg_alt_main = 0;
+uint32_t rtc_bckp_reg_main_time = 0;
+uint32_t rtc_bckp_reg_alt_landed = 0;
+uint32_t rtc_bckp_reg_landed_time = 0;
+
+
 //Reference list to each time component (in the same order than typedef enum rtc_backup_reg
 uint32_t* rtc_bckp_regs[NB_RTC_BCKP_REGS] = {&rtc_bckp_reg_reset, &rtc_bckp_reg_wu, &rtc_bckp_reg_iwdg, &rtc_bckp_reg_apogee, &rtc_bckp_reg_ejection_stage,
-							  &rtc_bckp_reg_hour, &rtc_bckp_reg_min, &rtc_bckp_reg_sec, &rtc_bckp_reg_subsec};
+							  &rtc_bckp_reg_hour, &rtc_bckp_reg_min, &rtc_bckp_reg_sec, &rtc_bckp_reg_subsec,
+				//TODO		      &rtc_bckp_reg_vr_power, &rtc_bckp_reg_vr_rec,
+							  &rtc_bckp_reg_alt_pad, &rtc_bckp_reg_pad_time, &rtc_bckp_reg_alt_true_apogee, &rtc_bckp_reg_true_apogee_time,
+							  &rtc_bckp_reg_alt_apogee, &rtc_bckp_reg_apogee_time, &rtc_bckp_reg_alt_main, &rtc_bckp_reg_main_time,
+							  &rtc_bckp_reg_alt_landed, &rtc_bckp_reg_landed_time};
 
 
 //Get all the backup regs values (initialization)
@@ -350,10 +370,24 @@ void MRT_RTC_backup_regs_Init(void){
 	for (int i = 0; i < NB_RTC_BCKP_REGS; i++){
 		*rtc_bckp_regs[i] = MRT_RTC_getBackupReg(i);
 	}
+
+	//TODO TESTING
+	char buffer[100];
+	sprintf(buffer, "ALTITUDES:\r\n\tGround: %i \tTime: %i"
+					"\r\n\tTrue Apogee: %i \tTime: %i"
+					"\r\n\tApogee: %i \tTime: %i"
+					"\r\n\tMain: %i \tTime: %i"
+					"\r\n\tLanded: %i \tTime: %i\r\n",
+			rtc_bckp_reg_alt_pad, rtc_bckp_reg_pad_time,  rtc_bckp_reg_alt_true_apogee, rtc_bckp_reg_true_apogee_time,
+			rtc_bckp_reg_alt_apogee, rtc_bckp_reg_apogee_time, rtc_bckp_reg_alt_main, rtc_bckp_reg_main_time,
+			rtc_bckp_reg_alt_landed, rtc_bckp_reg_landed_time);
+	print(buffer);
+
+	HAL_Delay(2000);
 }
 
 // initializes backup register values to zero
-void MRT_RTC_resetBackupRegs(void) {
+void MRT_RTC_clearBackupRegs(void) {
 	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
 	for (uint8_t i = 0; i < 20; i++) {
 		HAL_RTCEx_BKUPWrite(&hrtc, i, 0);	// set all backup register values to zero

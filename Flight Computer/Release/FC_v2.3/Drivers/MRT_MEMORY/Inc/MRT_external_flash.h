@@ -82,6 +82,7 @@ extern uint8_t RTC_TIME_NULL_BUFFER[RTC_NB_OF_VAR];
 void MRT_external_flash_Init(void);
 void MRT_updateExternalFlashBuffers(void);
 void MRT_updateExternalFlashValues(void);
+void MRT_clearExternalFlash(void);
 
 
 #ifdef __cplusplus

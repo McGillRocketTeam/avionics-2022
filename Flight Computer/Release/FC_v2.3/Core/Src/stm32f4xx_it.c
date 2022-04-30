@@ -24,6 +24,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <MRT_memory.h>
+#include <MRT_iridium.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +55,8 @@ uint8_t flagB = 0; //Dynamic
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
+
+void MRT_resetFromStart(void);
 
 /* USER CODE END PFP */
 
@@ -211,7 +216,26 @@ void TIM6_DAC_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if (GPIO_Pin == IN_Button_Pin){
+		//Manual reset from external button
+		MRT_resetFromStart();
+	}
+}
 
+
+
+void MRT_resetFromStart(void){
+
+	//Clear memory
+	MRT_clearExternalFlash();
+	MRT_RTC_clearBackupRegs();
+
+	//Shutdown Iridium
+	//TODO should have deninit for every system?
+	MRT_Iridium_Deinit();
+
+	//Reset function
+	NVIC_SystemReset();
 }
 
 /* USER CODE END 1 */

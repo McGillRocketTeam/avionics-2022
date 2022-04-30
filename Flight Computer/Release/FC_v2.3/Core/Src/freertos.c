@@ -271,14 +271,33 @@ void StartEjection1(void *argument)
 
 	osDelay(5000); //Let the LPS "warm up" to have a valid pressure_hPa
 
+	//TODO put in setup.h?
+	uint8_t counter = 0;
+	uint8_t COUNTER_THRESHOLD = 300;
+	uint8_t ALT_ERROR_MARGIN = 10; //In meters
+	uint8_t prev_alt = 0;
+
   /* Infinite loop */
   for(;;)
   {
 	  altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa);
 
-	  if (APOGEE_ALT <= altitude_m || ejection_stage_flag >= DROGUE_DESCENT){
+	  //TODO UPDATE TRUE APOGEE (TESTING?)
+	  if (altitude_m > rtc_bckp_reg_alt_true_apogee){
+		  rtc_bckp_reg_alt_true_apogee = altitude_m;
+		  rtc_bckp_reg_true_apogee_time = 100*prev_min + prev_sec;
+	  }
+
+	  //TODO check for apogee (starting to go down or stagnating)
+	  if(altitude_m < prev_alt || MAX(altitude_m - prev_alt, prev_alt - altitude_m) < ALT_ERROR_MARGIN) counter++;
+
+	  if (counter == COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
 
 		  if (ejection_stage_flag < DROGUE_DESCENT){
+
+			  //TODO update value to be saved in rtc bckp registers
+			  rtc_bckp_reg_alt_apogee = altitude_m;
+			  rtc_bckp_reg_apogee_time = 100*prev_min + prev_sec;
 
 			  //Update state (save the state in WatchDog thread)
 			  ejection_stage_flag = DROGUE_DESCENT;
@@ -307,8 +326,11 @@ void StartEjection1(void *argument)
 			  //We reached main deployment altitude
 			  if (altitude_m < DEPLOY_ALT || ejection_stage_flag >= MAIN_DESCENT){
 
-
 				  if (ejection_stage_flag < MAIN_DESCENT){
+
+					  //TODO update value to be saved in rtc bckp registers
+					  rtc_bckp_reg_alt_main = altitude_m;
+					  rtc_bckp_reg_main_time = 100*prev_min + prev_sec;
 
 					  //Update state (save the state in WatchDog thread)
 					  ejection_stage_flag = MAIN_DESCENT;
@@ -343,6 +365,10 @@ void StartEjection1(void *argument)
 					  prev_altitude = cur_altitude;
 					  osDelay(100);
 				  }
+
+				  //TODO update value to be saved in rtc bckp registers
+				  rtc_bckp_reg_alt_landed = altitude_m;
+				  rtc_bckp_reg_landed_time = 100*prev_min + prev_sec;
 
 				  //Update state (saved state in WatchDog thread)
 				  ejection_stage_flag = LANDED;
@@ -544,7 +570,7 @@ void StartWatchDog(void *argument)
 	 println((char*) buffer);
 
 
-	 //Check if new ejection stage to save on external flash
+	 //Check if new ejection stage to save in memory
 	 if(wd_ejection_flag == 1){
 
 		wd_ejection_flag = 0;
@@ -561,6 +587,18 @@ void StartWatchDog(void *argument)
 			ext_flash_apogee = apogee_flag;
 			MRT_saveFlagValue(FC_STATE_APOGEE);
 		}
+
+		//TODO TESTING SAVE EVERY ALT REGISTERS
+		MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
+		MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
+		MRT_RTC_setBackupReg(FC_STATE_TRUE_APOGEE, rtc_bckp_reg_alt_true_apogee);
+		MRT_RTC_setBackupReg(FC_TRUE_APOGEE_TIME, rtc_bckp_reg_true_apogee_time);
+		MRT_RTC_setBackupReg(FC_STATE_ALT_APOGEE, rtc_bckp_reg_alt_apogee);
+		MRT_RTC_setBackupReg(FC_APOGEE_TIME, rtc_bckp_reg_apogee_time);
+		MRT_RTC_setBackupReg(FC_STATE_ALT_MAIN, rtc_bckp_reg_alt_main);
+		MRT_RTC_setBackupReg(FC_MAIN_TIME, rtc_bckp_reg_main_time);
+		MRT_RTC_setBackupReg(FC_STATE_ALT_LANDED, rtc_bckp_reg_alt_landed);
+		MRT_RTC_setBackupReg(FC_LANDED_TIME, rtc_bckp_reg_landed_time);
 	 }
 
 	  //Check if it's sleep time

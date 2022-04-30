@@ -42,6 +42,9 @@
 #include <MRT_propulsion.h>
 #include <MRT_telemetry.h>
 
+//TODO for testing
+#include <MRT_i2c_sensors.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,6 +194,11 @@ void MRT_waitForLaunch(void){
 
 	println("Waiting for launch command from ground station\r\n");
 
+	//TODO for testing (saved in wd thread)
+	hlps22hh.getPressure();
+	rtc_bckp_reg_alt_pad = MRT_getAltitude(hlps22hh.pressure_hPa);
+	MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
+
 	char radio_buffer[RADIO_BUFFER_SIZE];
 	radio_command cmd = -1;
 
@@ -213,8 +221,6 @@ void MRT_waitForLaunch(void){
 		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		MRT_radio_rx(radio_buffer, 6, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
 		cmd = radio_parse_command(radio_buffer);
-		execute_parsed_command(cmd);
-
 		if (cmd == LAUNCH){
 			//Update ejection stage flag and save it
 			ejection_stage_flag = BOOST;
@@ -222,6 +228,7 @@ void MRT_waitForLaunch(void){
 			ext_flash_ejection_stage = BOOST;
 			MRT_saveFlagValue(FC_STATE_FLIGHT);
 		}
+		execute_parsed_command(cmd);
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
@@ -231,6 +238,18 @@ void MRT_waitForLaunch(void){
 
 		HAL_Delay(1000/PRE_APOGEE_SEND_FREQ);
 	}
+
+
+	//TODO testing time (saved in watchdog thread
+	 //Get RTC time
+	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+	 prev_min = sTime.Minutes;
+	 prev_sec = sTime.Seconds;
+	 if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
+	 prev_subsec = sTime.SubSeconds;
+	 rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
+	 MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
 
 
 	//Send acknowledgement

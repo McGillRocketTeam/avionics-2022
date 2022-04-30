@@ -405,7 +405,7 @@ void MRT_checkWakeUp(void){
 
 
 
-
+/*
 // gets backup register values and performs the appropriate
 // restoration action (e.g. arming, altitudes, etc.)
 void restore_fc_states(void) {
@@ -430,3 +430,4 @@ void restore_fc_states(void) {
 	alt_apogee = (float) (MRT_RTC_getBackupReg(FC_STATE_ALT_APOGEE));
 	alt_prev = (float) (MRT_RTC_getBackupReg(FC_STATE_ALT_PREV));
 }
+*/

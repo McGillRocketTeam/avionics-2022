@@ -91,3 +91,14 @@ void MRT_updateExternalFlashValues(void){
 		*ext_flash_time[i] = ext_flash_time_buffer[i];
 	}
 }
+
+
+void MRT_clearExternalFlash(void){
+	//Clear flags
+	W25qxx_EraseSector(FLAGS_SECTOR);
+	W25qxx_WriteSector(FLAGS_NULL_BUFFER, FLAGS_SECTOR, FLAGS_OFFSET, NB_OF_FLAGS);
+
+	//Clear RTC time (last recorded)
+	W25qxx_EraseSector(RTC_SECTOR);
+	W25qxx_WriteSector(RTC_TIME_NULL_BUFFER, RTC_SECTOR, RTC_TIME_OFFSET, RTC_NB_OF_VAR);
+}

@@ -62,7 +62,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/MRT_EJECTION/Inc/MRT_ejection.h \
  ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h \
  ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
- ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h
+ ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
+ ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
+ ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
+ ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
+ ../Drivers/MRT_SENSORS/Inc/gps.h
 
 ../Core/Inc/main.h:
 
@@ -215,3 +219,11 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
 
 ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h:
+
+../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
+
+../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h:
+
+../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h:
+
+../Drivers/MRT_SENSORS/Inc/gps.h:

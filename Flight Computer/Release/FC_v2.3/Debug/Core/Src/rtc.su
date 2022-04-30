@@ -6,7 +6,7 @@ rtc.c:197:6:MRT_clear_alarms_flags	8	static
 rtc.c:237:6:MRT_StandByMode	56	static
 rtc.c:274:6:MRT_set_rtc	40	static
 rtc.c:301:6:MRT_set_alarmA	16	static
-rtc.c:349:6:MRT_RTC_backup_regs_Init	24	static
-rtc.c:356:6:MRT_RTC_resetBackupRegs	16	static
-rtc.c:365:10:MRT_RTC_getBackupReg	24	static
-rtc.c:373:6:MRT_RTC_setBackupReg	16	static
+rtc.c:369:6:MRT_RTC_backup_regs_Init	176	static
+rtc.c:390:6:MRT_RTC_clearBackupRegs	16	static
+rtc.c:399:10:MRT_RTC_getBackupReg	24	static
+rtc.c:407:6:MRT_RTC_setBackupReg	16	static

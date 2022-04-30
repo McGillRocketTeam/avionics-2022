@@ -58,7 +58,7 @@ void MRT_set_alarmA(uint8_t h, uint8_t m, uint8_t s);
 
 //Backup registers
 
-#define NB_RTC_BCKP_REGS	9
+#define NB_RTC_BCKP_REGS	19 //Max of 20
 
 typedef enum rtc_backup_reg {
 	// for simplicity, put them all in separate backup registers
@@ -78,11 +78,18 @@ typedef enum rtc_backup_reg {
 	RTC_SUBSEC,
 
 	//FC state (others) //TODO ADD THESE TO EXTERNAL FLASH and GETINFO PROCEDURE (Or nah?)
-	FC_STATE_VR_POWER,
-	FC_STATE_VR_RECORDING,
-	FC_STATE_ALT_GROUND,			// floats will be rounded to int
+//	FC_STATE_VR_POWER,
+//	FC_STATE_VR_RECORDING,
+	FC_STATE_ALT_PAD,			// floats will be rounded to int
+	FC_PAD_TIME,
+	FC_STATE_TRUE_APOGEE,
+	FC_TRUE_APOGEE_TIME,
 	FC_STATE_ALT_APOGEE,
-	FC_STATE_ALT_PREV,
+	FC_APOGEE_TIME,
+	FC_STATE_ALT_MAIN,
+	FC_MAIN_TIME,
+	FC_STATE_ALT_LANDED,
+	FC_LANDED_TIME
 } rtc_backup_reg;
 
 //Flags
@@ -98,12 +105,27 @@ extern uint32_t rtc_bckp_reg_min; //Last recorded minutes
 extern uint32_t rtc_bckp_reg_sec; //Last recorded seconds
 extern uint32_t rtc_bckp_reg_subsec; //Last recorded subseconds
 
+//FC states
+extern uint32_t rtc_bckp_reg_vr_power;
+extern uint32_t rtc_bckp_reg_vr_rec;
+
+extern uint32_t rtc_bckp_reg_alt_pad; // floats will be rounded to int
+extern uint32_t rtc_bckp_reg_pad_time;
+extern uint32_t rtc_bckp_reg_alt_true_apogee;
+extern uint32_t rtc_bckp_reg_true_apogee_time;
+extern uint32_t rtc_bckp_reg_alt_apogee;
+extern uint32_t rtc_bckp_reg_apogee_time;
+extern uint32_t rtc_bckp_reg_alt_main;
+extern uint32_t rtc_bckp_reg_main_time;
+extern uint32_t rtc_bckp_reg_alt_landed;
+extern uint32_t rtc_bckp_reg_landed_time;
+
 
 //Reference list to each time component (in the same order than typedef enum rtc_backup_reg
 uint32_t* rtc_bckp_regs[NB_RTC_BCKP_REGS];
 
 void MRT_RTC_backup_regs_Init(void);
-void MRT_RTC_resetBackupRegs(void);
+void MRT_RTC_clearBackupRegs(void);
 uint32_t MRT_RTC_getBackupReg(rtc_backup_reg state);
 void MRT_RTC_setBackupReg(rtc_backup_reg state, uint32_t value);
 
