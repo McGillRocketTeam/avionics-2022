@@ -62,8 +62,8 @@ void runMEKF() {// used for testing only
 		mekf2.kf_predict(gyro_meas[i], acc_meas[i]);
 		mekf2.kf_update();
 		std::cout << "predict worked" << std::endl;
-		//mekf2.kf_correct(gps_meas[i]); 
-		//mekf2.kf_update();
+		mekf2.kf_correct(gps_meas[i]); 
+		mekf2.kf_update();
 		std::cout << "correct worked" << std::endl;
 		pos_pred[i] = mekf2.ra_k;
 		orien_pred[i] = mekf2.dcmToEuler(mekf2.Cab_k);
