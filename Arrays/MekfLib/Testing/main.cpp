@@ -43,9 +43,9 @@ void runMEKF() {// used for testing only
 		mekf.kf_predict(gyro_input, acc_input);
 		mekf.kf_update();
 		Eigen::Vector3d gps_noise;
-		gps_noise << sin(10*i),
-					 sin(10*i),
-					 sin(10*i);
+		gps_noise << 0.1 * sin(10*i),
+					 0.1 * sin(10*i),
+					 0.1 * sin(10*i);
 
 		gps_meas[i] = mekf.ra_k + gps_noise;
 		gyro_meas[i] = gyro_input + gps_noise;
@@ -54,22 +54,23 @@ void runMEKF() {// used for testing only
 	
 	Eigen::Vector3d pos_pred[N];
 	Eigen::Vector3d orien_pred[N];
+	MEKF mekf2(0.01, 0.1, 0.1, 2, 0.1, 0.5);
 
 	std::cout << "loop 2" << std::endl;
 	//data consumption
 	for (int i = 0; i < N; i++) {
-		mekf.kf_predict(gyro_meas[i], acc_meas[i]);
-		mekf.kf_update();
+		mekf2.kf_predict(gyro_meas[i], acc_meas[i]);
+		mekf2.kf_update();
 		std::cout << "predict worked" << std::endl;
-		mekf.kf_correct(gps_meas[i]); 
-		mekf.kf_update();
+		//mekf2.kf_correct(gps_meas[i]); 
+		//mekf2.kf_update();
 		std::cout << "correct worked" << std::endl;
-		pos_pred[i] = mekf.ra_k;
-		orien_pred[i] = mekf.dcmToEuler(mekf.Cab_k);
-		printVector(mekf.ra_k);
-		printMatrix3(mekf.Cab_k);
+		pos_pred[i] = mekf2.ra_k;
+		orien_pred[i] = mekf2.dcmToEuler(mekf2.Cab_k);
+		printVector(mekf2.ra_k);
+		printMatrix3(mekf2.Cab_k);
 	}
-	printVector(mekf.ra_k);
+	printVector(mekf2.ra_k);
 }
 
 int main(void) {
