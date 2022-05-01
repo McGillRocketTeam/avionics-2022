@@ -50,13 +50,15 @@ class MEKF {
         void kf_predict(Eigen::Vector3d gyro_input, Eigen::Vector3d acc_input);
 
         //correct step
-        void kf_correct();
+        void kf_correct(Eigen::Vector3d gps_input);
 
         // t -> t+1
         void kf_update();
 
         //Helpers 
-        Eigen::Matrix3d initRotation(double roll, double yaw, double pitch);
+        Eigen::Matrix3d eulerToDcm(double roll, double yaw, double pitch);
+
+        Eigen::Vector3d dcmToEuler(Eigen::Matrix3d dcm);
 
         Eigen::MatrixXd crossOperator(Eigen::Vector3d vector);
 };

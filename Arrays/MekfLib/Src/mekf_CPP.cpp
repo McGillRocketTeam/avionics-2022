@@ -30,7 +30,7 @@ MEKF::MEKF(double dt,double sigma_gyro, double sigma_acc, double sigma_gps, doub
     this->correction_term = Eigen::MatrixXd::Zero(9, 1); //9x1 zeros
 
     //static matrices
-    this->Cab_k_1 = initRotation(0.2, 0.3, 0.5); //3x3
+    this->Cab_k_1 = eulerToDcm(0.0, 0.0, 0.0); //3x3
     this->Cab_k = Eigen::MatrixXd::Identity(3, 3); //3x3
 
     //dynamic matrices
@@ -108,24 +108,47 @@ void MEKF::kf_predict(Eigen::Vector3d gyro_input, Eigen::Vector3d acc_input){
     this->P_k = this->A * this->P_k_1 * this->A.transpose() + this->L * this->Q * this->L.transpose();
 }
 
-void MEKF::kf_correct() {
-    std::cout << "cpp correct" << std::endl;
-    return;
+void MEKF::kf_correct(Eigen::Vector3d gps_input) {
+
+    this->S2 = this->M_k  * this->R * this->M_k.transpose();
+    this->K_k = this->P_k * this->C_k.transpose() * (this->C_k * this->P_k * this->C_k.transpose() + this->S2).inverse();
+    Eigen::MatrixXd i9 = Eigen::MatrixXd::Identity(9, 9);
+    this->S1 = i9 - this->K_k * this->C_k;
+    this->P_k = this->S1 * this->P_k * this->S1.transpose() + this->K_k * this->S2 * this->K_k.transpose();
+
+    this->correction_term = this->K_k * (gps_input - this->ra_k);
+
+    Eigen::Vector3d f;
+    f << this->correction_term(0),
+               correction_term(1),
+               correction_term(2);
+    Eigen::Vector3d g;
+    g <<  this->correction_term(3),
+          this->correction_term(4),
+          this->correction_term(5);
+    Eigen::Vector3d h;
+    h << this->correction_term(6),
+         this->correction_term(7),
+         this->correction_term(8);
+
+    Eigen::Matrix3d correct_cross = crossOperator(f);
+    this->Cab_k = this->Cab_k * (-correct_cross).exp();
+    this->Va_k = this->Va_k + g;
+    this->ra_k = this->ra_k + h;
 }
 
 void MEKF::kf_update() {
-    std::cout << "cpp update" << std::endl;
+
     this->Cab_k_1 = this->Cab_k;
     this->Va_k_1 = this->Va_k;
     this->ra_k_1 = this->ra_k;
     this->P_k_1 = this->P_k;
-    return;
 }
 
 //Helper methods 
 
 //creates a rotation matrix from Euler angles 
-Eigen::Matrix3d MEKF::initRotation(double roll,double yaw, double pitch) {
+Eigen::Matrix3d MEKF::eulerToDcm(double roll,double yaw, double pitch) {
 
     Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitZ());
     Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitY());
@@ -135,6 +158,15 @@ Eigen::Matrix3d MEKF::initRotation(double roll,double yaw, double pitch) {
 
     Eigen::Matrix3d rotationMatrix = q.toRotationMatrix();
     return rotationMatrix;
+}
+
+Eigen::Vector3d MEKF::dcmToEuler(Eigen::Matrix3d dcm) {
+    Eigen::Matrix3d c = dcm.log();
+    Eigen::Vector3d d;
+    d << c(2, 1), 
+         c(0, 2), 
+         c(1, 0);
+    return d;
 }
 
 //applies the cross operator on a 3d vector
