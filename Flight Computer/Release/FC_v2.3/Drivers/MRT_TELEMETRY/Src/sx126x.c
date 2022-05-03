@@ -595,30 +595,30 @@ void RxProtocol(uint8_t buffer_received[]){
     } while ( (!(irq & SX126X_IRQ_RX_DONE)) && (!(irq & SX126X_IRQ_TIMEOUT)) );
 
     if (irq & SX126X_IRQ_TIMEOUT) {
-        transmitBuffer("RX TIMEOUT!");
+        //transmitBuffer("RX TIMEOUT!");
         sx126x_clear_irq_status(&hspi, SX126X_IRQ_TIMEOUT);
     } else {
         if (irq & SX126X_IRQ_HEADER_ERROR || irq & SX126X_IRQ_CRC_ERROR) {
-            transmitBuffer("CRC ERROR");
+            //transmitBuffer("CRC ERROR");
             sx126x_clear_irq_status(&hspi, SX126X_IRQ_HEADER_ERROR | SX126X_IRQ_CRC_ERROR);
         } else if (irq & SX126X_IRQ_RX_DONE) {
             command_status = sx126x_read_buffer(&hspi, buffer_received);
 
             if (command_status != SX126X_STATUS_OK) {
-                transmitBuffer("Receive Buffer failed, command status: ");
-                transmitStatus(command_status);
+                //transmitBuffer("Receive Buffer failed, command status: ");
+                //transmitStatus(command_status);
 
-                transmitBuffer("IRQ status: ");
-                transmitIRQ(irq);
+                //transmitBuffer("IRQ status: ");
+                //transmitIRQ(irq);
 
                 //maybe add device status
             } else {
                 sx126x_get_irq_status(&hspi, &irq);
-                transmitBuffer("IRQ Status: ");
-                transmitIRQ(irq);
+                //transmitBuffer("IRQ Status: ");
+                //transmitIRQ(irq);
 
-                transmitBuffer("----- RECEIVED DATA -----");
-                transmitBuffer(buffer_received);
+                //transmitBuffer("----- RECEIVED DATA -----");
+                //transmitBuffer(buffer_received);
             }
         }
     }

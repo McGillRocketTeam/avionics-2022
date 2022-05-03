@@ -23,7 +23,7 @@ extern "C" {
 
 //**************************************************//
 //DEBUGGING
-#define DEBUG 1 //If in debug mode, no IWDG
+#define DEBUG 0 //If in debug mode, no IWDG
 #define DEBUG_UART huart8
 #define PRINT 1
 #define NO_BUZZ 0
