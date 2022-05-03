@@ -208,13 +208,17 @@ void MRT_waitForLaunch(void){
 
 		HAL_IWDG_Refresh(&hiwdg);
 
+		//Save the RTC time
+	    MRT_saveTotalTime();
+
 		//Poll propulsion sensors
 		MRT_pollPropulsion();
 
 		//Send propulsion data
 		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		sprintf(radio_buffer,"P,%.2f,%.2f, %i,E",transducer_voltage,thermocouple_temperature,(int) valve_status);
-		MRT_radio_tx(radio_buffer);
+		//MRT_radio_tx(radio_buffer);
+
 
 
 		//Check for launch command

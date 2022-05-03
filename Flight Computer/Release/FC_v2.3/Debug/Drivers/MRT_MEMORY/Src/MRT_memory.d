@@ -60,7 +60,7 @@ Drivers/MRT_MEMORY/Src/MRT_memory.o: \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
  ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
- ../Drivers/MRT_MISC/Inc/video_recorder.h
+ ../Drivers/MRT_MISC/Inc/video_recorder.h ../Core/Inc/iwdg.h
 
 ../Core/Inc/MRT_helpers.h:
 
@@ -203,3 +203,5 @@ Drivers/MRT_MEMORY/Src/MRT_memory.o: \
 ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h:
 
 ../Drivers/MRT_MISC/Inc/video_recorder.h:
+
+../Core/Inc/iwdg.h:

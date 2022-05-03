@@ -11,6 +11,7 @@
 #include <MRT_memory.h>
 #include <radio_commands.h>
 #include <video_recorder.h>
+#include <iwdg.h>
 
 //**************************************************//
 //VARIABLES AND PROTOTYPES

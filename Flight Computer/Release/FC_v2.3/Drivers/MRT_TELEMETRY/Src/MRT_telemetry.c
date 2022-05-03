@@ -19,8 +19,8 @@ void MRT_radio_tx(char* buffer){
 		if (strlen(buffer) < XTEND_BUFFER_SIZE)	HAL_UART_Transmit(&XTEND_UART,(uint8_t*) buffer, strlen(buffer), HAL_MAX_DELAY);
 	#elif SRADIO_ //SRadio send TODO
 		if (strlen(buffer) < SRADIO_BUFFER_SIZE){
-			sx126x_set_tx(&SRADIO_SPI,100,SRADIO_BUFFER_SIZE);
-			TxProtocol(buffer, strlen(buffer));
+			sx126x_set_tx(&SRADIO_SPI, 1000, SRADIO_BUFFER_SIZE);
+			TxProtocol((uint8_t*) buffer, strlen(buffer));
 		}
 	#endif
 
@@ -36,8 +36,8 @@ void MRT_radio_rx(char* buffer, uint8_t size, uint16_t timeout){
 		}
 	#elif SRADIO_ //SRadio receive TODO
 		if (size < SRADIO_BUFFER_SIZE){
-			sx126x_set_rx(&SRADIO_SPI,100);
-			RxProtocol(buffer);
+			sx126x_set_rx(&SRADIO_SPI,5000);
+			RxProtocol((uint8_t*) buffer);
 		}
 	#endif
 
@@ -61,7 +61,8 @@ void MRT_radio_Init(void){
 	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
 	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
 	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-	Tx_setup();
+	//Tx_setup();
+	Rx_setup();
 	println("OK");
 	#else
 	println("\tNo radio currently in use");
@@ -77,7 +78,7 @@ void MRT_TELEMETRY_Init(void){
 
 	#if IRIDIUM_
 		HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-		#if IRIDIUM_INTERNAL_PRINT
+		#if IRIDIUM_INTERNAL_PRINTtGA
 		hiridium = MRT_Iridium_Init(IRIDIUM_TIMEOUT, IRIDIUM_I2C, print);
 		#else
 		hiridium = MRT_Iridium_Init(IRIDIUM_TIMEOUT, IRIDIUM_I2C, no_print); //Doesn't print the internal commands
