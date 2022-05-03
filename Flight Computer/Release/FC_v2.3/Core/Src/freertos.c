@@ -273,7 +273,7 @@ void StartEjection1(void *argument)
 
 	//TODO put in setup.h?
 	uint8_t counter = 0;
-	uint8_t COUNTER_THRESHOLD = 300;
+	uint8_t COUNTER_THRESHOLD = 500;
 	uint8_t ALT_ERROR_MARGIN = 10; //In meters
 	uint8_t prev_alt = 0;
 
@@ -288,8 +288,12 @@ void StartEjection1(void *argument)
 		  rtc_bckp_reg_true_apogee_time = 100*prev_min + prev_sec;
 	  }
 
-	  //TODO check for apogee (starting to go down or stagnating)
-	  if(altitude_m < prev_alt || MAX(altitude_m - prev_alt, prev_alt - altitude_m) < ALT_ERROR_MARGIN) counter++;
+	  //TODO check for apogee (starting to go down or stagnating, add to counter)
+	  if(altitude_m < prev_alt || MAX(altitude_m - prev_alt, prev_alt - altitude_m) < ALT_ERROR_MARGIN){
+		  counter++;
+		  char buff[50];
+		  sprintf(buff, "Alt: %i,  MAX:%i, counter: %i", altitude_m, MAX(altitude_m - prev_alt, prev_alt - altitude_m), counter);
+	  }
 
 	  if (counter == COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
 
@@ -382,6 +386,10 @@ void StartEjection1(void *argument)
 			  osDelay(10);
 		  }
 	  }
+
+
+	  //Update previous altitude
+	  prev_alt = altitude_m;
 
 	  osDelay(10);
   }

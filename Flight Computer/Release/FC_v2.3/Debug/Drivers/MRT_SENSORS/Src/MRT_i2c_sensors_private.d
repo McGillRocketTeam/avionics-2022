@@ -43,7 +43,7 @@ Drivers/MRT_SENSORS/Src/MRT_i2c_sensors_private.o: \
  ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
  ../Drivers/MRT_SENSORS/Inc/gps.h ../Core/Inc/main.h \
  ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/main.h \
- ../Core/Inc/i2c.h ../Core/Inc/adc.h
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/spi.h
 
 ../Core/Inc/MRT_helpers.h:
 
@@ -140,3 +140,5 @@ Drivers/MRT_SENSORS/Src/MRT_i2c_sensors_private.o: \
 ../Core/Inc/i2c.h:
 
 ../Core/Inc/adc.h:
+
+../Core/Inc/spi.h:

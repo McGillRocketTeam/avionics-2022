@@ -1,9 +1,9 @@
 core_cm4.h:1939:34:__NVIC_SystemReset	4	static,ignoring_inline_asm
 freertos.c:134:6:MX_FREERTOS_Init	8	static
 freertos.c:198:6:StartMemory0	16	static
-freertos.c:257:6:StartEjection1	24	static
-freertos.c:403:6:StartTelemetry2	280	static
-freertos.c:494:6:StartSensors3	16	static
-freertos.c:547:6:StartWatchDog	304	static
-freertos.c:637:6:StartPropulsion4	16	static
-freertos.c:678:6:MRT_checkThreadStates	16	static
+freertos.c:257:6:StartEjection1	104	static
+freertos.c:411:6:StartTelemetry2	280	static
+freertos.c:502:6:StartSensors3	16	static
+freertos.c:555:6:StartWatchDog	304	static
+freertos.c:645:6:StartPropulsion4	16	static
+freertos.c:686:6:MRT_checkThreadStates	16	static

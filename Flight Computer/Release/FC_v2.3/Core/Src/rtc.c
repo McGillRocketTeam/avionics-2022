@@ -372,7 +372,7 @@ void MRT_RTC_backup_regs_Init(void){
 	}
 
 	//TODO TESTING
-	char buffer[100];
+	char buffer[256];
 	sprintf(buffer, "ALTITUDES:\r\n\tGround: %i \tTime: %i"
 					"\r\n\tTrue Apogee: %i \tTime: %i"
 					"\r\n\tApogee: %i \tTime: %i"
@@ -383,7 +383,7 @@ void MRT_RTC_backup_regs_Init(void){
 			rtc_bckp_reg_alt_landed, rtc_bckp_reg_landed_time);
 	print(buffer);
 
-	HAL_Delay(2000);
+	HAL_Delay(20000);
 }
 
 // initializes backup register values to zero

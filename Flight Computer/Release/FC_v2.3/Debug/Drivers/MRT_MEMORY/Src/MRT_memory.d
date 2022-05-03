@@ -38,7 +38,7 @@ Drivers/MRT_MEMORY/Src/MRT_memory.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/i2c.h ../Core/Inc/adc.h \
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/spi.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_memory.h ../Core/Inc/rtc.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
  ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Core/Inc/main.h \
@@ -147,6 +147,8 @@ Drivers/MRT_MEMORY/Src/MRT_memory.o: \
 ../Core/Inc/i2c.h:
 
 ../Core/Inc/adc.h:
+
+../Core/Inc/spi.h:
 
 ../Drivers/MRT_MEMORY/Inc/MRT_memory.h:
 

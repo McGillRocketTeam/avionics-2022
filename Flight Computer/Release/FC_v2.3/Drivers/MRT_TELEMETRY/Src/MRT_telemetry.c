@@ -19,7 +19,7 @@ void MRT_radio_tx(char* buffer){
 		if (strlen(buffer) < XTEND_BUFFER_SIZE)	HAL_UART_Transmit(&XTEND_UART,(uint8_t*) buffer, strlen(buffer), HAL_MAX_DELAY);
 	#elif SRADIO_ //SRadio send TODO
 		if (strlen(buffer) < SRADIO_BUFFER_SIZE){
-			//sx126x_set_tx(); TODO
+			sx126x_set_tx(&SRADIO_SPI,100,SRADIO_BUFFER_SIZE);
 			TxProtocol(buffer, strlen(buffer));
 		}
 	#endif
@@ -36,8 +36,8 @@ void MRT_radio_rx(char* buffer, uint8_t size, uint16_t timeout){
 		}
 	#elif SRADIO_ //SRadio receive TODO
 		if (size < SRADIO_BUFFER_SIZE){
-			//sx126x_set_rx(); TODO??
-			RxProtocol(buffer)
+			sx126x_set_rx(&SRADIO_SPI,100);
+			RxProtocol(buffer);
 		}
 	#endif
 

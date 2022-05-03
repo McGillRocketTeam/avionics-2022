@@ -18,11 +18,12 @@ extern "C" {
 #include <usart.h> //For uart handler variable
 #include <i2c.h>
 #include <adc.h>
+#include <spi.h>
 
 
 //**************************************************//
 //DEBUGGING
-#define DEBUG 0 //If in debug mode, no IWDG
+#define DEBUG 1 //If in debug mode, no IWDG
 #define DEBUG_UART huart8
 #define PRINT 1
 #define NO_BUZZ 0
@@ -133,7 +134,7 @@ extern "C" {
 
 
 //SRadio
-#define SRADIO_ 0
+#define SRADIO_ 1
 #define SRADIO_SPI hspi2
 #define SRADIO_BUFFER_SIZE 256
 
@@ -151,7 +152,7 @@ extern "C" {
 #endif
 
 //Iridium
-#define IRIDIUM_ 0
+#define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 

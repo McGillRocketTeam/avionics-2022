@@ -37,7 +37,7 @@ Core/Src/MRT_helpers.o: ../Core/Src/MRT_helpers.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/tim.h
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/spi.h ../Core/Inc/tim.h
 
 ../Core/Inc/MRT_helpers.h:
 
@@ -124,5 +124,7 @@ Core/Src/MRT_helpers.o: ../Core/Src/MRT_helpers.c \
 ../Core/Inc/i2c.h:
 
 ../Core/Inc/adc.h:
+
+../Core/Inc/spi.h:
 
 ../Core/Inc/tim.h:

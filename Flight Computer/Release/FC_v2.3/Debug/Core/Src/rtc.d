@@ -37,7 +37,7 @@ Core/Src/rtc.o: ../Core/Src/rtc.c ../Core/Inc/rtc.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h ../Core/Inc/i2c.h \
- ../Core/Inc/adc.h ../Core/Inc/MRT_helpers.h \
+ ../Core/Inc/adc.h ../Core/Inc/spi.h ../Core/Inc/MRT_helpers.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_memory.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
  ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Core/Inc/main.h \
@@ -144,6 +144,8 @@ Core/Src/rtc.o: ../Core/Src/rtc.c ../Core/Inc/rtc.h ../Core/Inc/main.h \
 ../Core/Inc/i2c.h:
 
 ../Core/Inc/adc.h:
+
+../Core/Inc/spi.h:
 
 ../Core/Inc/MRT_helpers.h:
 
