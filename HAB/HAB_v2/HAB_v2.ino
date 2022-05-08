@@ -3,7 +3,7 @@
 #include <SPI.h>
 
 #define GPSECHO false       // print raw GPS sentences to Serial terminal
-#define TESTING_BYPASS_ALL  // comment out for actual launch
+//#define TESTING_BYPASS_ALL  // comment out for actual launch
 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_MS8607.h>
@@ -32,7 +32,7 @@ enum error_states {
 };
 
 enum flight_states {
-  FS_PAD,
+  FS_PAD = 0,
   FS_ASCENT,
   FS_DESCENT,
   FS_LANDED
@@ -191,10 +191,10 @@ void do_save_telemetry(void) {
 
   // save to storage
   char telemetry_buffer[150] = {0};
-  sprintf(telemetry_buffer, "S,%.4f,%.4f,%.4f,%.4f,%.3f,%.3f,%d,%d,%d,%d,E",
+  sprintf(telemetry_buffer, "S,%.4f,%.4f,%.4f,%.4f,%.3f,%.3f,%d,%d,%d,%d,%d,E",
       adxl345_ds.acc_x, adxl345_ds.acc_y, adxl345_ds.acc_z,
       ms8607_ds.pressure, ms8607_ds.temperature, ms8607_ds.humidity,
-      pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second
+      pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second, flight_state
   );
   datafile.println(telemetry_buffer); // save to SD card
 
@@ -208,10 +208,10 @@ void do_save_telemetry(void) {
 
   // in more readable form for serial terminal
   sprintf(telemetry_buffer, 
-      "ACCx = %.4f\tACCy = %.4f\tACCz = %.4f\nPRESSURE = %.4f\tTEMP = %.3f\tREL HUM = %.3f\nDAY = %d\tHOUR = %d\tMIN = %d\tSEC = %d",
+      "ACCx = %.4f\tACCy = %.4f\tACCz = %.4f\nPRESSURE = %.4f\tTEMP = %.3f\tREL HUM = %.3f\nDAY = %d\tHOUR = %d\tMIN = %d\tSEC = %d\tSTATE = %d",
       adxl345_ds.acc_x, adxl345_ds.acc_y, adxl345_ds.acc_z,
       ms8607_ds.pressure, ms8607_ds.temperature, ms8607_ds.humidity,
-      pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second
+      pcf8523_ds.day, pcf8523_ds.hour, pcf8523_ds.minute, pcf8523_ds.second, flight_state
   );
   Serial.println(telemetry_buffer);
   Serial.println("");
