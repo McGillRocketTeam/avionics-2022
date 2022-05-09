@@ -5,7 +5,7 @@
  Hardware:  Any STM32 device
 *************************************************************************************/
 #include"MAX31855.h"
-SPI_HandleTypeDef hspi4;
+extern SPI_HandleTypeDef hspi4;
 
 // ------------------- Variables ----------------
 

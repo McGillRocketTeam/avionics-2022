@@ -66,19 +66,29 @@ extern "C" {
 //**************************************************//
 //RTC (24h formatting, initial RTC time is always 0 in a wake up)
 //TODO Assume Launch at 3pm, sleep from 8pm to 6am
-#define ALARM_A_ACTIVE 1
-#define SLEEP_TIME 36000 //In seconds (10 hours)
+#define ALARM_A_ACTIVE 0
+#define ALARM_B_ACTIVE 0
+//#define SLEEP_TIME 36000 //In seconds (10 hours)
+#define SLEEP_TIME 15 //In seconds
 
+/*
 //Launch day sleep time (launch at 3:30pm)
 #define PRE_WHEN_SLEEP_TIME_SEC 0  //In seconds
 #define PRE_WHEN_SLEEP_TIME_MIN 30  //In minutes
 #define PRE_WHEN_SLEEP_TIME_HOURS 4  //In hours
-
+*/
+#define PRE_WHEN_SLEEP_TIME_SEC 13  //In seconds
+#define PRE_WHEN_SLEEP_TIME_MIN 0  //In minutes
+#define PRE_WHEN_SLEEP_TIME_HOURS 0  //In hours
+/*
 //Post launch day sleep time (waking up at 6am)
 #define POST_WHEN_SLEEP_TIME_SEC 0  //In seconds
 #define POST_WHEN_SLEEP_TIME_MIN 0  //In minutes
 #define POST_WHEN_SLEEP_TIME_HOURS 14  //In hours
-
+*/
+#define POST_WHEN_SLEEP_TIME_SEC 25  //In seconds
+#define POST_WHEN_SLEEP_TIME_MIN 0  //In minutes
+#define POST_WHEN_SLEEP_TIME_HOURS 0  //In hours
 
 
 
@@ -134,7 +144,7 @@ extern "C" {
 
 
 //SRadio
-#define SRADIO_ 1
+#define SRADIO_ 0
 #define SRADIO_SPI hspi2
 #define SRADIO_BUFFER_SIZE 256
 

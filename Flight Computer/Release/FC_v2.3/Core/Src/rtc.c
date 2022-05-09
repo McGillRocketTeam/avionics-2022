@@ -111,6 +111,21 @@ void MX_RTC_Init(void)
   {
     Error_Handler();
   }
+  /** Enable the Alarm B
+  */
+  sAlarm.AlarmTime.Minutes = 0x0;
+  sAlarm.Alarm = RTC_ALARM_B;
+  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Enable the WakeUp
+  */
+  __HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&hrtc, RTC_FLAG_WUTF);
+  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -139,6 +154,8 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
     __HAL_RCC_RTC_ENABLE();
 
     /* RTC interrupt Init */
+    HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
     HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
   /* USER CODE BEGIN RTC_MspInit 1 */
@@ -159,6 +176,7 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
     __HAL_RCC_RTC_DISABLE();
 
     /* RTC interrupt Deinit */
+    HAL_NVIC_DisableIRQ(RTC_WKUP_IRQn);
     HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
   /* USER CODE BEGIN RTC_MspDeInit 1 */
 
@@ -179,17 +197,21 @@ void MRT_rtc_Init(void){
 	MRT_set_rtc(prev_hour,prev_min,prev_sec);
 	println("OK");
 
+	HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
+
 	#if ALARM_A_ACTIVE
 		print("\tSetting alarmA...");
-		HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
-		if (wu_flag == 0){
-			MRT_set_alarmA(PRE_WHEN_SLEEP_TIME_HOURS, PRE_WHEN_SLEEP_TIME_MIN, PRE_WHEN_SLEEP_TIME_SEC);
-		}
-		else{
-			MRT_set_alarmA(POST_WHEN_SLEEP_TIME_HOURS, POST_WHEN_SLEEP_TIME_MIN, POST_WHEN_SLEEP_TIME_SEC);
-		}
+		MRT_set_alarmA(PRE_WHEN_SLEEP_TIME_HOURS, PRE_WHEN_SLEEP_TIME_MIN, PRE_WHEN_SLEEP_TIME_SEC);
 		println("OK");
 	#endif
+
+	#if ALARM_B_ACTIVE
+		print("\tSetting alarmB...");
+		MRT_set_alarmB(POST_WHEN_SLEEP_TIME_HOURS, POST_WHEN_SLEEP_TIME_MIN, POST_WHEN_SLEEP_TIME_SEC);
+		println("OK");
+	#endif
+
+
 }
 
 
@@ -312,6 +334,28 @@ void MRT_set_alarmA(uint8_t h, uint8_t m, uint8_t s){
 	  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
 	  sAlarm.AlarmDateWeekDay = 0x1;
 	  sAlarm.Alarm = RTC_ALARM_A;
+	  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
+	  {
+	    Error_Handler();
+	  }
+}
+
+
+
+void MRT_set_alarmB(uint8_t h, uint8_t m, uint8_t s){
+	  /** Enable the AlarmB
+	  */
+	  sAlarm.AlarmTime.Hours = int_to_hex_table[h];
+	  sAlarm.AlarmTime.Minutes = int_to_hex_table[m];
+	  sAlarm.AlarmTime.Seconds = int_to_hex_table[s];
+	  sAlarm.AlarmTime.SubSeconds = 0x0;
+	  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+	  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
+	  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+	  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+	  sAlarm.AlarmDateWeekDay = 0x1;
+	  sAlarm.Alarm = RTC_ALARM_B;
 	  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
 	  {
 	    Error_Handler();

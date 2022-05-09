@@ -10,6 +10,7 @@
 #include <MRT_helpers.h>
 #include <MRT_i2c_sensors_private.h>
 #include <MRT_setup.h>
+#include <rtc.h> //Clear alarm flags
 
 
 //**************************************************//
@@ -36,8 +37,17 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	  sprintf(buffer, "%X\r\n", whoamI);
 	  print(buffer);
 
-	  println((char*) "\n\rProgram Terminated\n\r");
-	  while(1);
+
+		println((char*) "Hardfault: Going into standByMode and waiting for IWDG reset");
+		// Enable the WAKEUP PIN
+		// (Needs to be placed BEFORE clearing up the flags or else it wakes up as soon as we enter standby mode)
+		HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+
+		// Clear the flags so it doesn't wake up as soon as it goes to sleep
+		MRT_clear_alarms_flags();
+		HAL_PWR_EnterSTANDBYMode();
+
+
 	}
 	println((char*) "OK");
 
@@ -158,8 +168,16 @@ LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	  sprintf(buffer, "%X\r\n", whoamI);
 	  print(buffer);
 
-	  println((char*) "\n\rProgram Terminated\n\r");
-	  while(1);
+
+		println((char*) "Hardfault: Going into standByMode and waiting for IWDG reset");
+		//Enable the WAKEUP PIN
+		//(Needs to be placed BEFORE clearing up the flags or else it wakes up as soon as we enter standby mode)
+		HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+
+		//Clear the flags so it doesn't wake up as soon as it goes to sleep
+		MRT_clear_alarms_flags();
+		HAL_PWR_EnterSTANDBYMode();
+
 	}
 	println((char*) "OK");
 

@@ -54,6 +54,7 @@ void MRT_StandByMode(uint32_t seconds);
 
 void MRT_set_rtc(uint8_t h, uint8_t m, uint8_t s);
 void MRT_set_alarmA(uint8_t h, uint8_t m, uint8_t s);
+void MRT_set_alarmB(uint8_t h, uint8_t m, uint8_t s);
 
 
 //Backup registers
@@ -122,7 +123,7 @@ extern uint32_t rtc_bckp_reg_landed_time;
 
 
 //Reference list to each time component (in the same order than typedef enum rtc_backup_reg
-uint32_t* rtc_bckp_regs[NB_RTC_BCKP_REGS];
+extern uint32_t* rtc_bckp_regs[NB_RTC_BCKP_REGS];
 
 void MRT_RTC_backup_regs_Init(void);
 void MRT_RTC_clearBackupRegs(void);

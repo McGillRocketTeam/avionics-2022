@@ -56,7 +56,8 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
- ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h \
+ ../Core/Inc/MRT_helpers.h
 
 ../Core/Inc/main.h:
 
@@ -187,3 +188,5 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 ../FATFS/Target/user_diskio.h:
 
 ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h:
+
+../Core/Inc/MRT_helpers.h:

@@ -610,11 +610,11 @@ void StartWatchDog(void *argument)
 	 }
 
 	  //Check if it's sleep time
-	  if (flagA==1){
+	  if (flagA==1 || flagB==1){
 		//Update iwdg_flag
 		iwdg_flag = 1;
-		rtc_bckp_reg_apogee = iwdg_flag;
-		ext_flash_apogee = iwdg_flag;
+		rtc_bckp_reg_iwdg = iwdg_flag;
+		ext_flash_iwdg = iwdg_flag;
 		MRT_saveFlagValue(FC_STATE_IWDG);
 
 		//Reset to deactivate IWDG

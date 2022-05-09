@@ -26,6 +26,7 @@
 
 #include <MRT_memory.h>
 #include <MRT_iridium.h>
+#include <MRT_helpers.h>
 
 /* USER CODE END Includes */
 
@@ -97,6 +98,16 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
+
+
+	println((char*) "Hardfault: Going into standByMode and waiting for IWDG reset");
+	/* Enable the WAKEUP PIN
+	 * (Needs to be placed BEFORE clearing up the flags or else it wakes up as soon as we enter standby mode)*/
+	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+
+	/*Clear the flags so it doesn't wake up as soon as it goes to sleep*/
+	MRT_clear_alarms_flags();
+	HAL_PWR_EnterSTANDBYMode();
 
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -172,6 +183,20 @@ void DebugMon_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles RTC wake-up interrupt through EXTI line 22.
+  */
+void RTC_WKUP_IRQHandler(void)
+{
+  /* USER CODE BEGIN RTC_WKUP_IRQn 0 */
+
+  /* USER CODE END RTC_WKUP_IRQn 0 */
+  HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_WKUP_IRQn 1 */
+
+  /* USER CODE END RTC_WKUP_IRQn 1 */
+}
+
+/**
   * @brief This function handles EXTI line0 interrupt.
   */
 void EXTI0_IRQHandler(void)
@@ -221,6 +246,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		MRT_resetFromStart();
 	}
 }
+
+
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
+	println("AlarmA");
+	flagA = 1;
+}
+
+void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
+	println("AlarmB");
+	flagB = 1;
+}
+
+void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
+}
+
 
 
 

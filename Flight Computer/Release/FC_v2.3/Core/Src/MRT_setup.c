@@ -148,11 +148,6 @@ void MRT_reset_info(void){
 		  char buf[30];
 		  sprintf(buf, "FC wake up %i\r\n", wu_flag);
 		  print(buf);
-
-		  print((char*) "Resetting RTC time\r\n");
-
-		  //Clear RTC time (last recorded)
-		  MRT_resetTotalTime();
 	  }
 
 
