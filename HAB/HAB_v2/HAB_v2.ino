@@ -3,7 +3,7 @@
 #include <SPI.h>
 
 #define GPSECHO false       // print raw GPS sentences to Serial terminal
-//#define TESTING_BYPASS_ALL  // comment out for actual launch
+#define TESTING_BYPASS_ALL  // comment out for actual launch
 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_MS8607.h>
@@ -160,6 +160,9 @@ void setup() {
 
   #ifdef TESTING_BYPASS_ALL
   ft_test_on_ground();
+
+  video_recorder_stop_recording();
+  vr_is_recording = 0;
   while (1);
   #endif  
   
