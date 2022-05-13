@@ -84,6 +84,8 @@ void TESTING_LOOP(void); //TODO remove
 
 int main(void){
 	MRT_STM_Init();
+	__HAL_DBGMCU_FREEZE_IWDG();	// pause IWDG and RTC during debugging
+	__HAL_FREEZE_RTC_DBGMCU();
 	println("\r\n\r\nSTM Init...OK");
 
 	MRT_Init();
@@ -211,8 +213,12 @@ void MRT_waitForLaunch(void){
 
 		//Send propulsion data
 		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
-		sprintf(radio_buffer,"P,%.2f,%.2f, %i,E",transducer_voltage,thermocouple_temperature,(int) valve_status);
+		sprintf(radio_buffer,"P,%.2f,%.2f, %i,E\r\n",transducer_voltage,thermocouple_temperature,(int) valve_status);
 		MRT_radio_tx(radio_buffer);
+
+//		fres = sd_open_file(filename);
+//		sd_write(&fil, radio_buffer);
+//		f_close(&fil);
 
 
 

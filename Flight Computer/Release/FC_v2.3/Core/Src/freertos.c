@@ -216,9 +216,6 @@ void StartMemory0(void *argument)
     osThreadExit();
 	#endif
 
-	#if SD_CARD_
-    sd_open_file(&filename);
-	#endif
 
   /* Infinite loop */
   for(;;)
@@ -237,9 +234,11 @@ void StartMemory0(void *argument)
 
 	// Save to SD card
 	#if SD_CARD_
+	MRT_formatAvionics();
 	fres = sd_open_file(filename);
 	sd_write(&fil, msg_buffer_av);
 	if (ejection_stage_flag < MAIN_DESCENT){
+		MRT_formatPropulsion();
 		sd_write(&fil, msg_buffer_pr);
 	}
 	f_close(&fil);
@@ -440,7 +439,7 @@ void StartTelemetry2(void *argument)
 	  }
 	  else{ //Only send prop data pre-apogee
 		  //Send propulsion data
-		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+//		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		  MRT_formatPropulsion();
 		  memcpy(radio_buffer, msg_buffer_pr, strlen(msg_buffer_pr));
 		  MRT_radio_tx((char*) radio_buffer);
@@ -467,7 +466,7 @@ void StartTelemetry2(void *argument)
 		  */
 
 	  	  //Send sensors data
-		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+//		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		  MRT_formatAvionics();
 		  memcpy(radio_buffer, msg_buffer_av, strlen(msg_buffer_av));
 		  MRT_radio_tx((char*) radio_buffer);

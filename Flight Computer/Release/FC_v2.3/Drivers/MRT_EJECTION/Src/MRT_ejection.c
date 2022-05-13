@@ -50,7 +50,7 @@ uint8_t MRT_getContinuity(void){
 // formats avionics telemetry string using sprintf
 void MRT_formatAvionics(void) {
 	memset(msg_buffer_av, 0, 200);
-	sprintf(msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E",
+	sprintf(msg_buffer_av, "S,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.2f,%03.7f,%03.7f,%02d,%02d,%lu,%d,%d,E\r\n",
 		hlsm6dsr.acceleration_mg[0],	hlsm6dsr.acceleration_mg[1],	hlsm6dsr.acceleration_mg[2],
 		hlsm6dsr.angular_rate_mdps[0],	hlsm6dsr.angular_rate_mdps[1],	hlsm6dsr.angular_rate_mdps[2],
 		hlps22hh.pressure_hPa,	hgps.latitude,	hgps.longitude,

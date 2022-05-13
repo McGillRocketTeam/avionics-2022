@@ -95,7 +95,7 @@ FRESULT sd_init_dynamic_filename(char *prefix, char *header_text, char* return_f
 
 	// create filename (max filename length in char array is 13 without LFN)
 	char filename[13];
-	sprintf(filename, "fc%06lu.txt", max_used_value + 1);
+	sprintf(filename, "%s%06lu.txt", prefix, max_used_value + 1);
 	return_filename = strcpy(return_filename, filename); // needed so that other functions can open the file!
 
 	// open file (create file) on SD card
