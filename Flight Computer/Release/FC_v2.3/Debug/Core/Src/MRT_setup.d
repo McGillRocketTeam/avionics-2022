@@ -61,6 +61,9 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
+ ../FATFS/Target/user_diskio_spi.h \
+ ../Middlewares/Third_Party/FatFs/src/integer.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h \
  ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
  ../Drivers/MRT_PROPULSION/Inc/MRT_propulsion.h \
@@ -213,6 +216,12 @@ Core/Src/MRT_setup.o: ../Core/Src/MRT_setup.c ../Core/Inc/MRT_setup.h \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 
 ../FATFS/Target/user_diskio.h:
+
+../FATFS/Target/user_diskio_spi.h:
+
+../Middlewares/Third_Party/FatFs/src/integer.h:
+
+../Middlewares/Third_Party/FatFs/src/diskio.h:
 
 ../Drivers/MRT_TELEMETRY/Inc/MRT_telemetry.h:
 

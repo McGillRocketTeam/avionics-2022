@@ -60,6 +60,9 @@ Drivers/MRT_PROPULSION/Src/MRT_propulsion.o: \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
+ ../FATFS/Target/user_diskio_spi.h \
+ ../Middlewares/Third_Party/FatFs/src/integer.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Drivers/MRT_PROPULSION/Inc/MAX31855.h
 
 ../Core/Inc/MRT_setup.h:
@@ -201,5 +204,11 @@ Drivers/MRT_PROPULSION/Src/MRT_propulsion.o: \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 
 ../FATFS/Target/user_diskio.h:
+
+../FATFS/Target/user_diskio_spi.h:
+
+../Middlewares/Third_Party/FatFs/src/integer.h:
+
+../Middlewares/Third_Party/FatFs/src/diskio.h:
 
 ../Drivers/MRT_PROPULSION/Inc/MAX31855.h:

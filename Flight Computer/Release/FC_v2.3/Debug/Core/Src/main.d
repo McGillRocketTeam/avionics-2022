@@ -53,10 +53,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
- ../Core/Inc/i2c.h ../Core/Inc/iwdg.h ../Core/Inc/rtc.h ../Core/Inc/spi.h \
- ../Core/Inc/tim.h ../Core/Inc/usart.h ../Core/Inc/gpio.h \
- ../Core/Inc/MRT_setup.h ../Core/Inc/MRT_helpers.h \
- ../Drivers/MRT_MEMORY/Inc/MRT_memory.h \
+ ../FATFS/Target/user_diskio_spi.h \
+ ../Middlewares/Third_Party/FatFs/src/integer.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h ../Core/Inc/i2c.h \
+ ../Core/Inc/iwdg.h ../Core/Inc/rtc.h ../Core/Inc/spi.h ../Core/Inc/tim.h \
+ ../Core/Inc/usart.h ../Core/Inc/gpio.h ../Core/Inc/MRT_setup.h \
+ ../Core/Inc/MRT_helpers.h ../Drivers/MRT_MEMORY/Inc/MRT_memory.h \
  ../Drivers/MRT_MEMORY/Inc/MRT_external_flash.h \
  ../Drivers/MRT_MEMORY/Inc/w25qxx.h ../Drivers/MRT_MEMORY/Inc/sd_card.h \
  ../Drivers/MRT_EJECTION/Inc/MRT_ejection.h \
@@ -185,6 +187,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 
 ../FATFS/Target/user_diskio.h:
+
+../FATFS/Target/user_diskio_spi.h:
+
+../Middlewares/Third_Party/FatFs/src/integer.h:
+
+../Middlewares/Third_Party/FatFs/src/diskio.h:
 
 ../Core/Inc/i2c.h:
 

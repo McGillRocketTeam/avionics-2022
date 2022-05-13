@@ -62,6 +62,9 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
+ ../FATFS/Target/user_diskio_spi.h \
+ ../Middlewares/Third_Party/FatFs/src/integer.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h \
  ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
@@ -217,6 +220,12 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 
 ../FATFS/Target/user_diskio.h:
+
+../FATFS/Target/user_diskio_spi.h:
+
+../Middlewares/Third_Party/FatFs/src/integer.h:
+
+../Middlewares/Third_Party/FatFs/src/diskio.h:
 
 ../Drivers/MRT_SENSORS/Inc/MRT_i2c_sensors.h:
 

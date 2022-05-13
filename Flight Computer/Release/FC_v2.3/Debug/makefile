@@ -27,7 +27,6 @@ RM := rm -rf
 -include Drivers/MRT_EJECTION/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
--include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -91,8 +90,8 @@ all: main-build
 main-build: FC_v2.3.elf secondary-outputs
 
 # Tool invocations
-FC_v2.3.elf: $(OBJS) $(USER_OBJS) C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight\ Computer\avionics-2022\Flight\ Computer\Release\FC_v2.3\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "FC_v2.3.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight Computer\avionics-2022\Flight Computer\Release\FC_v2.3\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FC_v2.3.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+FC_v2.3.elf: $(OBJS) $(USER_OBJS) C:\Users\jaspe\Desktop\Rocket\ Team\ STM32\00\ STM32\ Workspace\avionics-2022\Flight\ Computer\Release\FC_v2.3\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-g++ -o "FC_v2.3.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\jaspe\Desktop\Rocket Team STM32\00 STM32 Workspace\avionics-2022\Flight Computer\Release\FC_v2.3\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FC_v2.3.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -113,7 +112,7 @@ FC_v2.3.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 
 # Other Targets
 clean:
-	-$(RM) $(OBJDUMP_LIST)$(C_UPPER_DEPS)$(S_DEPS)$(C_DEPS)$(OBJCOPY_BIN)$(CC_DEPS)$(SIZE_OUTPUT)$(C++_DEPS)$(EXECUTABLES)$(OBJS)$(CXX_DEPS)$(S_UPPER_DEPS)$(CPP_DEPS) FC_v2.3.elf
+	-$(RM) FC_v2.3.bin FC_v2.3.elf FC_v2.3.list default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
@@ -125,6 +124,6 @@ fail-specified-linker-script-missing:
 warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
-.PHONY: all clean dependents fail-specified-linker-script-missing warn-no-linker-script-specified
+.PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified
 
 -include ../makefile.targets

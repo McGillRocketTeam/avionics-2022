@@ -120,7 +120,7 @@ extern "C" {
 
 //**************************************************//
 //MEMORY THREAD
-#define SD_CARD_	0
+#define SD_CARD_	1
 #define SD_SPI_HANDLE hspi5
 #define DATA_FREQ 10 //Times per second that you want to save data
 
