@@ -73,13 +73,13 @@ IridiumSBD.cpp:1651:5:int IridiumSBD::i2cSerRead()	24	static
 IridiumSBD.cpp:1663:6:void IridiumSBD::i2cSerPoke(char)	24	static
 IridiumSBD.cpp:1677:5:int IridiumSBD::internalClearBuffers(int)	24	static
 IridiumSBD.cpp:1702:5:int IridiumSBD::internalGetIMEI(char*, size_t)	32	static
-IridiumSBD.cpp:1739:9:uint8_t IridiumSBD::MRT_Iridium_setup(uint8_t, uint8_t, void (*)(char*))	80	static
-IridiumSBD.cpp:1819:9:boolean IridiumSBD::MRT_Iridium_shutdown()	48	static
-IridiumSBD.cpp:1851:6:void IridiumSBD::MRT_Iridium_ErrorMessage(uint8_t)	16	static
-IridiumSBD.cpp:1896:6:void st_pinMode(GPIO_TypeDef*, uint8_t, int)	48	static
-IridiumSBD.cpp:1920:9:boolean IridiumSBD::MRT_Iridium_getIMEI()	80	static
-IridiumSBD.cpp:1953:5:int IridiumSBD::MRT_Iridium_CSQ()	128	static
-IridiumSBD.cpp:1983:9:boolean IridiumSBD::MRT_Iridium_NetworkAvailability()	16	static
-IridiumSBD.cpp:2002:9:boolean IridiumSBD::MRT_Iridium_getTime()	152	static
-IridiumSBD.cpp:2038:9:boolean IridiumSBD::MRT_Iridium_sendMessage(char*)	72	static
-IridiumSBD.cpp:2091:9:boolean IridiumSBD::MRT_Iridium_sendReceive()	328	static
+IridiumSBD.cpp:1739:9:uint8_t IridiumSBD::MRT_Iridium_setup(uint8_t, uint8_t, void (*)(char*))	88	static
+IridiumSBD.cpp:1831:9:boolean IridiumSBD::MRT_Iridium_shutdown()	48	static
+IridiumSBD.cpp:1863:6:void IridiumSBD::MRT_Iridium_ErrorMessage(uint8_t)	16	static
+IridiumSBD.cpp:1908:6:void st_pinMode(GPIO_TypeDef*, uint8_t, int)	48	static
+IridiumSBD.cpp:1932:9:boolean IridiumSBD::MRT_Iridium_getIMEI()	80	static
+IridiumSBD.cpp:1965:5:int IridiumSBD::MRT_Iridium_CSQ()	128	static
+IridiumSBD.cpp:1995:9:boolean IridiumSBD::MRT_Iridium_NetworkAvailability()	16	static
+IridiumSBD.cpp:2014:9:boolean IridiumSBD::MRT_Iridium_getTime()	152	static
+IridiumSBD.cpp:2050:9:boolean IridiumSBD::MRT_Iridium_sendMessage(char*)	72	static
+IridiumSBD.cpp:2103:9:boolean IridiumSBD::MRT_Iridium_sendReceive()	328	static

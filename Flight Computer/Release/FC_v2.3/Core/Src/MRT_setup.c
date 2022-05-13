@@ -29,18 +29,18 @@ void MRT_reset_info(void);
 void MRT_Init(void){
 	print((char*) "\r\n\r\n/********MRT Init********/\r\n");
 
+	MRT_Reinitialize_Peripherals();
+
+	//Memory
+	MRT_MEMORY_Init();
+	MRT_reset_info();
+
 	//IWDG
 	#if IWDG_ACTIVE
 	print((char*) "IWDG Init...");
 	MX_IWDG_Init();
 	print((char*) "OK\r\n");
 	#endif
-
-	MRT_Reinitialize_Peripherals();
-
-	//Memory
-	MRT_MEMORY_Init();
-	MRT_reset_info();
 
 	//RTC
 	HAL_IWDG_Refresh(&hiwdg);

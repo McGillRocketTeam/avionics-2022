@@ -29,7 +29,15 @@
 
 #include <iwdg.h>
 #include <rtc.h>
-#include "stm32f4xx_it.h" //Flag A for alarm A
+#include "stm32f4xx_it.h" //Flag A and B for alarms A and B and reset from start function
+
+/*
+//TODO Trying to debug interrupt handlers
+#include <stm32f4xx_hal_uart.h> //
+#include <stm32f4xx_hal_rtc.h> //Alarm IRQHandler
+#include <stm32f4xx_hal_rtc_ex.h> //Timestamp interrupt and WakeUpTimer interrupt
+#include <stm32f4xx_hal_cortex.h> //Systick handler (callback not defined?)
+*/
 
 #include <MRT_setup.h>
 #include <MRT_helpers.h>
@@ -267,7 +275,6 @@ void StartEjection1(void *argument)
 
 	//Double check the state TODO bad? (say wakeup flag is raised but ground isn't reached yet
 	if (ejection_stage_flag >= LANDED)  osThreadExit(); //Ground reached
-	if (wu_flag > 0) osThreadExit(); //WHEN WAKING UP
 
 	osDelay(5000); //Let the LPS "warm up" to have a valid pressure_hPa
 
@@ -295,7 +302,7 @@ void StartEjection1(void *argument)
 		  sprintf(buff, "Alt: %i,  MAX:%i, counter: %i", altitude_m, MAX(altitude_m - prev_alt, prev_alt - altitude_m), counter);
 	  }
 
-	  if (counter == COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
+	  if (counter >= COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
 
 		  if (ejection_stage_flag < DROGUE_DESCENT){
 
@@ -428,15 +435,18 @@ void StartTelemetry2(void *argument)
   {
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
-	  if(apogee_flag == 0){ //Only send prop data pre-apogee
-
+	  if (apogee_flag){
+		  osDelay(1000/POST_APOGEE_SEND_FREQ);
+	  }
+	  else{ //Only send prop data pre-apogee
 		  //Send propulsion data
 		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		  MRT_formatPropulsion();
 		  memcpy(radio_buffer, msg_buffer_pr, strlen(msg_buffer_pr));
 		  MRT_radio_tx((char*) radio_buffer);
-	  }
 
+		  osDelay(1000/PRE_APOGEE_SEND_FREQ);
+	  }
 
 	  if (counter == SENSORS_SEND_FREQ_DIVIDER){
 		  counter = 0;
@@ -476,13 +486,6 @@ void StartTelemetry2(void *argument)
 
 
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
-
-	  if (apogee_flag){
-		  osDelay(1000/POST_APOGEE_SEND_FREQ);
-	  }
-	  else{
-		  osDelay(1000/PRE_APOGEE_SEND_FREQ);
-	  }
   }
 
   //In case it leaves the infinite loop
@@ -569,8 +572,10 @@ void StartWatchDog(void *argument)
 
 	 HAL_IWDG_Refresh(&hiwdg);
 
-	 //Save the RTC time
-	 MRT_saveTotalTime();
+	#if HARDFAULT_GENERATOR
+	 uint64_t* i = 0x20CDCDCD;
+	 *i = 10;
+	#endif
 
 	 //TODO remove for comp
 	 memset(buffer, 0, WD_BUFFER_SIZE);
@@ -617,8 +622,20 @@ void StartWatchDog(void *argument)
 		ext_flash_iwdg = iwdg_flag;
 		MRT_saveFlagValue(FC_STATE_IWDG);
 
+		//Save the RTC time
+		MRT_saveTotalTime();
+
 		//Reset to deactivate IWDG
 		NVIC_SystemReset();
+	  }
+
+	  //Save the RTC time
+	  MRT_saveTotalTime();
+
+
+	  //Check for complete restart
+	  if(restart_flag == 1){
+		  MRT_resetFromStart();
 	  }
 
 	  MRT_checkThreadStates();

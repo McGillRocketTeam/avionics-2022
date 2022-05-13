@@ -1753,7 +1753,12 @@ uint8_t IridiumSBD::MRT_Iridium_setup(uint8_t timeout, uint8_t i2c_bus, void (*i
 	this->print((char*) "OK\r\n");
 
 	this->print((char*) "\tChecking device connection...");
-	while(!this->isConnected()){
+	bool connected = 0;
+	for (int i=0; i<3; i++){
+		if(this->isConnected()){
+			connected=1;
+			break;
+		}
 		HAL_Delay(300);
 		this->print((char*) "\r\tChecking device connection   ");
 		HAL_Delay(300);
@@ -1763,7 +1768,14 @@ uint8_t IridiumSBD::MRT_Iridium_setup(uint8_t timeout, uint8_t i2c_bus, void (*i
 		HAL_Delay(300);
 		this->print((char*) "\r\tChecking device connection...");
 	}
-	this->print((char*) "OK\r\n");
+	if(connected){
+		this->print((char*) "OK\r\n");
+	}
+	else{
+		this->print((char*) "NOT OK\r\n");
+		this->print((char*) "\tError: Iridium failed to connect. Check I2C connection\r\n");
+		return -1;
+	}
 
 	//Activate the superchargers
 	this->print((char*) "\tActivating the superchargers...");

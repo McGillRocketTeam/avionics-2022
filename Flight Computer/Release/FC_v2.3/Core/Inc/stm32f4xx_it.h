@@ -36,6 +36,9 @@
 
  extern uint8_t flagA; //Dynamic
  extern uint8_t flagB; //Dynamic
+ extern uint8_t restart_flag;
+
+ void MRT_resetFromStart(void);
 
 /* USER CODE END ET */
 
@@ -58,11 +61,8 @@ void UsageFault_Handler(void);
 void DebugMon_Handler(void);
 void RTC_WKUP_IRQHandler(void);
 void EXTI0_IRQHandler(void);
-void RTC_Alarm_IRQHandler(void);
 void TIM6_DAC_IRQHandler(void);
 /* USER CODE BEGIN EFP */
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 
 /* USER CODE END EFP */
 

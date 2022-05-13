@@ -97,7 +97,7 @@ void MX_RTC_Init(void)
   /** Enable the Alarm A
   */
   sAlarm.AlarmTime.Hours = 0x0;
-  sAlarm.AlarmTime.Minutes = 0x1;
+  sAlarm.AlarmTime.Minutes = 0x0;
   sAlarm.AlarmTime.Seconds = 0x0;
   sAlarm.AlarmTime.SubSeconds = 0x0;
   sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
@@ -113,7 +113,6 @@ void MX_RTC_Init(void)
   }
   /** Enable the Alarm B
   */
-  sAlarm.AlarmTime.Minutes = 0x0;
   sAlarm.Alarm = RTC_ALARM_B;
   if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
   {
@@ -199,11 +198,14 @@ void MRT_rtc_Init(void){
 
 	HAL_Delay(2000); //To make sure that when you set the Alarm it doesn't go off automatically
 
+	//TODO for some reason, both set_alarm need to be uncommented or commented together
+	//They can't be used individually (or else we get a hardfault during external flash setup??)
 	#if ALARM_A_ACTIVE
 		print("\tSetting alarmA...");
 		MRT_set_alarmA(PRE_WHEN_SLEEP_TIME_HOURS, PRE_WHEN_SLEEP_TIME_MIN, PRE_WHEN_SLEEP_TIME_SEC);
 		println("OK");
 	#endif
+
 
 	#if ALARM_B_ACTIVE
 		print("\tSetting alarmB...");
@@ -211,7 +213,7 @@ void MRT_rtc_Init(void){
 		println("OK");
 	#endif
 
-
+	MRT_clear_alarms_flags();
 }
 
 
@@ -231,6 +233,7 @@ void MRT_clear_alarms_flags(void){
 	__HAL_RTC_ALARM_EXTI_CLEAR_FLAG();
 
 
+
   	//Clear alarmB flag
 	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
 	while (__HAL_RTC_ALARM_GET_FLAG(&hrtc, RTC_FLAG_ALRBF) != RESET){
@@ -247,6 +250,7 @@ void MRT_clear_alarms_flags(void){
 	/* clear the RTC Wake UP (WU) flag */
 	//print("Clearing RTC wake up flag\r\n");
 	__HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&hrtc, RTC_FLAG_WUTF);
+	__HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
 }
 
 
@@ -262,6 +266,13 @@ void MRT_StandByMode(uint32_t seconds){
 	/* Enable the WAKEUP PIN
 	 * (Needs to be placed BEFORE clearing up the flags or else it wakes up as soon as we enter standby mode)*/
 	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+
+
+	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
+	//Need this line or else alarm B will wake up the board immediately
+	//Weird thing is this is not needed for alarm A
+	__HAL_RTC_WAKEUPTIMER_DISABLE(&hrtc);
+	__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
 
 	/*Clear the flags so it doesn't wake up as soon as it goes to sleep*/
 	MRT_clear_alarms_flags();
@@ -282,10 +293,12 @@ void MRT_StandByMode(uint32_t seconds){
 	sprintf(msg,"Going to sleep for %i seconds",(int) seconds);
 	println(msg);
 
-	if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc,seconds, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
+	if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, seconds, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
 	{
 	  Error_Handler();
 	}
+
+	HAL_SuspendTick(); //System tick interrupt disabled (might not be necessary)
 
 	HAL_PWR_EnterSTANDBYMode();
 }
@@ -297,6 +310,16 @@ void MRT_set_rtc(uint8_t h, uint8_t m, uint8_t s){
 	  /** Initialize RTC and set the Time and Date
 	  */
 	  RTC_TimeTypeDef sTime;
+
+	  //TODO added from https://akospasztor.github.io/stm32-rtc-scheduler/rtc_8c_source.html#l00030
+	  /*
+	  __HAL_RCC_RTC_ENABLE();
+	  __HAL_RCC_PWR_CLK_ENABLE();
+	  HAL_PWR_EnableBkUpAccess();
+
+	  HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 4U, 0U);
+	  HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
+	  */
 
 	  sTime.Hours = int_to_hex_table[h];
 	  sTime.Minutes = int_to_hex_table[m];

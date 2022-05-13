@@ -23,10 +23,12 @@ extern "C" {
 
 //**************************************************//
 //DEBUGGING
-#define DEBUG 1 //If in debug mode, no IWDG
+#define DEBUG 0 //If in debug mode, no IWDG
 #define DEBUG_UART huart8
 #define PRINT 1
 #define NO_BUZZ 0
+#define HARDFAULT_GENERATOR 0
+#define TESTING_SLEEP 0
 
 //Forced state
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
@@ -66,29 +68,38 @@ extern "C" {
 //**************************************************//
 //RTC (24h formatting, initial RTC time is always 0 in a wake up)
 //TODO Assume Launch at 3pm, sleep from 8pm to 6am
-#define ALARM_A_ACTIVE 0
-#define ALARM_B_ACTIVE 0
-//#define SLEEP_TIME 36000 //In seconds (10 hours)
+#define ALARM_A_ACTIVE 1
+#define ALARM_B_ACTIVE 1
+
+
+#if TESTING_SLEEP
+
 #define SLEEP_TIME 15 //In seconds
 
-/*
+#define PRE_WHEN_SLEEP_TIME_SEC 15  //In seconds
+#define PRE_WHEN_SLEEP_TIME_MIN 0  //In minutes
+#define PRE_WHEN_SLEEP_TIME_HOURS 0  //In hours
+
+#define POST_WHEN_SLEEP_TIME_SEC 30  //In seconds
+#define POST_WHEN_SLEEP_TIME_MIN 0  //In minutes
+#define POST_WHEN_SLEEP_TIME_HOURS 0  //In hours
+
+#else
+#define SLEEP_TIME 36000 //In seconds (10 hours)
+
+//Alarm times are relative to RTC, which is stopped when asleep
+//and continues at the time it went to sleep when waking up
+
 //Launch day sleep time (launch at 3:30pm)
 #define PRE_WHEN_SLEEP_TIME_SEC 0  //In seconds
 #define PRE_WHEN_SLEEP_TIME_MIN 30  //In minutes
 #define PRE_WHEN_SLEEP_TIME_HOURS 4  //In hours
-*/
-#define PRE_WHEN_SLEEP_TIME_SEC 13  //In seconds
-#define PRE_WHEN_SLEEP_TIME_MIN 0  //In minutes
-#define PRE_WHEN_SLEEP_TIME_HOURS 0  //In hours
-/*
+
 //Post launch day sleep time (waking up at 6am)
-#define POST_WHEN_SLEEP_TIME_SEC 0  //In seconds
-#define POST_WHEN_SLEEP_TIME_MIN 0  //In minutes
-#define POST_WHEN_SLEEP_TIME_HOURS 14  //In hours
-*/
-#define POST_WHEN_SLEEP_TIME_SEC 25  //In seconds
-#define POST_WHEN_SLEEP_TIME_MIN 0  //In minutes
-#define POST_WHEN_SLEEP_TIME_HOURS 0  //In hours
+#define POST_WHEN_SLEEP_TIME_SEC ( 0 + PRE_WHEN_SLEEP_TIME_SEC )  //In seconds
+#define POST_WHEN_SLEEP_TIME_MIN ( 0 + PRE_WHEN_SLEEP_TIME_MIN )  //In minutes
+#define POST_WHEN_SLEEP_TIME_HOURS ( 14 + PRE_WHEN_SLEEP_TIME_HOURS )  //In hours
+#endif
 
 
 

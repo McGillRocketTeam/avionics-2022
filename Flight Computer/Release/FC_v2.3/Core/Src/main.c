@@ -194,16 +194,11 @@ void MRT_waitForLaunch(void){
 
 	println("Waiting for launch command from ground station\r\n");
 
-	//TODO for testing (saved in wd thread)
-	hlps22hh.getPressure();
-	rtc_bckp_reg_alt_pad = MRT_getAltitude(hlps22hh.pressure_hPa);
-	MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
-
 	char radio_buffer[RADIO_BUFFER_SIZE];
 	radio_command cmd = -1;
 
 	//Poll propulsion until launch command sent
-	while((XTEND_ || SRADIO_) && ejection_stage_flag == PAD && wu_flag == 0){
+	while((XTEND_ || SRADIO_) && ejection_stage_flag == PAD){
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
 		HAL_IWDG_Refresh(&hiwdg);
@@ -217,7 +212,7 @@ void MRT_waitForLaunch(void){
 		//Send propulsion data
 		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		sprintf(radio_buffer,"P,%.2f,%.2f, %i,E",transducer_voltage,thermocouple_temperature,(int) valve_status);
-		//MRT_radio_tx(radio_buffer);
+		MRT_radio_tx(radio_buffer);
 
 
 
@@ -244,16 +239,21 @@ void MRT_waitForLaunch(void){
 	}
 
 
-	//TODO testing time (saved in watchdog thread
-	 //Get RTC time
-	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-	 prev_min = sTime.Minutes;
-	 prev_sec = sTime.Seconds;
-	 if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
-	 prev_subsec = sTime.SubSeconds;
-	 rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
-	 MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
+	//TODO testing time (saved in watchdog thread)
+	//TODO for testing (saved in wd thread)
+	hlps22hh.getPressure();
+	rtc_bckp_reg_alt_pad = MRT_getAltitude(hlps22hh.pressure_hPa);
+	MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
+
+	//Get RTC time
+	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+	prev_min = sTime.Minutes;
+	prev_sec = sTime.Seconds;
+	if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
+	prev_subsec = sTime.SubSeconds;
+	rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
+	MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
 
 
 	//Send acknowledgement

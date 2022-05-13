@@ -47,6 +47,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+extern RTC_HandleTypeDef hrtc;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

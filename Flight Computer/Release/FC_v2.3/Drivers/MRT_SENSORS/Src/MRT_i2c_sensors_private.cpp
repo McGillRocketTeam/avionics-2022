@@ -38,6 +38,7 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	  print(buffer);
 
 
+	  /*TODO not a good idea
 		println((char*) "Hardfault: Going into standByMode and waiting for IWDG reset");
 		// Enable the WAKEUP PIN
 		// (Needs to be placed BEFORE clearing up the flags or else it wakes up as soon as we enter standby mode)
@@ -46,6 +47,7 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 		// Clear the flags so it doesn't wake up as soon as it goes to sleep
 		MRT_clear_alarms_flags();
 		HAL_PWR_EnterSTANDBYMode();
+		*/
 
 
 	}
@@ -169,6 +171,7 @@ LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	  print(buffer);
 
 
+	  /*TODO not a good idea. Let other FCs handle ejection at this point
 		println((char*) "Hardfault: Going into standByMode and waiting for IWDG reset");
 		//Enable the WAKEUP PIN
 		//(Needs to be placed BEFORE clearing up the flags or else it wakes up as soon as we enter standby mode)
@@ -177,6 +180,7 @@ LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 		//Clear the flags so it doesn't wake up as soon as it goes to sleep
 		MRT_clear_alarms_flags();
 		HAL_PWR_EnterSTANDBYMode();
+		*/
 
 	}
 	println((char*) "OK");

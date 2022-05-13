@@ -51,13 +51,15 @@
 //Global
 uint8_t flagA = 0; //Dynamic
 uint8_t flagB = 0; //Dynamic
+uint8_t restart_flag = 0; //Flag to restart board
+
+//External
+extern RTC_HandleTypeDef hrtc;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
-void MRT_resetFromStart(void);
 
 /* USER CODE END PFP */
 
@@ -99,14 +101,8 @@ void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
 
-
 	println((char*) "Hardfault: Going into standByMode and waiting for IWDG reset");
-	/* Enable the WAKEUP PIN
-	 * (Needs to be placed BEFORE clearing up the flags or else it wakes up as soon as we enter standby mode)*/
 	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
-
-	/*Clear the flags so it doesn't wake up as soon as it goes to sleep*/
-	MRT_clear_alarms_flags();
 	HAL_PWR_EnterSTANDBYMode();
 
   /* USER CODE END HardFault_IRQn 0 */
@@ -211,20 +207,6 @@ void EXTI0_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles RTC alarms A and B interrupt through EXTI line 17.
-  */
-void RTC_Alarm_IRQHandler(void)
-{
-  /* USER CODE BEGIN RTC_Alarm_IRQn 0 */
-
-  /* USER CODE END RTC_Alarm_IRQn 0 */
-  HAL_RTC_AlarmIRQHandler(&hrtc);
-  /* USER CODE BEGIN RTC_Alarm_IRQn 1 */
-
-  /* USER CODE END RTC_Alarm_IRQn 1 */
-}
-
-/**
   * @brief This function handles TIM6 global interrupt, DAC1 and DAC2 underrun error interrupts.
   */
 void TIM6_DAC_IRQHandler(void)
@@ -243,25 +225,40 @@ void TIM6_DAC_IRQHandler(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if (GPIO_Pin == IN_Button_Pin){
 		//Manual reset from external button
-		MRT_resetFromStart();
+		restart_flag = 1;
 	}
+}
+
+/**
+  * @brief This function handles RTC alarms A and B interrupt through EXTI line 17.
+  */
+void RTC_Alarm_IRQHandler(void)
+{
+  /* USER CODE BEGIN RTC_Alarm_IRQn 0 */
+
+  /* USER CODE END RTC_Alarm_IRQn 0 */
+  HAL_RTC_AlarmIRQHandler(&hrtc);
+  /* USER CODE BEGIN RTC_Alarm_IRQn 1 */
+
+  /* USER CODE END RTC_Alarm_IRQn 1 */
 }
 
 
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
-	println("AlarmA");
+	println("\r\nAlarmA");
 	flagA = 1;
 }
 
-void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
-	println("AlarmB");
+
+void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
+	println("\r\nAlarmB");
 	flagB = 1;
 }
 
+/*
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
 }
-
-
+*/
 
 
 void MRT_resetFromStart(void){
@@ -272,7 +269,9 @@ void MRT_resetFromStart(void){
 
 	//Shutdown Iridium
 	//TODO should have deninit for every system?
+	#if IRIDIUM_
 	MRT_Iridium_Deinit();
+	#endif
 
 	//Reset function
 	NVIC_SystemReset();
