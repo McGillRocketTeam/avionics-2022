@@ -295,7 +295,8 @@ void MRT_MEMORY_Init(void){
 			  }
 			}
 			else {
-			  Error_Handler();
+				println("No SD card inserted");
+			  //Error_Handler(); TODO no a good idea if SD card stops working for no reason (will stop the FC)
 			}
 		#endif
 	#endif

@@ -439,7 +439,7 @@ void StartTelemetry2(void *argument)
 	  }
 	  else{ //Only send prop data pre-apogee
 		  //Send propulsion data
-//		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		  MRT_formatPropulsion();
 		  memcpy(radio_buffer, msg_buffer_pr, strlen(msg_buffer_pr));
 		  MRT_radio_tx((char*) radio_buffer);
@@ -466,7 +466,7 @@ void StartTelemetry2(void *argument)
 		  */
 
 	  	  //Send sensors data
-//		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		  MRT_formatAvionics();
 		  memcpy(radio_buffer, msg_buffer_av, strlen(msg_buffer_av));
 		  MRT_radio_tx((char*) radio_buffer);

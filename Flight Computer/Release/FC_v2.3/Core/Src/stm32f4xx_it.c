@@ -247,18 +247,21 @@ void RTC_Alarm_IRQHandler(void)
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc){
 	println("\r\nAlarmA");
 	flagA = 1;
+	return;
 }
 
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc){
 	println("\r\nAlarmB");
 	flagB = 1;
+	return;
 }
 
-/*
+
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc){
+	return;
 }
-*/
+
 
 
 void MRT_resetFromStart(void){

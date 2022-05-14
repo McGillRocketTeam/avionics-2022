@@ -11,5 +11,6 @@ stm32f4xx_it.c:212:6:TIM6_DAC_IRQHandler	8	static
 stm32f4xx_it.c:225:6:HAL_GPIO_EXTI_Callback	16	static
 stm32f4xx_it.c:235:6:RTC_Alarm_IRQHandler	8	static
 stm32f4xx_it.c:247:6:HAL_RTC_AlarmAEventCallback	16	static
-stm32f4xx_it.c:253:6:HAL_RTCEx_AlarmBEventCallback	16	static
-stm32f4xx_it.c:264:6:MRT_resetFromStart	8	static
+stm32f4xx_it.c:254:6:HAL_RTCEx_AlarmBEventCallback	16	static
+stm32f4xx_it.c:261:6:HAL_RTCEx_WakeUpTimerEventCallback	16	static
+stm32f4xx_it.c:267:6:MRT_resetFromStart	8	static
