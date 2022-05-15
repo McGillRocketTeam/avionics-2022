@@ -26,7 +26,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 #include <iwdg.h>
 #include <rtc.h>
 #include "stm32f4xx_it.h" //Flag A and B for alarms A and B and reset from start function
@@ -53,6 +52,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -77,44 +77,74 @@ osThreadId_t threadsID[NUMBER_OF_THREADS]; //Thread list accessed by Watch Dog t
 /* USER CODE END Variables */
 /* Definitions for Memory0 */
 osThreadId_t Memory0Handle;
+uint32_t Memory0Buffer[ 512 ];
+osStaticThreadDef_t Memory0ControlBlock;
 const osThreadAttr_t Memory0_attributes = {
   .name = "Memory0",
-  .stack_size = 512 * 4,
+  .cb_mem = &Memory0ControlBlock,
+  .cb_size = sizeof(Memory0ControlBlock),
+  .stack_mem = &Memory0Buffer[0],
+  .stack_size = sizeof(Memory0Buffer),
   .priority = (osPriority_t) osPriorityHigh3,
 };
 /* Definitions for Ejection1 */
 osThreadId_t Ejection1Handle;
+uint32_t Ejection1Buffer[ 512 ];
+osStaticThreadDef_t Ejection1ControlBlock;
 const osThreadAttr_t Ejection1_attributes = {
   .name = "Ejection1",
-  .stack_size = 512 * 4,
+  .cb_mem = &Ejection1ControlBlock,
+  .cb_size = sizeof(Ejection1ControlBlock),
+  .stack_mem = &Ejection1Buffer[0],
+  .stack_size = sizeof(Ejection1Buffer),
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for Telemetry2 */
 osThreadId_t Telemetry2Handle;
+uint32_t Telemetry2Buffer[ 512 ];
+osStaticThreadDef_t Telemetry2ControlBlock;
 const osThreadAttr_t Telemetry2_attributes = {
   .name = "Telemetry2",
-  .stack_size = 1024 * 4,
+  .cb_mem = &Telemetry2ControlBlock,
+  .cb_size = sizeof(Telemetry2ControlBlock),
+  .stack_mem = &Telemetry2Buffer[0],
+  .stack_size = sizeof(Telemetry2Buffer),
   .priority = (osPriority_t) osPriorityHigh1,
 };
 /* Definitions for Sensors3 */
 osThreadId_t Sensors3Handle;
+uint32_t Sensors3Buffer[ 512 ];
+osStaticThreadDef_t Sensors3ControlBlock;
 const osThreadAttr_t Sensors3_attributes = {
   .name = "Sensors3",
-  .stack_size = 512 * 4,
+  .cb_mem = &Sensors3ControlBlock,
+  .cb_size = sizeof(Sensors3ControlBlock),
+  .stack_mem = &Sensors3Buffer[0],
+  .stack_size = sizeof(Sensors3Buffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for WatchDog */
 osThreadId_t WatchDogHandle;
+uint32_t WatchDogBuffer[ 512 ];
+osStaticThreadDef_t WatchDogControlBlock;
 const osThreadAttr_t WatchDog_attributes = {
   .name = "WatchDog",
-  .stack_size = 512 * 4,
+  .cb_mem = &WatchDogControlBlock,
+  .cb_size = sizeof(WatchDogControlBlock),
+  .stack_mem = &WatchDogBuffer[0],
+  .stack_size = sizeof(WatchDogBuffer),
   .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for Propulsion4 */
 osThreadId_t Propulsion4Handle;
+uint32_t Propulsion4Buffer[ 512 ];
+osStaticThreadDef_t Propulsion4ControlBlock;
 const osThreadAttr_t Propulsion4_attributes = {
   .name = "Propulsion4",
-  .stack_size = 512 * 4,
+  .cb_mem = &Propulsion4ControlBlock,
+  .cb_size = sizeof(Propulsion4ControlBlock),
+  .stack_mem = &Propulsion4Buffer[0],
+  .stack_size = sizeof(Propulsion4Buffer),
   .priority = (osPriority_t) osPriorityHigh1,
 };
 

@@ -1,4 +1,4 @@
 MRT_telemetry.c:17:6:MRT_radio_tx	16	static
-MRT_telemetry.c:33:6:MRT_radio_rx	16	static
-MRT_telemetry.c:58:6:MRT_radio_Init	8	static
+MRT_telemetry.c:33:6:MRT_radio_rx	32	dynamic
+MRT_telemetry.c:58:6:MRT_radio_Init	88	static
 MRT_telemetry.c:82:6:MRT_TELEMETRY_Init	8	static
