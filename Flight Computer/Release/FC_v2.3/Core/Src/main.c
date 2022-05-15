@@ -250,7 +250,6 @@ void MRT_waitForLaunch(void){
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
-
 		//Reset IWDG timer
 		HAL_IWDG_Refresh(&hiwdg);
 
