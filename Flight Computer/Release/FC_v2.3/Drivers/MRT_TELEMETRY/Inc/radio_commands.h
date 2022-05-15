@@ -8,6 +8,10 @@
 #ifndef INC_RADIO_COMMANDS_H_
 #define INC_RADIO_COMMANDS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum radio_command {
 	LAUNCH = 1,
 	ARM_PROP,
@@ -30,5 +34,9 @@ void arming_propulsion(void);
 void arming_recovery(void);
 void disarm_propulsion(void);
 void disarm_recovery(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_RADIO_COMMANDS_H_ */

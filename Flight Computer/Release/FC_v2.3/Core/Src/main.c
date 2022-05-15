@@ -75,8 +75,6 @@ void MX_FREERTOS_Init(void);
 void MRT_STM_Init(void);
 void MRT_waitForLaunch(void);
 
-void TESTING_LOOP(void); //TODO remove
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -96,9 +94,8 @@ int main(void){
 
 	MRT_waitForLaunch();
 
-	//if (DEBUG) TESTING_LOOP(); //TODO remove
-
 	//TODO I2C SENSORS (lsm and lps) SOMETIMES DON'T WANT TO WORK ANYMORE -> NEED TO RESET THE POWER (Enter quick standByMode?)
+	//check hardfault_handler
 
 	//Initialize the os
 	MX_FREERTOS_Init();
@@ -205,6 +202,17 @@ void MRT_waitForLaunch(void){
 
 		HAL_IWDG_Refresh(&hiwdg);
 
+		//Get RTC time
+		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+		HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+
+		//Update global variables
+		prev_hour = sTime.Hours;
+		prev_min = sTime.Minutes;
+		prev_sec = sTime.Seconds;
+		if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
+		prev_subsec = sTime.SubSeconds;
+
 		//Save the RTC time
 	    MRT_saveTotalTime();
 
@@ -216,16 +224,21 @@ void MRT_waitForLaunch(void){
 		sprintf(radio_buffer,"P,%.2f,%.2f, %i,E\r\n",transducer_voltage,thermocouple_temperature,(int) valve_status);
 		MRT_radio_tx(radio_buffer);
 
-//		fres = sd_open_file(filename);
-//		sd_write(&fil, radio_buffer);
-//		f_close(&fil);
 
+		// Save to SD card
+		#if SD_CARD_
+		fres = sd_open_file(filename);
+		MRT_formatPropulsion();
+		sd_write(&fil, msg_buffer_pr);
+		f_close(&fil);
+		#endif
 
 
 		//Check for launch command
 		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
-		MRT_radio_rx(radio_buffer, 6, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
+		MRT_radio_rx(radio_buffer, 2, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
 		cmd = radio_parse_command(radio_buffer);
+
 		if (cmd == LAUNCH){
 			//Update ejection stage flag and save it
 			ejection_stage_flag = BOOST;
@@ -245,97 +258,16 @@ void MRT_waitForLaunch(void){
 	}
 
 
-	//TODO testing time (saved in watchdog thread)
-	//TODO for testing (saved in wd thread)
+	//Todo to test ejection
 	hlps22hh.getPressure();
 	rtc_bckp_reg_alt_pad = MRT_getAltitude(hlps22hh.pressure_hPa);
 	MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
-
-	//Get RTC time
-	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-	prev_min = sTime.Minutes;
-	prev_sec = sTime.Seconds;
-	if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
-	prev_subsec = sTime.SubSeconds;
 	rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
 	MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
 
-
 	//Send acknowledgement
-	MRT_radio_tx((char*) "LAUNCH COMMAND RECEIVED"); //TODO CHECK AT WHAT JASPER DID
+	MRT_radio_tx((char*) "LAUNCH COMMAND RECEIVED"); //TODO CHECK AT WHAT JASPER DID FOR ACK MESSAGES
 }
-
-
-
-
-
-
-
-//TODO REMOVE
-/*
-void TESTING_LOOP(void){
-	//FOR TESTING
-
-	#define TX_BUF_DIM 256
-	char buffer[TX_BUF_DIM];
-
-
-	while(1){
-		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, SET);
-		HAL_Delay(1000);
-
-		  //GPS
-		  hgps.pollAll();
-
-		  //LSM6DSR
-		  hlsm6dsr.pollAll();
-
-		  //LPS22HH
-		  hlps22hh.pollAll();
-		  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //Update altitude TODO put somewhere else
-
-
-		  //GPS
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",hgps.latitude, hgps.longitude, hgps.time);
-		  print(buffer);
-
-		  //LSM6DSR
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",
-				  hlsm6dsr.acceleration_mg[0], hlsm6dsr.acceleration_mg[1], hlsm6dsr.acceleration_mg[2]);
-		  print(buffer);
-
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",
-				  hlsm6dsr.angular_rate_mdps[0], hlsm6dsr.angular_rate_mdps[1], hlsm6dsr.angular_rate_mdps[2]);
-		  print(buffer);
-
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlsm6dsr.temperature_degC);
-		  print(buffer);
-
-
-		  //LPS22HH
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",hlps22hh.pressure_hPa);
-		  print(buffer);
-
-		  memset(buffer, 0, TX_BUF_DIM);
-		  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", hlps22hh.temperature_degC);
-		  print(buffer);
-
-
-		  //Iridium
-		  hiridium.getTime();
-
-		HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
-		HAL_Delay(1000);
-		HAL_IWDG_Refresh(&hiwdg);
-	}
-}
-*/
 
 /* USER CODE END 4 */
 

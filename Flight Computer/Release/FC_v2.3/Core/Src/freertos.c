@@ -79,7 +79,7 @@ osThreadId_t threadsID[NUMBER_OF_THREADS]; //Thread list accessed by Watch Dog t
 osThreadId_t Memory0Handle;
 const osThreadAttr_t Memory0_attributes = {
   .name = "Memory0",
-  .stack_size = 1024 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityHigh3,
 };
 /* Definitions for Ejection1 */

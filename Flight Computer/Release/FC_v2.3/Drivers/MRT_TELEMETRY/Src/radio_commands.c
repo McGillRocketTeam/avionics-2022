@@ -5,6 +5,7 @@
  *      Author: jasper
  */
 
+#include <MRT_setup.h>
 #include "MRT_helpers.h"
 #include "radio_commands.h"
 #include "video_recorder.h"
@@ -19,6 +20,18 @@
 //extern volatile char rx_buf[10]; // dma buffer NOT IN USE YET
 
 radio_command radio_parse_command(char* rx_buf) {
+
+	#if DEBUG
+	char radio_buffer[10];
+	for (int i=0; i<strlen(rx_buf);i++){
+		memset(radio_buffer,0,10);
+		sprintf(radio_buffer,"%i",rx_buf[i]);
+		println(radio_buffer);
+	}
+	memset(radio_buffer,0,10);
+	sprintf(radio_buffer,"%i",strcmp(rx_buf, "lr"));
+	//println(radio_buffer);
+	#endif
 
 	if (strcmp(rx_buf, "lr") == 0) { // launch command
 		return LAUNCH;

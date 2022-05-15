@@ -1,7 +1,6 @@
 Drivers/MRT_TELEMETRY/Src/radio_commands.o: \
- ../Drivers/MRT_TELEMETRY/Src/radio_commands.c ../Core/Inc/MRT_helpers.h \
- ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
- ../Drivers/MRT_MISC/Inc/video_recorder.h ../Core/Inc/main.h \
+ ../Drivers/MRT_TELEMETRY/Src/radio_commands.c ../Core/Inc/MRT_setup.h \
+ ../Core/Inc/usart.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -38,13 +37,14 @@ Drivers/MRT_TELEMETRY/Src/radio_commands.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/spi.h \
+ ../Core/Inc/MRT_helpers.h ../Drivers/MRT_TELEMETRY/Inc/radio_commands.h \
+ ../Drivers/MRT_MISC/Inc/video_recorder.h ../Core/Inc/main.h
 
-../Core/Inc/MRT_helpers.h:
+../Core/Inc/MRT_setup.h:
 
-../Drivers/MRT_TELEMETRY/Inc/radio_commands.h:
-
-../Drivers/MRT_MISC/Inc/video_recorder.h:
+../Core/Inc/usart.h:
 
 ../Core/Inc/main.h:
 
@@ -121,3 +121,17 @@ Drivers/MRT_TELEMETRY/Src/radio_commands.o: \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+
+../Core/Inc/i2c.h:
+
+../Core/Inc/adc.h:
+
+../Core/Inc/spi.h:
+
+../Core/Inc/MRT_helpers.h:
+
+../Drivers/MRT_TELEMETRY/Inc/radio_commands.h:
+
+../Drivers/MRT_MISC/Inc/video_recorder.h:
+
+../Core/Inc/main.h:

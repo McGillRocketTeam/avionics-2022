@@ -28,7 +28,7 @@ void myprintf(const char *fmt, ...) { // currently does nothing, was copied from
   va_end(args);
 
   //CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
-  HAL_UART_Transmit(&DEBUG_UART, (uint8_t*)buffer, strlen(buffer), -1);
+  HAL_UART_Transmit(&DEBUGUART, (uint8_t*)buffer, strlen(buffer), -1);
 
 }
 

@@ -174,7 +174,7 @@ void Error_Handler(void);
 
 //TODO
 UART_HandleTypeDef huart8;
-#define DEBUG_UART huart8
+#define DEBUGUART huart8
 #define SD_SPI_HANDLE hspi5
 
 #define SEA_LEVEL_TEMPERATURE 25+273.15 //Sea level temperature kelvin

@@ -342,14 +342,14 @@ int main(void)
    *-Include the path to all includes folders of the drivers (for C and C++ linkers)
    */
 
-  HAL_UART_Transmit(&DEBUG_UART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUGUART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
 
   /*
    * For external FLASH memory
    *-Put before RTOS setup because you need the external flash in its setup
    */
-    MRT_SetupRTOS(&hrtc, DEBUG_UART, SLEEP_TIME); //Put here so we can pass the uart value to the setup
-	MRT_externalFlashSetup(&DEBUG_UART);
+    MRT_SetupRTOS(&hrtc, DEBUGUART, SLEEP_TIME); //Put here so we can pass the uart value to the setup
+	MRT_externalFlashSetup(&DEBUGUART);
 
 
 	  /*
@@ -413,14 +413,14 @@ int main(void)
 	  #if IWDG_ACTIVE
 		HAL_IWDG_Refresh(&hiwdg);
 	  #endif
-	  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUG_UART);
+	  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUGUART);
 
 	  #if IWDG_ACTIVE
 	    HAL_IWDG_Refresh(&hiwdg);
 	  #endif
-	  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUG_UART);
+	  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUGUART);
 
-	  GPS_init(&GPS_UART, &DEBUG_UART);
+	  GPS_init(&GPS_UART, &DEBUGUART);
 #endif
 
 
@@ -453,7 +453,7 @@ int main(void)
 
 	  #if IRIDIUM_
 	  HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-	  uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART, IRIDIUM_TIMEOUT, IRIDIUM_I2C); //TODO remove lol?
+	  uint8_t lol = MRT_Static_Iridium_Setup(DEBUGUART, IRIDIUM_TIMEOUT, IRIDIUM_I2C); //TODO remove lol?
 	  #endif
 #endif
 
@@ -1420,7 +1420,7 @@ void StartMemory0(void *argument)
 
 			  //TODO when the sd card bug, it seems that only removing power from it works to reset it.
 			  //Otherwise it always give an error. Trying to close and open doesn't work
-			  HAL_UART_Transmit(&DEBUG_UART,"TEST\tTEST\tTEST\tTEST\r\n",17,HAL_MAX_DELAY);
+			  HAL_UART_Transmit(&DEBUGUART,"TEST\tTEST\tTEST\tTEST\r\n",17,HAL_MAX_DELAY);
 			  f_close(&fil);
 			  sd_open_file(&filename);
 			  sd_write(&fil, writeBuf);
@@ -1436,7 +1436,7 @@ void StartMemory0(void *argument)
 	  }
 
 	  //In case it leaves the infinite loop
-	  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 0\r\n",36,HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUGUART,"Something went wrong with thread 0\r\n",36,HAL_MAX_DELAY);
 	  osThreadExit();
 
   /* USER CODE END 5 */
@@ -1478,7 +1478,7 @@ void StartEjection1(void *argument)
 				  ejection_state_flag = 2;
 				  wd_ejection_flag = 1;
 
-				  HAL_UART_Transmit(&DEBUG_UART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
+				  HAL_UART_Transmit(&DEBUGUART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
 
 				  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
 					  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
@@ -1505,7 +1505,7 @@ void StartEjection1(void *argument)
 						  ejection_state_flag = 3;
 						  wd_ejection_flag = 1;
 
-						  HAL_UART_Transmit(&DEBUG_UART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
+						  HAL_UART_Transmit(&DEBUGUART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
 
 						  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
 							  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
@@ -1537,7 +1537,7 @@ void StartEjection1(void *argument)
 					  ejection_state_flag = 4;
 					  wd_ejection_flag = 1;
 
-					  HAL_UART_Transmit(&DEBUG_UART, "Ground Level Reached\r\n", 22, HAL_MAX_DELAY);
+					  HAL_UART_Transmit(&DEBUGUART, "Ground Level Reached\r\n", 22, HAL_MAX_DELAY);
 					  osThreadExit();
 
 				  }
@@ -1550,7 +1550,7 @@ void StartEjection1(void *argument)
 	  }
 
 	  //In case it leaves the infinite loop
-	  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 1\r\n",36,HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUGUART,"Something went wrong with thread 1\r\n",36,HAL_MAX_DELAY);
 	  osThreadExit();
 
   /* USER CODE END StartEjection1 */
@@ -1668,7 +1668,7 @@ void StartTelemetry2(void *argument)
   }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 2\r\n",36,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUGUART,"Something went wrong with thread 2\r\n",36,HAL_MAX_DELAY);
   osThreadExit();
 
   /* USER CODE END StartTelemetry2 */
@@ -1742,7 +1742,7 @@ void StartSensors3(void *argument)
 }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread 3\r\n",36,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUGUART,"Something went wrong with thread 3\r\n",36,HAL_MAX_DELAY);
 
   osThreadExit();
 
@@ -1774,36 +1774,36 @@ void StartPrinting(void *argument)
 	  //GPS
 	  memset(gps_data, 0, GPS_DATA_BUF_DIM);
 	  sprintf(gps_data,"Alt: %.2f   Long: %.2f   Time: %.0f\r\n",LATITUDE, LONGITUDE, time);
-	  HAL_UART_Transmit(&DEBUG_UART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUGUART,gps_data,strlen(gps_data),HAL_MAX_DELAY);
 
   	  //LSM6DSR
   	  memset(buffer, 0, TX_BUF_DIM);
   	  sprintf(buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n",acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
-  	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+  	  HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
   	  memset(buffer, 0, TX_BUF_DIM);
   	  sprintf(buffer,"Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n",angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
-  	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+  	  HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lsm_temperature_degC);
-	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  //LPS22HH
   	  memset(buffer, 0, TX_BUF_DIM);
   	  sprintf(buffer,"Pressure [hPa]:%6.2f\r\n",pressure_hPa);
-  	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+  	  HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Temperature [degC]:%6.2f\r\n", lps_temperature_degC);
-	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  //Thermocouple
 	  memset(buffer, 0, TX_BUF_DIM);
 	  sprintf(buffer, "Thermocouple temperature [degC]: %6.2f\r\n", THERMO_TEMP);
-	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	  //Iridium
@@ -1824,7 +1824,7 @@ void StartPrinting(void *argument)
 }
 
   //In case it leaves the infinite loop
-  HAL_UART_Transmit(&DEBUG_UART,"Something went wrong with thread p\r\n",36,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUGUART,"Something went wrong with thread p\r\n",36,HAL_MAX_DELAY);
   osThreadExit();
   /* USER CODE END StartPrinting */
 }
@@ -1868,7 +1868,7 @@ void StartWatchDog(void *argument)
 
 	 memset(buffer, 0, TX_BUF_DIM);
 	 sprintf(buffer, "Time: %i:%i:%i ::%i	Altitude: \r\n %f\r\n", prev_hours,prev_min,prev_sec,prev_subsec , altitude_m);
-	 HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	 HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
 
 
 	 if(wd_ejection_flag){

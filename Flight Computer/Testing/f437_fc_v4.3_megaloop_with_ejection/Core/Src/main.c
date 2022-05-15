@@ -63,7 +63,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-#define DEBUG_MODE
+#define DEBUGMODE
 
 // radios
 #define USING_XTEND 	// comment out to use SRADio
@@ -188,7 +188,7 @@ void telemetry_format_propulsion(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//#ifdef DEBUG_MODE
+//#ifdef DEBUGMODE
 void debug_tx_uart(char *msg) {
 	HAL_UART_Transmit(&huart8, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
@@ -201,7 +201,7 @@ void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 //	HAL_UART_Transmit(&huart3, msg_buffer, size, HAL_MAX_DELAY);
 	HAL_UART_Transmit_DMA(&huart3, msg_buffer, size);
 
-	#ifdef DEBUG_MODE
+	#ifdef DEBUGMODE
 	debug_tx_uart(msg_buffer);
 	#endif
 }
@@ -209,7 +209,7 @@ void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 void radio_tx(uint8_t *msg_buffer, uint16_t size) {
 	TxProtocol(msg_buffer, size);
 
-	#ifdef DEBUG_MODE
+	#ifdef DEBUGMODE
 	debug_tx_uart(msg_buffer);
 	#endif
 }
@@ -493,7 +493,7 @@ int main(void)
 //		}
 		__HAL_IWDG_RELOAD_COUNTER(&hiwdg); // refresh watchdog
 
-	  	#ifdef DEBUG_MODE
+	  	#ifdef DEBUGMODE
 //			debug_tx_uart(msg_buffer_av);
 //			debug_tx_uart(msg_buffer_pr);
 			sprintf(msg, "states of fc: s=%d, ap=%d, ar=%d, HH:MM:SS = %02d:%02d:%02d\r\n",
@@ -749,7 +749,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 #ifdef TIMING_ITM
 		ITM_Port32(31) = 21;
 #endif
-#ifdef DEBUG_MODE
+#ifdef DEBUGMODE
 		tank_pressure = convert_prop_tank_pressure(); // for debug, later move to telemetry_format_prop()
 #endif
 
@@ -828,7 +828,7 @@ void check_flight_state(volatile uint8_t *state) {
 			sd_write(&fil, (uint8_t *)"launched\r\n");
 			f_close(&fil);
 
-			#ifdef DEBUG_MODE
+			#ifdef DEBUGMODE
 				HAL_GPIO_WritePin(Prop_Gate_1_GPIO_Port, Prop_Gate_1_Pin, SET);
 			#endif
 
@@ -859,7 +859,7 @@ void check_flight_state(volatile uint8_t *state) {
 				sd_write(&fil, (uint8_t *)"apogee\r\n");
 				f_close(&fil);
 
-				#ifdef DEBUG_MODE
+				#ifdef DEBUGMODE
 					HAL_GPIO_WritePin(Prop_Gate_2_GPIO_Port, Prop_Gate_2_Pin, SET);
 				#endif
 
@@ -895,7 +895,7 @@ void check_flight_state(volatile uint8_t *state) {
 				sd_write(&fil, (uint8_t *)"main deployed\r\n");
 				f_close(&fil);
 
-				#ifdef DEBUG_MODE
+				#ifdef DEBUGMODE
 					HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
 				#endif
 
@@ -928,7 +928,7 @@ void check_flight_state(volatile uint8_t *state) {
 				sd_write(&fil, (uint8_t *)"landed\r\n");
 				f_close(&fil);
 
-				#ifdef DEBUG_MODE
+				#ifdef DEBUGMODE
 					HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
 				#endif
 
@@ -952,7 +952,7 @@ void check_flight_state(volatile uint8_t *state) {
 		VR_Power_Off();
 		set_backup_state(FC_STATE_VR_POWER, 0);
 
-		#ifdef DEBUG_MODE
+		#ifdef DEBUGMODE
 			while (1) {
 				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, SET);
 				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, SET);

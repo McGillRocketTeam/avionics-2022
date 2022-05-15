@@ -24,7 +24,7 @@ extern "C" {
 //**************************************************//
 //DEBUGGING
 #define DEBUG 0 //If in debug mode, no IWDG
-#define DEBUG_UART huart8
+#define DEBUGUART huart8
 #define PRINT 1
 #define NO_BUZZ 0
 #define HARDFAULT_GENERATOR 0

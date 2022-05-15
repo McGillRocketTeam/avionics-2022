@@ -2417,7 +2417,7 @@ int main(void)
    *-Include the path to all includes folders of the drivers (for C and C++ linkers)
    */
 
-  HAL_UART_Transmit(&DEBUG_UART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUGUART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
  8001728:	f04f 33ff 	mov.w	r3, #4294967295
  800172c:	2213      	movs	r2, #19
  800172e:	4956      	ldr	r1, [pc, #344]	; (8001888 <main+0x250>)
@@ -2428,7 +2428,7 @@ int main(void)
    * For external FLASH memory
    *-Put before RTOS setup because you need the external flash in its setup
    */
-    MRT_SetupRTOS(&hrtc, DEBUG_UART, SLEEP_TIME); //Put here so we can pass the uart value to the setup
+    MRT_SetupRTOS(&hrtc, DEBUGUART, SLEEP_TIME); //Put here so we can pass the uart value to the setup
  8001736:	4e55      	ldr	r6, [pc, #340]	; (800188c <main+0x254>)
  8001738:	23a0      	movs	r3, #160	; 0xa0
  800173a:	930e      	str	r3, [sp, #56]	; 0x38
@@ -2445,7 +2445,7 @@ int main(void)
  8001756:	e896 000e 	ldmia.w	r6, {r1, r2, r3}
  800175a:	484d      	ldr	r0, [pc, #308]	; (8001890 <main+0x258>)
  800175c:	f005 f8ae 	bl	80068bc <MRT_SetupRTOS>
-	MRT_externalFlashSetup(&DEBUG_UART);
+	MRT_externalFlashSetup(&DEBUGUART);
  8001760:	484a      	ldr	r0, [pc, #296]	; (800188c <main+0x254>)
  8001762:	f002 f8a5 	bl	80038b0 <MRT_externalFlashSetup>
 	   * Watch dog
@@ -2517,7 +2517,7 @@ int main(void)
  80017b8:	483a      	ldr	r0, [pc, #232]	; (80018a4 <main+0x26c>)
  80017ba:	f007 fd55 	bl	8009268 <HAL_IWDG_Refresh>
 	  #endif
-	  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUG_UART);
+	  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUGUART);
  80017be:	4c3d      	ldr	r4, [pc, #244]	; (80018b4 <main+0x27c>)
  80017c0:	463b      	mov	r3, r7
  80017c2:	4a32      	ldr	r2, [pc, #200]	; (800188c <main+0x254>)
@@ -2533,7 +2533,7 @@ int main(void)
  80017d6:	4833      	ldr	r0, [pc, #204]	; (80018a4 <main+0x26c>)
  80017d8:	f007 fd46 	bl	8009268 <HAL_IWDG_Refresh>
 	  #endif
-	  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUG_UART);
+	  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUGUART);
  80017dc:	4c37      	ldr	r4, [pc, #220]	; (80018bc <main+0x284>)
  80017de:	463b      	mov	r3, r7
  80017e0:	4a2a      	ldr	r2, [pc, #168]	; (800188c <main+0x254>)
@@ -2544,7 +2544,7 @@ int main(void)
  80017ec:	e893 0007 	ldmia.w	r3, {r0, r1, r2}
  80017f0:	e884 0007 	stmia.w	r4, {r0, r1, r2}
 
-	  GPS_init(&GPS_UART, &DEBUG_UART);
+	  GPS_init(&GPS_UART, &DEBUGUART);
  80017f4:	4925      	ldr	r1, [pc, #148]	; (800188c <main+0x254>)
  80017f6:	4832      	ldr	r0, [pc, #200]	; (80018c0 <main+0x288>)
  80017f8:	f002 f826 	bl	8003848 <GPS_init>
@@ -4577,7 +4577,7 @@ void StartMemory0(void *argument)
 
 			  //TODO when the sd card bug, it seems that only removing power from it works to reset it.
 			  //Otherwise it always give an error. Trying to close and open doesn't work
-			  HAL_UART_Transmit(&DEBUG_UART,"TEST\tTEST\tTEST\tTEST\r\n",17,HAL_MAX_DELAY);
+			  HAL_UART_Transmit(&DEBUGUART,"TEST\tTEST\tTEST\tTEST\r\n",17,HAL_MAX_DELAY);
  80023e6:	f04f 33ff 	mov.w	r3, #4294967295
  80023ea:	2211      	movs	r2, #17
  80023ec:	4916      	ldr	r1, [pc, #88]	; (8002448 <StartMemory0+0xd8>)
@@ -4710,7 +4710,7 @@ void StartEjection1(void *argument)
  80024cc:	2201      	movs	r2, #1
  80024ce:	701a      	strb	r2, [r3, #0]
 
-				  HAL_UART_Transmit(&DEBUG_UART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
+				  HAL_UART_Transmit(&DEBUGUART, "Eject Drogue\r\n", 15, HAL_MAX_DELAY);
  80024d0:	f04f 33ff 	mov.w	r3, #4294967295
  80024d4:	220f      	movs	r2, #15
  80024d6:	496b      	ldr	r1, [pc, #428]	; (8002684 <StartEjection1+0x230>)
@@ -4805,7 +4805,7 @@ void StartEjection1(void *argument)
  800257c:	2201      	movs	r2, #1
  800257e:	701a      	strb	r2, [r3, #0]
 
-						  HAL_UART_Transmit(&DEBUG_UART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
+						  HAL_UART_Transmit(&DEBUGUART, "Eject Main\r\n", 13, HAL_MAX_DELAY);
  8002580:	f04f 33ff 	mov.w	r3, #4294967295
  8002584:	220d      	movs	r2, #13
  8002586:	4943      	ldr	r1, [pc, #268]	; (8002694 <StartEjection1+0x240>)
@@ -4918,7 +4918,7 @@ void StartEjection1(void *argument)
  8002640:	2201      	movs	r2, #1
  8002642:	701a      	strb	r2, [r3, #0]
 
-					  HAL_UART_Transmit(&DEBUG_UART, "Ground Level Reached\r\n", 22, HAL_MAX_DELAY);
+					  HAL_UART_Transmit(&DEBUGUART, "Ground Level Reached\r\n", 22, HAL_MAX_DELAY);
  8002644:	f04f 33ff 	mov.w	r3, #4294967295
  8002648:	2216      	movs	r2, #22
  800264a:	4913      	ldr	r1, [pc, #76]	; (8002698 <StartEjection1+0x244>)
@@ -5277,7 +5277,7 @@ void StartWatchDog(void *argument)
  8002894:	4632      	mov	r2, r6
  8002896:	4957      	ldr	r1, [pc, #348]	; (80029f4 <StartWatchDog+0x210>)
  8002898:	f013 fe6e 	bl	8016578 <siprintf>
-	 HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	 HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
  800289c:	f107 0308 	add.w	r3, r7, #8
  80028a0:	4618      	mov	r0, r3
  80028a2:	f7fd fca5 	bl	80001f0 <strlen>
@@ -16424,7 +16424,7 @@ void myprintf(const char *fmt, ...) { // currently does nothing, was copied from
   va_end(args);
 
   //CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
-  HAL_UART_Transmit(&DEBUG_UART, (uint8_t*)buffer, strlen(buffer), -1);
+  HAL_UART_Transmit(&DEBUGUART, (uint8_t*)buffer, strlen(buffer), -1);
  8006d8c:	4808      	ldr	r0, [pc, #32]	; (8006db0 <myprintf+0x40>)
  8006d8e:	f7f9 fa2f 	bl	80001f0 <strlen>
  8006d92:	4603      	mov	r3, r0

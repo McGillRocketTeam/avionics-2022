@@ -5450,7 +5450,7 @@ void radio_tx(uint8_t *msg_buffer, uint16_t size) {
  8002a6e:	4803      	ldr	r0, [pc, #12]	; (8002a7c <radio_tx+0x20>)
  8002a70:	f007 f9e2 	bl	8009e38 <HAL_UART_Transmit_DMA>
 
-	#ifdef DEBUG_MODE
+	#ifdef DEBUGMODE
 	debug_tx_uart(msg_buffer);
 	#endif
 }
@@ -6768,7 +6768,7 @@ void check_flight_state(volatile uint8_t *state) {
 				f_close(&fil);
  800333c:	483d      	ldr	r0, [pc, #244]	; (8003434 <check_flight_state+0x23c>)
  800333e:	f00a fca8 	bl	800dc92 <f_close>
-				#ifdef DEBUG_MODE
+				#ifdef DEBUGMODE
 					HAL_GPIO_WritePin(Rcov_Gate_Drogue_GPIO_Port, Rcov_Gate_Drogue_Pin, SET);
 				#endif
 
@@ -6862,7 +6862,7 @@ void check_flight_state(volatile uint8_t *state) {
 				f_close(&fil);
  80033d8:	4816      	ldr	r0, [pc, #88]	; (8003434 <check_flight_state+0x23c>)
  80033da:	f00a fc5a 	bl	800dc92 <f_close>
-				#ifdef DEBUG_MODE
+				#ifdef DEBUGMODE
 					HAL_GPIO_WritePin(Rcov_Gate_Main_GPIO_Port, Rcov_Gate_Main_Pin, SET);
 				#endif
 

@@ -2420,7 +2420,7 @@ int main(void)
    *-Include the path to all includes folders of the drivers (for C and C++ linkers)
    */
 
-  HAL_UART_Transmit(&DEBUG_UART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
+  HAL_UART_Transmit(&DEBUGUART,"\r\n\r\nStarting FC\r\n\r\n",19,HAL_MAX_DELAY);
  800172c:	f04f 33ff 	mov.w	r3, #4294967295
  8001730:	2213      	movs	r2, #19
  8001732:	4973      	ldr	r1, [pc, #460]	; (8001900 <main+0x2c8>)
@@ -2431,7 +2431,7 @@ int main(void)
    * For external FLASH memory
    *-Put before RTOS setup because you need the external flash in its setup
    */
-    MRT_SetupRTOS(&hrtc, DEBUG_UART,SLEEP_TIME); //Put here so we can pass the uart value to the setup
+    MRT_SetupRTOS(&hrtc, DEBUGUART,SLEEP_TIME); //Put here so we can pass the uart value to the setup
  800173a:	4e72      	ldr	r6, [pc, #456]	; (8001904 <main+0x2cc>)
  800173c:	2305      	movs	r3, #5
  800173e:	930e      	str	r3, [sp, #56]	; 0x38
@@ -2448,7 +2448,7 @@ int main(void)
  800175a:	e896 000e 	ldmia.w	r6, {r1, r2, r3}
  800175e:	486a      	ldr	r0, [pc, #424]	; (8001908 <main+0x2d0>)
  8001760:	f006 f9b4 	bl	8007acc <MRT_SetupRTOS>
-	MRT_externalFlashSetup(&DEBUG_UART);
+	MRT_externalFlashSetup(&DEBUGUART);
  8001764:	4867      	ldr	r0, [pc, #412]	; (8001904 <main+0x2cc>)
  8001766:	f002 f8b7 	bl	80038d8 <MRT_externalFlashSetup>
 	   *random resets. Now the problem is how do we start the FC from the beginning if we have a random
@@ -2493,7 +2493,7 @@ int main(void)
  800179a:	f44f 4100 	mov.w	r1, #32768	; 0x8000
  800179e:	4856      	ldr	r0, [pc, #344]	; (80018f8 <main+0x2c0>)
  80017a0:	f007 fbe8 	bl	8008f74 <HAL_GPIO_WritePin>
-    uint8_t lol = MRT_Static_Iridium_Setup(DEBUG_UART);
+    uint8_t lol = MRT_Static_Iridium_Setup(DEBUGUART);
  80017a4:	4e57      	ldr	r6, [pc, #348]	; (8001904 <main+0x2cc>)
  80017a6:	466d      	mov	r5, sp
  80017a8:	f106 0410 	add.w	r4, r6, #16
@@ -2517,7 +2517,7 @@ int main(void)
   HAL_IWDG_Refresh(&hiwdg);
  80017c8:	4853      	ldr	r0, [pc, #332]	; (8001918 <main+0x2e0>)
  80017ca:	f008 fcb7 	bl	800a13c <HAL_IWDG_Refresh>
-  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUG_UART);
+  lsm_ctx = MRT_LSM6DSR_Setup(&LSM_I2C, &DEBUGUART);
  80017ce:	4c53      	ldr	r4, [pc, #332]	; (800191c <main+0x2e4>)
  80017d0:	463b      	mov	r3, r7
  80017d2:	4a4c      	ldr	r2, [pc, #304]	; (8001904 <main+0x2cc>)
@@ -2535,7 +2535,7 @@ int main(void)
   HAL_IWDG_Refresh(&hiwdg);
  80017e6:	484c      	ldr	r0, [pc, #304]	; (8001918 <main+0x2e0>)
  80017e8:	f008 fca8 	bl	800a13c <HAL_IWDG_Refresh>
-  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUG_UART);
+  lps_ctx = MRT_LPS22HH_Setup(&LPS_I2C, &DEBUGUART);
  80017ec:	4c4d      	ldr	r4, [pc, #308]	; (8001924 <main+0x2ec>)
  80017ee:	463b      	mov	r3, r7
  80017f0:	4a44      	ldr	r2, [pc, #272]	; (8001904 <main+0x2cc>)
@@ -2553,7 +2553,7 @@ int main(void)
   HAL_IWDG_Refresh(&hiwdg);
  8001804:	4844      	ldr	r0, [pc, #272]	; (8001918 <main+0x2e0>)
  8001806:	f008 fc99 	bl	800a13c <HAL_IWDG_Refresh>
-  GPS_init(&GPS_UART, &DEBUG_UART);
+  GPS_init(&GPS_UART, &DEBUGUART);
  800180a:	493e      	ldr	r1, [pc, #248]	; (8001904 <main+0x2cc>)
  800180c:	4846      	ldr	r0, [pc, #280]	; (8001928 <main+0x2f0>)
  800180e:	f002 f82f 	bl	8003870 <GPS_init>
@@ -5272,7 +5272,7 @@ void StartWatchDog(void *argument)
  8002922:	462a      	mov	r2, r5
  8002924:	4922      	ldr	r1, [pc, #136]	; (80029b0 <StartWatchDog+0x110>)
  8002926:	f019 f80f 	bl	801b948 <siprintf>
-	  HAL_UART_Transmit(&DEBUG_UART, buffer, strlen(buffer), HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&DEBUGUART, buffer, strlen(buffer), HAL_MAX_DELAY);
  800292a:	f107 0308 	add.w	r3, r7, #8
  800292e:	4618      	mov	r0, r3
  8002930:	f7fd fc5e 	bl	80001f0 <strlen>
@@ -18937,7 +18937,7 @@ void myprintf(const char *fmt, ...) { // currently does nothing, was copied from
   va_end(args);
 
   //CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
-  HAL_UART_Transmit(&DEBUG_UART, (uint8_t*)buffer, strlen(buffer), -1);
+  HAL_UART_Transmit(&DEBUGUART, (uint8_t*)buffer, strlen(buffer), -1);
  8007f9c:	4808      	ldr	r0, [pc, #32]	; (8007fc0 <myprintf+0x40>)
  8007f9e:	f7f8 f927 	bl	80001f0 <strlen>
  8007fa2:	4603      	mov	r3, r0

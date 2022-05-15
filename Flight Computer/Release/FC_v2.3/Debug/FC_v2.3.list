@@ -41,9 +41,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  18 .debug_line   0004440a  00000000  00000000  000e41a6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    00110933  00000000  00000000  001285b0  2**0
+ 19 .debug_str    00110932  00000000  00000000  001285b0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000053  00000000  00000000  00238ee3  2**0
+ 20 .comment      00000053  00000000  00000000  00238ee2  2**0
                   CONTENTS, READONLY
  21 .debug_frame  00010364  00000000  00000000  00238f38  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -1341,7 +1341,7 @@ void println(char* s){
  8001010:	af00      	add	r7, sp, #0
  8001012:	6078      	str	r0, [r7, #4]
 	#if PRINT
-	HAL_UART_Transmit(&DEBUG_UART, (uint8_t*) s, strlen(s), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&DEBUGUART, (uint8_t*) s, strlen(s), HAL_MAX_DELAY);
  8001014:	6878      	ldr	r0, [r7, #4]
  8001016:	f7ff f8eb 	bl	80001f0 <strlen>
  800101a:	4603      	mov	r3, r0
@@ -1350,7 +1350,7 @@ void println(char* s){
  8001022:	6879      	ldr	r1, [r7, #4]
  8001024:	4806      	ldr	r0, [pc, #24]	; (8001040 <println+0x34>)
  8001026:	f00b ff1e 	bl	800ce66 <HAL_UART_Transmit>
-	HAL_UART_Transmit(&DEBUG_UART, (uint8_t*) "\r\n", 2, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&DEBUGUART, (uint8_t*) "\r\n", 2, HAL_MAX_DELAY);
  800102a:	f04f 33ff 	mov.w	r3, #4294967295
  800102e:	2202      	movs	r2, #2
  8001030:	4904      	ldr	r1, [pc, #16]	; (8001044 <println+0x38>)
@@ -1373,7 +1373,7 @@ void print(char* s){
  800104c:	af00      	add	r7, sp, #0
  800104e:	6078      	str	r0, [r7, #4]
 	#if PRINT
-	HAL_UART_Transmit(&DEBUG_UART, (uint8_t*) s, strlen(s), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&DEBUGUART, (uint8_t*) s, strlen(s), HAL_MAX_DELAY);
  8001050:	6878      	ldr	r0, [r7, #4]
  8001052:	f7ff f8cd 	bl	80001f0 <strlen>
  8001056:	4603      	mov	r3, r0
@@ -9423,7 +9423,7 @@ void myprintf(const char *fmt, ...) { // currently does nothing, was copied from
   va_end(args);
 
   //CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
-  //HAL_UART_Transmit(&DEBUG_UART, (uint8_t*)buffer, strlen(buffer), -1);
+  //HAL_UART_Transmit(&DEBUGUART, (uint8_t*)buffer, strlen(buffer), -1);
   print(buffer);
  8004318:	4804      	ldr	r0, [pc, #16]	; (800432c <myprintf+0x30>)
  800431a:	f7fc fe95 	bl	8001048 <print>
@@ -17457,7 +17457,7 @@ void MRT_radio_tx(char* buffer){
  8007632:	b082      	sub	sp, #8
  8007634:	af00      	add	r7, sp, #0
  8007636:	6078      	str	r0, [r7, #4]
-			sx126x_set_tx(&SRADIO_SPI, 1000, SRADIO_BUFFER_SIZE);
+			Tx_setup();
 			TxProtocol((uint8_t*) buffer, strlen(buffer));
 		}
 	#endif
@@ -17487,9 +17487,9 @@ void MRT_radio_Init(void){
 	println("\r\nRadio Init");
  8007654:	4803      	ldr	r0, [pc, #12]	; (8007664 <MRT_radio_Init+0x14>)
  8007656:	f7f9 fcd9 	bl	800100c <println>
-	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-	//Tx_setup();
-	Rx_setup();
+	//  set_DIO3_pin(DIO3_1_GPIO_Port, DIO3_1_Pin);
+	Tx_setup();
+	//Rx_setup();
 	println("OK");
 	#else
 	println("\tNo radio currently in use");

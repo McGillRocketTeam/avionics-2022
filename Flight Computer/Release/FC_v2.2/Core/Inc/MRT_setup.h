@@ -21,7 +21,7 @@
 #endif
 
 UART_HandleTypeDef huart8;
-#define DEBUG_UART huart8
+#define DEBUGUART huart8
 
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
 #define FORCED_EJECTION_STAGE 0 //Can take value from 0 to 1 (boolean)

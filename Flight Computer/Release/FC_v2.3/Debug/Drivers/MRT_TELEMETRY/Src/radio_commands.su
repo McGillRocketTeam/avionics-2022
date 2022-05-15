@@ -1,7 +1,7 @@
-radio_commands.c:21:15:radio_parse_command	16	static
-radio_commands.c:57:6:execute_parsed_command	16	static
-radio_commands.c:110:6:rocket_launch	8	static
-radio_commands.c:119:6:arming_propulsion	8	static
-radio_commands.c:126:6:arming_recovery	8	static
-radio_commands.c:133:6:disarm_propulsion	8	static
-radio_commands.c:145:6:disarm_recovery	8	static
+radio_commands.c:22:15:radio_parse_command	16	static
+radio_commands.c:70:6:execute_parsed_command	16	static
+radio_commands.c:123:6:rocket_launch	8	static
+radio_commands.c:132:6:arming_propulsion	8	static
+radio_commands.c:139:6:arming_recovery	8	static
+radio_commands.c:146:6:disarm_propulsion	8	static
+radio_commands.c:158:6:disarm_recovery	8	static

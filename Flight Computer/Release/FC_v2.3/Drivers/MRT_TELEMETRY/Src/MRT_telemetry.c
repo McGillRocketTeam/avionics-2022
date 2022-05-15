@@ -19,7 +19,8 @@ void MRT_radio_tx(char* buffer){
 		if (strlen(buffer) < XTEND_BUFFER_SIZE)	HAL_UART_Transmit(&XTEND_UART,(uint8_t*) buffer, strlen(buffer), HAL_MAX_DELAY);
 	#elif SRADIO_ //SRadio send TODO
 		if (strlen(buffer) < SRADIO_BUFFER_SIZE){
-			sx126x_set_tx(&SRADIO_SPI, 1000, SRADIO_BUFFER_SIZE);
+			//sx126x_set_tx(&SRADIO_SPI, 1000, SRADIO_BUFFER_SIZE);
+			Tx_setup();
 			TxProtocol((uint8_t*) buffer, strlen(buffer));
 		}
 	#endif
@@ -36,8 +37,15 @@ void MRT_radio_rx(char* buffer, uint8_t size, uint16_t timeout){
 		}
 	#elif SRADIO_ //SRadio receive TODO
 		if (size < SRADIO_BUFFER_SIZE){
-			sx126x_set_rx(&SRADIO_SPI,5000);
-			RxProtocol((uint8_t*) buffer);
+			//sx126x_set_rx(&SRADIO_SPI,5000);
+			Rx_setup();
+
+			//Note: The last character is always random and needs to be removed
+			char temp_buf[size];
+			memset(temp_buf,0,size);
+			RxProtocol((uint8_t*) temp_buf);
+			//memcpy(buffer,temp_buf,strlen(temp_buf)-1);
+			memcpy(buffer,temp_buf,size);
 		}
 	#endif
 
@@ -56,13 +64,14 @@ void MRT_radio_Init(void){
 	#elif SRADIO_
 	print("\tSRADIO Init...");
 	set_hspi(SRADIO_SPI);
-	// SPI2_SX_CS_GPIO_Port TODO ???
 	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
 	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
 	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
 	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-	//Tx_setup();
-	Rx_setup();
+	//  set_DIO2_pin(DIO2_1_GPIO_Port, DIO2_1_Pin);
+	//  set_DIO3_pin(DIO3_1_GPIO_Port, DIO3_1_Pin);
+	Tx_setup();
+	//Rx_setup();
 	println("OK");
 	#else
 	println("\tNo radio currently in use");
