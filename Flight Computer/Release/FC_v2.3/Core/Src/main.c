@@ -247,6 +247,7 @@ void MRT_waitForLaunch(void){
 			MRT_saveFlagValue(FC_STATE_FLIGHT);
 		}
 		execute_parsed_command(cmd);
+		MRT_radio_send_ack(cmd);
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 

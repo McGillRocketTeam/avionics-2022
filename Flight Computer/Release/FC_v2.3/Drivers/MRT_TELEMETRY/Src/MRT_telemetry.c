@@ -97,6 +97,14 @@ void MRT_TELEMETRY_Init(void){
 
 
 
+void MRT_radio_send_ack(radio_command cmd){
+	if(cmd>=0 && cmd<=9){
+		char buffer[20];
+		sprintf(buffer, "radio_ack_%i\r\n",cmd);
+		MRT_radio_tx(buffer);
+	}
+}
+
 
 
 
