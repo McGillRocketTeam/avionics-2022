@@ -38,22 +38,22 @@ def runMEKF():
     xt = []
     while (i < N):
         #1. generate random gyro and acc data 
-        random_gyro1 = np.sin(2*120*i*np.pi) 
-        random_gyro2 = np.sin(2*90*i*np.pi) 
-        random_gyro3 = np.sin(2*70*i*np.pi) 
-        random_acc1 = 7.0 * np.sin(2*40*i*np.pi) 
-        random_acc2 = 2.0 * np.sin(2*80*i*np.pi) 
-        random_acc3 = 3.0 * np.sin(2*50*i*np.pi) 
+        random_gyro1 = np.sin(2*0.120*i*np.pi) 
+        random_gyro2 = np.sin(2*0.90*i*np.pi) 
+        random_gyro3 = np.sin(2*0.70*i*np.pi) 
+        random_acc1 = 7.0 * np.sin(2*0.40*i*np.pi) 
+        random_acc2 = 2.0 * np.sin(2*0.80*i*np.pi) 
+        random_acc3 = 3.0 * np.sin(2*0.50*i*np.pi) 
         
-        rg1 = np.sin(10*i) #random.normal(0, sigma_gyro)
-        rg2 = np.sin(10*i) #random.normal(0, sigma_gyro)
-        rg3 = np.sin(10*i) #random.normal(0, sigma_gyro)
-        ra1 = np.sin(10*i) #random.normal(0, sigma_acc)
-        ra2 = np.sin(10*i) #random.normal(0, sigma_acc)
-        ra3 = np.sin(10*i) #random.normal(0, sigma_acc)
-        rgps1 = np.sin(10*i) #random.normal(0, sigma_gps)
-        rgps2 = np.sin(10*i) #random.normal(0, sigma_gps)
-        rgps3 = np.sin(10*i) #random.normal(0, sigma_gps)
+        rg1 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_gyro)
+        rg2 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_gyro)
+        rg3 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_gyro)
+        ra1 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_acc)
+        ra2 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_acc)
+        ra3 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_acc)
+        rgps1 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_gps)
+        rgps2 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_gps)
+        rgps3 = 0.1 * np.sin(0.10*i*np.pi) #random.normal(0, sigma_gps)
 
         GYRO_input = np.array([random_gyro1, random_gyro2, random_gyro3], dtype='f')
         ACC_input = np.array( [random_acc1, random_acc2, random_acc3], dtype='f')
@@ -108,8 +108,8 @@ def runMEKF():
         mekf.kf_predict(GYRO_meas_arr[i], ACC_meas_arr[i])
         
         #correct
-        mekf.kf_update()
-        mekf.kf_correct(GPS_meas_arr[i])
+        #mekf.kf_update()
+        #mekf.kf_correct(GPS_meas_arr[i])
         #position_corr.append(mekf.ra_k[0][0])
           
         "predicted state"
@@ -163,6 +163,12 @@ def runMEKF():
     pH.plotMEKF1angleError(xt, orien_error3, orien_cov3a, orien_cov3b, N)
     
     #position error + cov 
+    #print(position_pred1[N-1])
+    #print(position_pred2[N-1])
+    #print(position_pred3[N-1])
+    print(orien_pred1[N-1])
+    print(orien_pred2[N-1])
+    print(orien_pred3[N-1])
     print(pos_error1[N-1])
     pH.plotMEKF1axisError(xt, pos_error1, pos_cov1a, pos_cov1b, N)
     pH.plotMEKF1axisError(xt, pos_error2, pos_cov2a, pos_cov2b, N)
