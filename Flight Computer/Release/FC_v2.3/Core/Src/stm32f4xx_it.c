@@ -27,6 +27,7 @@
 #include <MRT_memory.h>
 #include <MRT_iridium.h>
 #include <MRT_helpers.h>
+#include <MRT_setup.h>
 
 /* USER CODE END Includes */
 

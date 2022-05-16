@@ -60,7 +60,8 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h \
- ../Core/Inc/MRT_helpers.h
+ ../Core/Inc/MRT_helpers.h ../Core/Inc/MRT_setup.h ../Core/Inc/usart.h \
+ ../Core/Inc/i2c.h ../Core/Inc/adc.h ../Core/Inc/spi.h
 
 ../Core/Inc/main.h:
 
@@ -199,3 +200,13 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h:
 
 ../Core/Inc/MRT_helpers.h:
+
+../Core/Inc/MRT_setup.h:
+
+../Core/Inc/usart.h:
+
+../Core/Inc/i2c.h:
+
+../Core/Inc/adc.h:
+
+../Core/Inc/spi.h:

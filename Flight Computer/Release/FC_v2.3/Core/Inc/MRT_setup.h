@@ -112,10 +112,7 @@ extern "C" {
 #define PROPULSION_THREAD 1
 #define WATCHDOG_THREAD 1
 
-#define PRINTING_THREAD 0
-
-
-#define NUMBER_OF_THREADS 5
+#define NUMBER_OF_THREADS 5 //This excludes the watch dog thread
 
 
 //**************************************************//
@@ -173,7 +170,7 @@ extern "C" {
 #endif
 
 //Iridium
-#define IRIDIUM_ 0
+#define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 

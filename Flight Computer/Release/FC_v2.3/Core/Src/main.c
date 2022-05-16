@@ -36,15 +36,6 @@
 #include <MRT_setup.h>
 #include <MRT_helpers.h>
 
-//For the wait for launch
-#include <MRT_memory.h>
-#include <MRT_ejection.h>
-#include <MRT_propulsion.h>
-#include <MRT_telemetry.h>
-
-//TODO for testing
-#include <MRT_i2c_sensors.h>
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -86,13 +77,7 @@ int main(void){
 	__HAL_FREEZE_RTC_DBGMCU();
 	println("\r\n\r\nSTM Init...OK");
 
-	MRT_Init();
-
-	println("\r\n\r\n/****Starting FC****/\r\n\r\n");
-	HAL_IWDG_Refresh(&hiwdg);
-	buzz_startup_success();
-
-	MRT_waitForLaunch();
+	//The rest of the initialization is made in freertos.c by vApplicationDaemonTaskStartupHook()
 
 	//TODO I2C SENSORS (lsm and lps) SOMETIMES DON'T WANT TO WORK ANYMORE -> NEED TO RESET THE POWER (Enter quick standByMode?)
 	//check hardfault_handler
@@ -187,86 +172,6 @@ void MRT_STM_Init(void){
 	MX_RTC_Init();
 	//MX_IWDG_Init(); TODO ADDED IN MRT_Init()
 	MX_FATFS_Init();
-}
-
-void MRT_waitForLaunch(void){
-
-	println("Waiting for launch command from ground station\r\n");
-
-	char radio_buffer[RADIO_BUFFER_SIZE];
-	radio_command cmd = -1;
-
-	//Poll propulsion until launch command sent
-	while((XTEND_ || SRADIO_) && ejection_stage_flag == PAD){
-		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
-
-		HAL_IWDG_Refresh(&hiwdg);
-
-		//Get RTC time
-		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-		HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-
-		//Update global variables
-		prev_hour = sTime.Hours;
-		prev_min = sTime.Minutes;
-		prev_sec = sTime.Seconds;
-		if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
-		prev_subsec = sTime.SubSeconds;
-
-		//Save the RTC time
-	    MRT_saveTotalTime();
-
-		//Poll propulsion sensors
-		MRT_pollPropulsion();
-
-		//Send propulsion data
-		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
-		sprintf(radio_buffer,"P,%.2f,%.2f, %i,E\r\n",transducer_voltage,thermocouple_temperature,(int) valve_status);
-		MRT_radio_tx(radio_buffer);
-
-
-		// Save to SD card
-		#if SD_CARD_
-		fres = sd_open_file(filename);
-		MRT_formatPropulsion();
-		sd_write(&fil, msg_buffer_pr);
-		f_close(&fil);
-		#endif
-
-
-		//Check for launch command
-		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
-		MRT_radio_rx(radio_buffer, 2, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
-		cmd = radio_parse_command(radio_buffer);
-
-		if (cmd == LAUNCH){
-			//Update ejection stage flag and save it
-			ejection_stage_flag = BOOST;
-			rtc_bckp_reg_ejection_stage = BOOST;
-			ext_flash_ejection_stage = BOOST;
-			MRT_saveFlagValue(FC_STATE_FLIGHT);
-		}
-		execute_parsed_command(cmd);
-		MRT_radio_send_ack(cmd);
-
-		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
-
-		//Reset IWDG timer
-		HAL_IWDG_Refresh(&hiwdg);
-
-		HAL_Delay(1000/PRE_APOGEE_SEND_FREQ);
-	}
-
-
-	//Todo to test ejection
-	hlps22hh.getPressure();
-	rtc_bckp_reg_alt_pad = MRT_getAltitude(hlps22hh.pressure_hPa);
-	MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
-	rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
-	MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
-
-	//Send acknowledgement
-	MRT_radio_tx((char*) "LAUNCH COMMAND RECEIVED"); //TODO CHECK AT WHAT JASPER DID FOR ACK MESSAGES
 }
 
 /* USER CODE END 4 */

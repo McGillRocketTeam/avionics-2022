@@ -28,9 +28,6 @@ radio_command radio_parse_command(char* rx_buf) {
 		sprintf(radio_buffer,"%i",rx_buf[i]);
 		println(radio_buffer);
 	}
-	memset(radio_buffer,0,10);
-	sprintf(radio_buffer,"%i",strcmp(rx_buf, "lr"));
-	//println(radio_buffer);
 	#endif
 
 	if (strcmp(rx_buf, "lr") == 0) { // launch command

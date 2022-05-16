@@ -30,13 +30,6 @@
 #include <rtc.h>
 #include "stm32f4xx_it.h" //Flag A and B for alarms A and B and reset from start function
 
-/*
-//TODO Trying to debug interrupt handlers
-#include <stm32f4xx_hal_uart.h> //
-#include <stm32f4xx_hal_rtc.h> //Alarm IRQHandler
-#include <stm32f4xx_hal_rtc_ex.h> //Timestamp interrupt and WakeUpTimer interrupt
-#include <stm32f4xx_hal_cortex.h> //Systick handler (callback not defined?)
-*/
 
 #include <MRT_setup.h>
 #include <MRT_helpers.h>
@@ -52,7 +45,6 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
-typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -77,80 +69,51 @@ osThreadId_t threadsID[NUMBER_OF_THREADS]; //Thread list accessed by Watch Dog t
 /* USER CODE END Variables */
 /* Definitions for Memory0 */
 osThreadId_t Memory0Handle;
-uint32_t Memory0Buffer[ 512 ];
-osStaticThreadDef_t Memory0ControlBlock;
 const osThreadAttr_t Memory0_attributes = {
   .name = "Memory0",
-  .cb_mem = &Memory0ControlBlock,
-  .cb_size = sizeof(Memory0ControlBlock),
-  .stack_mem = &Memory0Buffer[0],
-  .stack_size = sizeof(Memory0Buffer),
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityHigh3,
 };
 /* Definitions for Ejection1 */
 osThreadId_t Ejection1Handle;
-uint32_t Ejection1Buffer[ 512 ];
-osStaticThreadDef_t Ejection1ControlBlock;
 const osThreadAttr_t Ejection1_attributes = {
   .name = "Ejection1",
-  .cb_mem = &Ejection1ControlBlock,
-  .cb_size = sizeof(Ejection1ControlBlock),
-  .stack_mem = &Ejection1Buffer[0],
-  .stack_size = sizeof(Ejection1Buffer),
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityAboveNormal,
 };
 /* Definitions for Telemetry2 */
 osThreadId_t Telemetry2Handle;
-uint32_t Telemetry2Buffer[ 512 ];
-osStaticThreadDef_t Telemetry2ControlBlock;
 const osThreadAttr_t Telemetry2_attributes = {
   .name = "Telemetry2",
-  .cb_mem = &Telemetry2ControlBlock,
-  .cb_size = sizeof(Telemetry2ControlBlock),
-  .stack_mem = &Telemetry2Buffer[0],
-  .stack_size = sizeof(Telemetry2Buffer),
+  .stack_size = 1024 * 4,
   .priority = (osPriority_t) osPriorityHigh1,
 };
 /* Definitions for Sensors3 */
 osThreadId_t Sensors3Handle;
-uint32_t Sensors3Buffer[ 512 ];
-osStaticThreadDef_t Sensors3ControlBlock;
 const osThreadAttr_t Sensors3_attributes = {
   .name = "Sensors3",
-  .cb_mem = &Sensors3ControlBlock,
-  .cb_size = sizeof(Sensors3ControlBlock),
-  .stack_mem = &Sensors3Buffer[0],
-  .stack_size = sizeof(Sensors3Buffer),
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for WatchDog */
 osThreadId_t WatchDogHandle;
-uint32_t WatchDogBuffer[ 512 ];
-osStaticThreadDef_t WatchDogControlBlock;
 const osThreadAttr_t WatchDog_attributes = {
   .name = "WatchDog",
-  .cb_mem = &WatchDogControlBlock,
-  .cb_size = sizeof(WatchDogControlBlock),
-  .stack_mem = &WatchDogBuffer[0],
-  .stack_size = sizeof(WatchDogBuffer),
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for Propulsion4 */
 osThreadId_t Propulsion4Handle;
-uint32_t Propulsion4Buffer[ 512 ];
-osStaticThreadDef_t Propulsion4ControlBlock;
 const osThreadAttr_t Propulsion4_attributes = {
   .name = "Propulsion4",
-  .cb_mem = &Propulsion4ControlBlock,
-  .cb_size = sizeof(Propulsion4ControlBlock),
-  .stack_mem = &Propulsion4Buffer[0],
-  .stack_size = sizeof(Propulsion4Buffer),
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityHigh1,
 };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
+void MRT_waitForLaunch(void);
 void MRT_checkThreadStates(void);
 
 /* USER CODE END FunctionPrototypes */
@@ -163,6 +126,45 @@ void StartWatchDog(void *argument);
 void StartPropulsion4(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+
+/* Hook prototypes */
+void vApplicationDaemonTaskStartupHook(void);
+
+/* USER CODE BEGIN DAEMON_TASK_STARTUP_HOOK */
+void vApplicationDaemonTaskStartupHook(void)
+{
+	MRT_Init();
+
+	println("\r\n\r\n/****Starting FC****/\r\n\r\n");
+	HAL_IWDG_Refresh(&hiwdg);
+	buzz_startup_success();
+
+	MRT_waitForLaunch();
+
+	print("\tCreating the threads...");
+
+	/* Create the thread(s) */
+	/* creation of Memory0 */
+	Memory0Handle = osThreadNew(StartMemory0, NULL, &Memory0_attributes);
+
+	/* creation of Ejection1 */
+	Ejection1Handle = osThreadNew(StartEjection1, NULL, &Ejection1_attributes);
+
+	/* creation of Telemetry2 */
+	Telemetry2Handle = osThreadNew(StartTelemetry2, NULL, &Telemetry2_attributes);
+
+	/* creation of Sensors3 */
+	Sensors3Handle = osThreadNew(StartSensors3, NULL, &Sensors3_attributes);
+
+	/* creation of WatchDog */
+	WatchDogHandle = osThreadNew(StartWatchDog, NULL, &WatchDog_attributes);
+
+	/* creation of Propulsion4 */
+	Propulsion4Handle = osThreadNew(StartPropulsion4, NULL, &Propulsion4_attributes);
+
+	println("OK");
+}
+/* USER CODE END DAEMON_TASK_STARTUP_HOOK */
 
 /**
   * @brief  FreeRTOS initialization
@@ -177,7 +179,6 @@ void MX_FREERTOS_Init(void) {
 	osKernelInitialize();
 	println("OK");
 
-	print("\tCreating the threads...");
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -194,6 +195,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+	//TODO No thread creation here (check vApplicationDaemonTaskStartupHook)
+#if NO_THREAD_CREATION_HERE
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -217,9 +220,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  println("OK");
+#endif
   /* USER CODE END RTOS_THREADS */
-
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
@@ -237,8 +239,6 @@ void StartMemory0(void *argument)
 {
   /* USER CODE BEGIN StartMemory0 */
 
-	//TODO UNTESTED
-
 	//Add thread id to the list
 	threadsID[0]=osThreadGetId();
 
@@ -246,6 +246,7 @@ void StartMemory0(void *argument)
     osThreadExit();
 	#endif
 
+    uint8_t reset_counter = 0;
 
   /* Infinite loop */
   for(;;)
@@ -264,14 +265,20 @@ void StartMemory0(void *argument)
 
 	// Save to SD card
 	#if SD_CARD_
+	reset_counter++;
 	MRT_formatAvionics();
 	fres = sd_open_file(filename);
-	sd_write(&fil, msg_buffer_av);
+	if (sd_write(&fil,(uint8_t*) msg_buffer_av) >= 0){
+		reset_counter=0;
+	}
+
 	if (ejection_stage_flag < MAIN_DESCENT){
 		MRT_formatPropulsion();
-		sd_write(&fil, msg_buffer_pr);
+		sd_write(&fil,(uint8_t*) msg_buffer_pr);
 	}
 	f_close(&fil);
+
+	if (reset_counter>=30) NVIC_SystemReset(); //Reset system if we haven't been able to write for some time
 	#endif
 
 	osDelay(1000/DATA_FREQ);
@@ -728,6 +735,85 @@ void StartPropulsion4(void *argument)
 /* USER CODE BEGIN Application */
 
 //TODO private functions
+
+
+void MRT_waitForLaunch(void){
+
+	println("Waiting for launch command from ground station\r\n");
+
+	char radio_buffer[RADIO_BUFFER_SIZE];
+	radio_command cmd = -1;
+
+	//Poll propulsion until launch command sent
+	while((XTEND_ || SRADIO_) && ejection_stage_flag == PAD){
+		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
+
+		HAL_IWDG_Refresh(&hiwdg);
+
+		//Get RTC time
+		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+		HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+
+		//Update global variables
+		prev_hour = sTime.Hours;
+		prev_min = sTime.Minutes;
+		prev_sec = sTime.Seconds;
+		if (__HAL_RTC_SHIFT_GET_FLAG(&hrtc, RTC_FLAG_SHPF)) prev_sec++; //Adjust following the user manual
+		prev_subsec = sTime.SubSeconds;
+
+		//Save the RTC time
+	    MRT_saveTotalTime();
+
+		//Poll propulsion sensors
+		MRT_pollPropulsion();
+
+		//Send propulsion data
+		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+		sprintf(radio_buffer,"P,%.2f,%.2f, %i,E\r\n",transducer_voltage,thermocouple_temperature,(int) valve_status);
+		MRT_radio_tx(radio_buffer);
+
+
+		// Save to SD card
+		#if SD_CARD_
+		fres = sd_open_file(filename);
+		MRT_formatPropulsion();
+		sd_write(&fil, msg_buffer_pr);
+		f_close(&fil);
+		#endif
+
+
+		//Check for launch command
+		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+		MRT_radio_rx(radio_buffer, 2, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
+		cmd = radio_parse_command(radio_buffer);
+
+		if (cmd == LAUNCH){
+			//Update ejection stage flag and save it
+			ejection_stage_flag = BOOST;
+			rtc_bckp_reg_ejection_stage = BOOST;
+			ext_flash_ejection_stage = BOOST;
+			MRT_saveFlagValue(FC_STATE_FLIGHT);
+		}
+		execute_parsed_command(cmd);
+		MRT_radio_send_ack(cmd);
+
+		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
+
+		//Reset IWDG timer
+		HAL_IWDG_Refresh(&hiwdg);
+
+		HAL_Delay(1000/PRE_APOGEE_SEND_FREQ);
+	}
+
+
+	//Todo to test ejection
+	hlps22hh.getPressure();
+	rtc_bckp_reg_alt_pad = MRT_getAltitude(hlps22hh.pressure_hPa);
+	MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
+	rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
+	MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
+}
+
 
 void MRT_checkThreadStates(void){
 	  //Check each thread state
