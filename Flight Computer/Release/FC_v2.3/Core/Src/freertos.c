@@ -39,6 +39,7 @@
 #include <MRT_memory.h>
 #include <MRT_i2c_sensors.h>
 #include <MRT_iridium.h>
+#include <video_recorder.h>
 
 
 
@@ -246,7 +247,10 @@ void StartMemory0(void *argument)
     osThreadExit();
 	#endif
 
-    uint8_t reset_counter = 0;
+    fres = sd_open_file(filename);
+
+    //uint8_t reset_counter = 0;
+    uint8_t sync_counter = 0;
 
   /* Infinite loop */
   for(;;)
@@ -265,20 +269,36 @@ void StartMemory0(void *argument)
 
 	// Save to SD card
 	#if SD_CARD_
-	reset_counter++;
+	//reset_counter++;
+	sync_counter++;
 	MRT_formatAvionics();
-	fres = sd_open_file(filename);
+	//fres = sd_open_file(filename);
+
+
+	if (sd_write(&fil,(uint8_t*) msg_buffer_av)<0){
+		f_close(&fil);
+		fres = sd_open_file(filename);
+	}
+	/*
 	if (sd_write(&fil,(uint8_t*) msg_buffer_av) >= 0){
 		reset_counter=0;
 	}
+	*/
 
 	if (ejection_stage_flag < MAIN_DESCENT){
 		MRT_formatPropulsion();
-		sd_write(&fil,(uint8_t*) msg_buffer_pr);
+		if (sd_write(&fil,(uint8_t*) msg_buffer_pr)<0){
+			f_close(&fil);
+			fres = sd_open_file(filename);
+		}
 	}
-	f_close(&fil);
+	//f_close(&fil);
+	if (sync_counter == 50) {
+		sync_counter=0;
+		f_sync(&fil);
+	}
 
-	if (reset_counter>=30) NVIC_SystemReset(); //Reset system if we haven't been able to write for some time
+	//if (reset_counter>=30) NVIC_SystemReset(); //Reset system if we haven't been able to write for some time
 	#endif
 
 	osDelay(1000/DATA_FREQ);
@@ -312,12 +332,10 @@ void StartEjection1(void *argument)
 	//Double check the state TODO bad? (say wakeup flag is raised but ground isn't reached yet
 	if (ejection_stage_flag >= LANDED)  osThreadExit(); //Ground reached
 
-	osDelay(5000); //Let the LPS "warm up" to have a valid pressure_hPa
+	osDelay(5000); //TODO (remove?) Let the LPS "warm up" to have a valid pressure_hPa
 
 	//TODO put in setup.h?
 	uint8_t counter = 0;
-	uint8_t COUNTER_THRESHOLD = 500;
-	uint8_t ALT_ERROR_MARGIN = 10; //In meters
 	uint8_t prev_alt = 0;
 
   /* Infinite loop */
@@ -335,7 +353,7 @@ void StartEjection1(void *argument)
 	  if(altitude_m < prev_alt || MAX(altitude_m - prev_alt, prev_alt - altitude_m) < ALT_ERROR_MARGIN){
 		  counter++;
 		  char buff[50];
-		  sprintf(buff, "Alt: %i,  MAX:%i, counter: %i", altitude_m, MAX(altitude_m - prev_alt, prev_alt - altitude_m), counter);
+		  sprintf(buff, "Alt: %f,  MAX:%f, counter: %i", altitude_m, MAX(altitude_m - prev_alt, prev_alt - altitude_m), counter);
 	  }
 
 	  if (counter >= COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
@@ -421,6 +439,9 @@ void StartEjection1(void *argument)
 				  ejection_stage_flag = LANDED;
 				  wd_ejection_flag = 1;
 
+				  VR_Stop_Rec();
+				  VR_Power_Off();
+
 				  println("Ground Level Reached");
 				  osThreadExit();
 
@@ -475,6 +496,7 @@ void StartTelemetry2(void *argument)
 		  osDelay(1000/POST_APOGEE_SEND_FREQ);
 	  }
 	  else{ //Only send prop data pre-apogee
+
 		  //Send propulsion data
 		  memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		  MRT_formatPropulsion();
@@ -513,6 +535,8 @@ void StartTelemetry2(void *argument)
 			  iridium_counter = 0;
 			  #if IRIDIUM_ //Iridium send
 			  hiridium.getTime(); //TODO doesn't cost anything
+
+			  //TODO make a list of latest coordinates retrieved to optimize the credits we use
 			  //hiridium.sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
 			  #endif
 		  }
@@ -744,6 +768,10 @@ void MRT_waitForLaunch(void){
 	char radio_buffer[RADIO_BUFFER_SIZE];
 	radio_command cmd = -1;
 
+	//Open SD card file
+	fres = sd_open_file(filename);
+	uint8_t sync_counter = 0;
+
 	//Poll propulsion until launch command sent
 	while((XTEND_ || SRADIO_) && ejection_stage_flag == PAD){
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
@@ -775,14 +803,19 @@ void MRT_waitForLaunch(void){
 
 		// Save to SD card
 		#if SD_CARD_
-		fres = sd_open_file(filename);
 		MRT_formatPropulsion();
-		sd_write(&fil, msg_buffer_pr);
-		f_close(&fil);
+		if (sd_write(&fil,(uint8_t*) msg_buffer_pr)<0){
+			f_close(&fil);
+			fres = sd_open_file(filename);
+		}
+		if (sync_counter==10){
+			sync_counter=0;
+			f_sync(&fil);
+		}
 		#endif
 
 
-		//Check for launch command
+		//Check for command
 		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
 		MRT_radio_rx(radio_buffer, 2, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
 		cmd = radio_parse_command(radio_buffer);
@@ -805,6 +838,8 @@ void MRT_waitForLaunch(void){
 		HAL_Delay(1000/PRE_APOGEE_SEND_FREQ);
 	}
 
+	//Close SD card (reopened by FreeRTOS)
+	f_close(&fil);
 
 	//Todo to test ejection
 	hlps22hh.getPressure();

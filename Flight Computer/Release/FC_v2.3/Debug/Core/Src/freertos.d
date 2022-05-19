@@ -69,7 +69,8 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
  ../Drivers/MRT_SENSORS/Inc/lsm6dsr_reg.h \
  ../Drivers/MRT_SENSORS/Inc/lps22hh_reg.h \
  ../Drivers/MRT_SENSORS/Inc/gps.h \
- ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h
+ ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h \
+ ../Drivers/MRT_MISC/Inc/video_recorder.h
 
 ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 
@@ -236,3 +237,5 @@ Core/Src/freertos.o: ../Core/Src/freertos.c \
 ../Drivers/MRT_SENSORS/Inc/gps.h:
 
 ../Drivers/MRT_TELEMETRY/Inc/MRT_Iridium_f4xx/Inc/MRT_iridium.h:
+
+../Drivers/MRT_MISC/Inc/video_recorder.h:

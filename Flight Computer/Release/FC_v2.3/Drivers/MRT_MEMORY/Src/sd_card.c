@@ -14,7 +14,7 @@ FATFS FatFs;
 FIL fil;
 uint8_t msg_buffer[1000];
 FRESULT fres; //Result after operations
-char filename[13];
+//char filename[13]; Not needed here
 uint8_t writeBuf[1000];
 const char sd_file_header[] = "S,ACCx,ACCy,ACCz,GYRx,GYRy,GYRz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E\r\n"; // printed to top of SD card file
 
@@ -96,6 +96,7 @@ FRESULT sd_init_dynamic_filename(char *prefix, char *header_text, char* return_f
 	// create filename (max filename length in char array is 13 without LFN)
 	char filename[13];
 	sprintf(filename, "%s%06lu.txt", prefix, max_used_value + 1);
+	memset(return_filename,0,13); //TODO added by MRT
 	return_filename = strcpy(return_filename, filename); // needed so that other functions can open the file!
 
 	// open file (create file) on SD card

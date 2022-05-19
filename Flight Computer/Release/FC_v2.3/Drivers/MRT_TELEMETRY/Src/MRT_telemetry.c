@@ -87,7 +87,7 @@ void MRT_TELEMETRY_Init(void){
 
 	#if IRIDIUM_
 		HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-		#if IRIDIUM_INTERNAL_PRINTtGA
+		#if IRIDIUM_INTERNAL_PRINT
 		hiridium = MRT_Iridium_Init(IRIDIUM_TIMEOUT, IRIDIUM_I2C, print);
 		#else
 		hiridium = MRT_Iridium_Init(IRIDIUM_TIMEOUT, IRIDIUM_I2C, no_print); //Doesn't print the internal commands

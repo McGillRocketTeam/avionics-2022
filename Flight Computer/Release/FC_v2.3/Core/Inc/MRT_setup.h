@@ -130,6 +130,9 @@ extern "C" {
 #define DEPLOY_ALT 2000 //In meters
 #define GROUND_LEVEL_ALT 100 //In meters
 
+#define COUNTER_THRESHOLD 500
+#define ALT_ERROR_MARGIN 10 //In meters
+
 
 #define PAD_STATE 0
 #define BOOST_STATE 1
