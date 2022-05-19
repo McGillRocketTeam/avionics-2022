@@ -1,4 +1,0 @@
-MRT_setup.c:29:6:MRT_Init	8	static
-MRT_setup.c:84:6:MRT_Deinit	8	static
-MRT_setup.c:121:6:MRT_reset_info	184	static
-MRT_setup.c:193:6:MRT_Reinitialize_Peripherals	8	static

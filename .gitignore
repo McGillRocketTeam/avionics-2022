@@ -1,1 +1,3 @@
-﻿Flight Computer/Testing/f437_fc_v4.3_megaloop_with_ejection/Debug
+Debug/
+.settings/
+*.launch

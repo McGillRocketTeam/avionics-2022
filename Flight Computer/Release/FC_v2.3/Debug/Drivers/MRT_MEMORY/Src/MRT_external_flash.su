@@ -1,4 +1,0 @@
-MRT_external_flash.c:55:6:MRT_external_flash_Init	16	static
-MRT_external_flash.c:76:6:MRT_updateExternalFlashBuffers	16	static
-MRT_external_flash.c:86:6:MRT_updateExternalFlashValues	16	static
-MRT_external_flash.c:96:6:MRT_clearExternalFlash	8	static
