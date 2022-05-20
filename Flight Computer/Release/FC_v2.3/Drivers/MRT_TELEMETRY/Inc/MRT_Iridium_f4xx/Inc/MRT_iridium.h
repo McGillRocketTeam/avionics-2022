@@ -26,6 +26,7 @@ struct HIRIDIUM{
 	bool (*getNetworkAvailability)(void);
 	int (*CSQ)(void);
 	bool (*sendMessage)(char*);
+	void (*adjustTimeout)(int);
 };
 
 extern struct HIRIDIUM hiridium;
@@ -41,6 +42,7 @@ bool MRT_Iridium_NetworkAvailability();
 bool MRT_Iridium_getTime();
 bool MRT_Iridium_sendMessage(char* msg);
 bool MRT_Iridium_sendReceive();
+void MRT_Iridium_adjustTimeout(int seconds);
 
 
 

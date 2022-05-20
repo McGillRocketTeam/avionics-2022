@@ -453,7 +453,7 @@ int main(void)
 
 	  #if IRIDIUM_
 	  HAL_GPIO_WritePin(Iridium_RST_GPIO_Port, Iridium_RST_Pin, SET);
-	  uint8_t lol = MRT_Static_Iridium_Setup(DEBUGUART, IRIDIUM_TIMEOUT, IRIDIUM_I2C); //TODO remove lol?
+	  uint8_t lol = MRT_Static_Iridium_Setup(DEBUGUART, IRIDIUM_FLIGHT_TIMEOUT, IRIDIUM_I2C); //TODO remove lol?
 	  #endif
 #endif
 

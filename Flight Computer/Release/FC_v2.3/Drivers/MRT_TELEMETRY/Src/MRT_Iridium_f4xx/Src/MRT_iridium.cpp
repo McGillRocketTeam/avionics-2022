@@ -34,6 +34,7 @@ struct HIRIDIUM MRT_Iridium_Init(uint8_t timeout, uint8_t i2c_bus, void (*iridiu
 	iridium_handler.getNetworkAvailability = &MRT_Iridium_NetworkAvailability;
 	iridium_handler.getTime = &MRT_Iridium_getTime;
 	iridium_handler.sendMessage = &MRT_Iridium_sendMessage;
+	iridium_handler.adjustTimeout = &MRT_Iridium_adjustTimeout;
 	return iridium_handler;
 }
 
@@ -73,6 +74,9 @@ bool MRT_Iridium_sendReceive(){
 	return E_T->MRT_Iridium_sendReceive();
 }
 
+void MRT_Iridium_adjustTimeout(int seconds){
+	return E_T->adjustATTimeout(seconds);
+}
 
 #ifdef __cplusplus
 }

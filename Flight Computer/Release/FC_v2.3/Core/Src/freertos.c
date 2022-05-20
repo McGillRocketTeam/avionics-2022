@@ -486,6 +486,7 @@ void StartTelemetry2(void *argument)
 	char radio_buffer[RADIO_BUFFER_SIZE];
 	uint8_t counter = 0;
 	uint8_t iridium_counter = 0;
+	uint8_t timeout_changed = 0;
 
   /* Infinite loop */
   for(;;)
@@ -531,13 +532,23 @@ void StartTelemetry2(void *argument)
 		  MRT_radio_tx((char*) radio_buffer);
 
 
+		  MRT_formatIridium();
 		  if(apogee_flag && iridium_counter == IRIDIUM_SEND_FREQ_DIVIDER){
 			  iridium_counter = 0;
 			  #if IRIDIUM_ //Iridium send
+			  if (!timeout_changed && ejection_stage_flag == LANDED) {
+				  timeout_changed = 1;
+				  hiridium.adjustTimeout(IRIDIUM_LANDED_TIMEOUT); //Adjust timeout when landed
+			  }
 			  hiridium.getTime(); //TODO doesn't cost anything
 
-			  //TODO make a list of latest coordinates retrieved to optimize the credits we use
-			  //hiridium.sendMessage(msg); TODO IT COSTS CREDITS WATCH OUT
+			  if(!MRT_formatIridium()){
+				  //TODO make a list of latest coordinates retrieved to optimize the credits we use
+				  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
+				  println("\tIridium sending: ");
+				  println(iridium_buffer);
+				  memset(iridium_buffer,0,IRIDIUM_BUFFER_SIZE);
+			  }
 			  #endif
 		  }
 		  iridium_counter++;

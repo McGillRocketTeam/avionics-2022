@@ -15,10 +15,13 @@ extern "C" {
 #include <stdint.h>
 #include <radio_commands.h>//Not needed here put nice to import along telemetry
 
+extern char iridium_buffer[IRIDIUM_BUFFER_SIZE];
+
 void MRT_radio_Init(void);
 void MRT_radio_tx(char* buffer);
 void MRT_radio_rx(char* buffer, uint8_t size, uint16_t timeout);
 void MRT_radio_send_ack(radio_command cmd);
+int MRT_formatIridium(void);
 
 void MRT_TELEMETRY_Init(void);
 void MRT_TELEMETRY_Deinit(void);

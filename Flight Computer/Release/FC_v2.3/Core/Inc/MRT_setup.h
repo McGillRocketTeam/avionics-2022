@@ -175,7 +175,9 @@ extern "C" {
 //Iridium
 #define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
-#define IRIDIUM_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
+#define IRIDIUM_BUFFER_SIZE 50//Keep in mind a 1 credit per 50 bytes message
+#define IRIDIUM_FLIGHT_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
+#define IRIDIUM_LANDED_TIMEOUT 20
 
 #define IRIDIUM_INTERNAL_PRINT 1
 
