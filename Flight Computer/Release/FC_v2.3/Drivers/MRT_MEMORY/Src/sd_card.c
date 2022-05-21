@@ -96,8 +96,8 @@ FRESULT sd_init_dynamic_filename(char *prefix, char *header_text, char* return_f
 	// create filename (max filename length in char array is 13 without LFN)
 	char filename[13];
 	sprintf(filename, "%s%06lu.txt", prefix, max_used_value + 1);
-	memset(return_filename,0,13); //TODO added by MRT
-	return_filename = strcpy(return_filename, filename); // needed so that other functions can open the file!
+	//return_filename = strcpy(return_filename, filename); // needed so that other functions can open the file!
+	strcpy(return_filename, filename);
 
 	// open file (create file) on SD card
 	fres = f_open(&fil, filename, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);

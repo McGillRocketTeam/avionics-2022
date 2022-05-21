@@ -276,7 +276,9 @@ void StartMemory0(void *argument)
 
 
 	if (sd_write(&fil,(uint8_t*) msg_buffer_av)<0){
+		println("SD card error, closing and opening");
 		f_close(&fil);
+		osDelay(100);
 		fres = sd_open_file(filename);
 	}
 	/*
@@ -288,7 +290,9 @@ void StartMemory0(void *argument)
 	if (ejection_stage_flag < MAIN_DESCENT){
 		MRT_formatPropulsion();
 		if (sd_write(&fil,(uint8_t*) msg_buffer_pr)<0){
+			println("SD card error, closing and opening");
 			f_close(&fil);
+			osDelay(100);
 			fres = sd_open_file(filename);
 		}
 	}
@@ -334,8 +338,7 @@ void StartEjection1(void *argument)
 
 	osDelay(5000); //TODO (remove?) Let the LPS "warm up" to have a valid pressure_hPa
 
-	//TODO put in setup.h?
-	uint8_t counter = 0;
+	uint16_t counter = 0;
 	uint8_t prev_alt = 0;
 
   /* Infinite loop */
@@ -354,6 +357,7 @@ void StartEjection1(void *argument)
 		  counter++;
 		  char buff[50];
 		  sprintf(buff, "Alt: %f,  MAX:%f, counter: %i", altitude_m, MAX(altitude_m - prev_alt, prev_alt - altitude_m), counter);
+		  //println(buff);
 	  }
 
 	  if (counter >= COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
@@ -544,10 +548,10 @@ void StartTelemetry2(void *argument)
 
 			  if(!MRT_formatIridium()){
 				  //TODO make a list of latest coordinates retrieved to optimize the credits we use
-				  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
-				  println("\tIridium sending: ");
+				  print("\tIridium sending: ");
 				  println(iridium_buffer);
 				  memset(iridium_buffer,0,IRIDIUM_BUFFER_SIZE);
+				  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
 			  }
 			  #endif
 		  }
