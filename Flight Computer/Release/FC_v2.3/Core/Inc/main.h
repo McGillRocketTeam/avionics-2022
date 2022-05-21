@@ -91,8 +91,8 @@ void Error_Handler(void);
 #define IN_PyroValve_Cont_1_GPIO_Port GPIOG
 #define OUT_PyroValve_Arming_Pin GPIO_PIN_1
 #define OUT_PyroValve_Arming_GPIO_Port GPIOG
-#define OUT_Prop_ActuatedVent_Gate_Pin GPIO_PIN_7
-#define OUT_Prop_ActuatedVent_Gate_GPIO_Port GPIOE
+#define Vent_Valve_EN_Pin GPIO_PIN_7
+#define Vent_Valve_EN_GPIO_Port GPIOE
 #define PAYLOAD_I2C_EN_Pin GPIO_PIN_9
 #define PAYLOAD_I2C_EN_GPIO_Port GPIOE
 #define SPI4_CS_Thermocouple_Pin GPIO_PIN_10

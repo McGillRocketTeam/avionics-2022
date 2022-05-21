@@ -223,6 +223,7 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
 #endif
   /* USER CODE END RTOS_THREADS */
+
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */

@@ -45,6 +45,12 @@ radio_command radio_parse_command(char* rx_buf) {
 	else if (strcmp(rx_buf, "dr") == 0) { // disarm recovery
 		return DISARM_RCOV;
 	}
+	else if (strcmp(rx_buf, "d1") == 0) { // dump valve power on
+		return DUMP_POWER_ON;
+	}
+	else if (strcmp(rx_buf, "d2") == 0) { // dump valve power off
+		return DUMP_POWER_OFF;
+	}
 	else if (strcmp(rx_buf, "v1") == 0) { // vr power on
 		return VR_POWER_ON;
 	}
@@ -90,6 +96,16 @@ void execute_parsed_command(radio_command cmd) {
 	case DISARM_RCOV:
 		disarm_recovery();
 		println((char*) "disarm rc");
+		break;
+
+	case DUMP_POWER_ON:
+		dump_power_on();
+		println((char *)"dump pwr on");
+		break;
+
+	case DUMP_POWER_OFF:
+		dump_power_off();
+		println((char *)"dump pwr off");
 		break;
 
 	case VR_POWER_ON:
@@ -162,4 +178,12 @@ void disarm_recovery(void) {
 
 	//state_arm_rcov = 0;
 	//set_backup_state(FC_STATE_ARM_RCOV, //state_arm_rcov);
+}
+
+void dump_power_on(void) {
+	HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, SET);
+}
+
+void dump_power_off(void) {
+	HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET);
 }

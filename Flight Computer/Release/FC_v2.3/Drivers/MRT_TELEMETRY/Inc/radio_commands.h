@@ -18,6 +18,8 @@ typedef enum radio_command {
 	ARM_RCOV,
 	DISARM_PROP,
 	DISARM_RCOV,
+	DUMP_POWER_ON,
+	DUMP_POWER_OFF,
 	VR_POWER_ON,
 	VR_REC_START,
 	VR_REC_STOP,	// should not be used at comp
@@ -34,6 +36,8 @@ void arming_propulsion(void);
 void arming_recovery(void);
 void disarm_propulsion(void);
 void disarm_recovery(void);
+void dump_power_on(void);
+void dump_power_off(void);
 
 #ifdef __cplusplus
 }
