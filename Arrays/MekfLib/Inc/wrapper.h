@@ -15,6 +15,8 @@ void MEKF_correct(MEKF* v, double gps_input[]);//correct
 
 void MEKF_update(MEKF* v);//update
 
+double* MEKF_getPosition(MEKF* v); //getter
+
 void deleteMEKF(MEKF* v); //destroyer
 
 #ifdef __cplusplus

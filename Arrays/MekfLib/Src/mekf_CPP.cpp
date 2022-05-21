@@ -145,6 +145,14 @@ void MEKF::kf_update() {
     this->P_k_1 = this->P_k;
 }
 
+double* MEKF::getPosition() {
+    static double position[3]; 
+    position[0] = this->ra_k(0);
+    position[1] = this->ra_k(1);
+    position[2] = this->ra_k(2);
+    return position;
+}
+
 //Helper methods 
 
 //creates a rotation matrix from Euler angles 

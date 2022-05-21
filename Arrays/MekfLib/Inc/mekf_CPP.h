@@ -55,6 +55,9 @@ class MEKF {
         // t -> t+1
         void kf_update();
 
+        //getter 
+        double* getPosition();
+
         //Helpers 
         Eigen::Matrix3d eulerToDcm(double roll, double yaw, double pitch);
 

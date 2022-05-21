@@ -30,6 +30,10 @@ extern "C" {
             v->kf_update();
         }
 
+        double* MEKF_getPosition(MEKF* v) {
+            return v->getPosition();
+        }
+
         void deleteMEKF(MEKF* v) {
                 delete v;
         }
