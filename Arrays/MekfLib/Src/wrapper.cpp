@@ -1,5 +1,5 @@
-#include "mekf_CPP.h"
-#include "wrapper.h"
+#include "../Inc/mekf_CPP.h"
+#include "../Inc/wrapper.h"
 
 extern "C" {
         MEKF* newMEKF(double dt,double sigma_gyro, double sigma_acc, double sigma_gps, double P_init_orien, double P_init_pos) {
