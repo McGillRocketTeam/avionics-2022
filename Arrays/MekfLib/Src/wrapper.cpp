@@ -31,7 +31,8 @@ extern "C" {
         }
 
         double* MEKF_getPosition(MEKF* v) {
-            return v->getPosition();
+            double *a = v->getPosition();
+            return a;
         }
 
         void deleteMEKF(MEKF* v) {

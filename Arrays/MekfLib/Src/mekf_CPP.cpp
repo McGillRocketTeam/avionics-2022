@@ -146,11 +146,13 @@ void MEKF::kf_update() {
 }
 
 double* MEKF::getPosition() {
-    static double position[3]; 
+    static double position[3];
+    double *ptr;
+    ptr = &position[0]; 
     position[0] = this->ra_k(0);
     position[1] = this->ra_k(1);
     position[2] = this->ra_k(2);
-    return position;
+    return ptr; //returning pointer to first element in array. Use ptr++ to access other elements.
 }
 
 //Helper methods 

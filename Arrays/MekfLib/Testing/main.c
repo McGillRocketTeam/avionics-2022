@@ -6,15 +6,17 @@ int main(int argc, char* argv[]) {
         	
         double gyro_input[3] = { 0.0, 0.0, 0.0 }; 
         double acc_input[3] = {1.0, 0.0, 0.0};
+        double *p;
 
         for(int i=0; i<100; i++) {
             MEKF_predict(c, gyro_input, acc_input);
             MEKF_update(c);
-            double *p;
+
             p = MEKF_getPosition(c);
-            printf("%d\n", p[0]);
-            printf("%d\t", p[1]);
-            printf("%d\t", p[2]);
+            printf("%.5f\t", *p);
+            printf("%.5f\t", *(++p));
+            printf("%.5f\t", *(++p));
+            printf("\n");
         }
 
         deleteMEKF(c);
