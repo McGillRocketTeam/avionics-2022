@@ -7,7 +7,7 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-I",
-                "C:/Users/Dell/CPP_libraries/eigen-3.4.0/Eigen",
+                "{workspaceFolder}/MekfLib/CPP_libraries/eigen-3.4.0/Eigen",
                 "-g",
                 "${workspaceFolder}/MekfLib/Src/mekf_CPP.cpp",
                 "${workspaceFolder}/MekfLib/Src/wrapper.cpp",

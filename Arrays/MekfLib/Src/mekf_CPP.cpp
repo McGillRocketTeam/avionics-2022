@@ -4,8 +4,8 @@
 #include <iostream>
 #include <cmath>
 #include "../Inc/mekf_CPP.h"
-#include "C:/Users/Dell/CPP_libraries/eigen-3.4.0/Eigen/Dense"
-#include "C:/Users/Dell/CPP_libraries/eigen-3.4.0/unsupported/Eigen/MatrixFunctions"
+#include "../CPP_libraries/eigen-3.4.0/Eigen/Dense"
+#include "../CPP_libraries/eigen-3.4.0/unsupported/Eigen/MatrixFunctions"
 
 //Disclaimer: I'm aware that this code is poorly optimized and does things in a very roundabout way.
 //            I just hope it works. I don't have the energy to refactor.
