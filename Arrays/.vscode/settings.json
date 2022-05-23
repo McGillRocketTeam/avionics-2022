@@ -44,5 +44,6 @@
         "xutility": "cpp",
         "string": "cpp",
         "stdio.h": "c"
-    }
+    },
+    "cmake.sourceDirectory": "${workspaceFolder}/MekfLib/CPP_libraries/eigen-3.4.0/bench/btl"
 }
