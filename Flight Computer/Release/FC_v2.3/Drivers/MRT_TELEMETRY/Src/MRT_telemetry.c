@@ -18,6 +18,7 @@
 #include <MRT_ejection.h>
 
 char iridium_buffer[IRIDIUM_BUFFER_SIZE];
+uint8_t current_pos = 0;
 
 void MRT_float_to_4char(float f, char* receiving_buffer);
 
@@ -136,21 +137,24 @@ int MRT_formatIridium(void){
 	//The max extrema value for latitude are -90 and 90 and it's -180 and 180 for longitude
 	//The max value for longitude in binary is therefore (sign bit)(0 padded)110101 10100100 11101001 00000000
 	//The max value for latitude in binary is therefore (sign bit)1101011 01001001 11010010 00000000
-	//We can fit the pair inside 2x 4 bytes. This reprensents a maximum of 6 pairs inside one message (with 2 bytes left)
+	//We can fit the pair inside 2x 4 bytes. This reprensents a maximum of 6 pairs inside one message (with 2 bytes left)¸
+
+	/*
 	char lat[4];
 	char lng[4];
 	MRT_float_to_4char(hgps.latitude, lat);
 	MRT_float_to_4char(hgps.longitude, lng);
+	*/
 
-	for(int i=0; i<IRIDIUM_BUFFER_SIZE; i+=8){
-		if (iridium_buffer[i]==0){
-			//If you find a free spot, insert data and return
-			memcpy(iridium_buffer+i,lat,4);
-			memcpy(iridium_buffer+i+4,lng,8);
-			return 1;
-		}
-	}
 	//TODO add something for payload data
+	memcpy(iridium_buffer+current_pos,&hgps.latitude,4);
+	memcpy(iridium_buffer+current_pos+4,&hgps.longitude,4);
+	current_pos += 8;
+
+	if(current_pos > IRIDIUM_BUFFER_SIZE){
+		current_pos = 0;
+		return 1;
+	}
 	return -1;
 }
 
@@ -180,7 +184,9 @@ void MRT_float_to_4char(float f, char* receiving_buffer){
 	//Convert to 4 characters string
 	char buffer[5]; //Account for terminating bit (will remove later)
 	sprintf(buffer,"%c%c%c%c",char1,char2,char3,char4);
-	memcpy(receiving_buffer,buffer,4); //Copy only the 4 characters
+	memcpy(receiving_buffer,buffer,5); //Copy only the 4 characters
+	print("\r\n\r\nreceivingbuffer: ");
+	println(receiving_buffer);
 }
 
 

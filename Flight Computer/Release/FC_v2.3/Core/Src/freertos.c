@@ -732,6 +732,8 @@ void StartPropulsion4(void *argument)
 
 	uint8_t timeout_changed = 0;
 
+	char buf[10];
+
   /* Infinite loop */
   for(;;)
   {
@@ -751,7 +753,7 @@ void StartPropulsion4(void *argument)
 
 			hiridium.getTime(); //TODO doesn't cost anything
 
-			if(!MRT_formatIridium()){
+			if(MRT_formatIridium() == 1){
 			  //TODO make a list of latest coordinates retrieved to optimize the credits we use
 			  print("\tIridium sending: ");
 			  println(iridium_buffer);
@@ -761,7 +763,13 @@ void StartPropulsion4(void *argument)
 			println("");
 			println("");
 			print("\t\tIridium sent: ");
-			println(iridium_buffer);
+			print(iridium_buffer);
+
+			memset(buf,0,10);
+			sprintf(buf,"%i",strlen(iridium_buffer));
+			print("Bytes sent:");
+			println(buf);
+
 			println("\r\n");
 			osDelay(IRIDIUM_WAIT_TIME);
 			//osDelay(1000/POST_APOGEE_POLL_FREQ);
