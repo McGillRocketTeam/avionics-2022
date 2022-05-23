@@ -55,5 +55,5 @@ void MRT_formatAvionics(void) {
 		hlsm6dsr.angular_rate_mdps[0],	hlsm6dsr.angular_rate_mdps[1],	hlsm6dsr.angular_rate_mdps[2],
 		hlps22hh.pressure_hPa,	hgps.latitude,	hgps.longitude,
 		prev_min, prev_sec, prev_subsec,
-		gates_continuity,	ejection_stage_flag);
+		ejection_stage_flag, gates_continuity);
 }
