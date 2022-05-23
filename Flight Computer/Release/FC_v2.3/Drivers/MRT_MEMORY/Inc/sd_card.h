@@ -26,7 +26,7 @@ extern FATFS FatFs;
 extern FIL fil;
 extern uint8_t msg_buffer[1000];
 extern FRESULT fres; //Result after operations
-char filename[13];
+extern char filename[13];
 extern uint8_t writeBuf[1000];
 extern const char sd_file_header[];
 
