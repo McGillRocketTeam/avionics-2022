@@ -145,13 +145,10 @@ extern "C" {
 
 //**************************************************//
 //TELEMETRY_THREAD
-#define PRE_APOGEE_SEND_FREQ 50 //Times per second that you want to transmit data before apogee
-#define POST_APOGEE_SEND_FREQ 100 //Times per second that you want to transmit data after apogee
+#define PRE_APOGEE_SEND_FREQ 1000 //Times per second that you want to transmit data before apogee
+#define POST_APOGEE_SEND_FREQ 1000 //Times per second that you want to transmit data after apogee
 #define SENSORS_SEND_FREQ_DIVIDER 10 //Number of times that you want to send sensors data relative to propulsion data
 									 //(can only be equal or slower). Divides the XXXX_APOGEE_SEND_FREQ
-#define IRIDIUM_SEND_FREQ_DIVIDER 5 //Number of times that you want to send iridium data relative to sensors data
-									//(can only be equal or slower). Divides the XXXX_APOGEE_SEND_FREQ after it has been divided
-									//by SENSORS_SEND_FREQ_DIVIDER
 
 
 //SRadio
@@ -176,8 +173,9 @@ extern "C" {
 #define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_BUFFER_SIZE 50//Keep in mind a 1 credit per 50 bytes message (does it take into account the terminating byte of a string?)
-#define IRIDIUM_FLIGHT_TIMEOUT 3 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
-#define IRIDIUM_LANDED_TIMEOUT 1
+#define IRIDIUM_FLIGHT_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
+#define IRIDIUM_LANDED_TIMEOUT 5
+#define IRIDIUM_WAIT_TIME 1000 //in milliseconds
 
 #define IRIDIUM_INTERNAL_PRINT 1
 
@@ -213,7 +211,7 @@ extern "C" {
 
 //**************************************************//
 //WATCHDOG THREAD
-#define WD_FREQ 1 //Times per second that you want to check threads
+#define WD_FREQ 0.4 //Times per second that you want to check threads
 #define WD_BUFFER_SIZE 256//WD thread buffer size to print
 
 #if PRINTING_THREAD

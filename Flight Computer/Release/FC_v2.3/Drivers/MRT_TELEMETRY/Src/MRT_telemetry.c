@@ -14,6 +14,8 @@
 #include <sx126x.h>
 #include <MRT_i2c_sensors.h> //Format Iridium
 #include <math.h> //pow function
+#include <MRT_memory.h> //ejection_stage_flag
+#include <MRT_ejection.h>
 
 char iridium_buffer[IRIDIUM_BUFFER_SIZE];
 
@@ -26,7 +28,7 @@ void MRT_radio_tx(char* buffer){
 	#elif SRADIO_ //SRadio send TODO
 		if (strlen(buffer) < SRADIO_BUFFER_SIZE){
 			//sx126x_set_tx(&SRADIO_SPI, 1000, SRADIO_BUFFER_SIZE);
-			Tx_setup();
+			if(ejection_stage_flag == PAD) Tx_setup(); //Only necessary when doing bidirectionnal
 			TxProtocol((uint8_t*) buffer, strlen(buffer));
 		}
 	#endif

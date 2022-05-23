@@ -73,28 +73,28 @@ osThreadId_t Memory0Handle;
 const osThreadAttr_t Memory0_attributes = {
   .name = "Memory0",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityHigh3,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for Ejection1 */
 osThreadId_t Ejection1Handle;
 const osThreadAttr_t Ejection1_attributes = {
   .name = "Ejection1",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for Telemetry2 */
 osThreadId_t Telemetry2Handle;
 const osThreadAttr_t Telemetry2_attributes = {
   .name = "Telemetry2",
   .stack_size = 1024 * 4,
-  .priority = (osPriority_t) osPriorityHigh1,
+  .priority = (osPriority_t) osPriorityRealtime,
 };
 /* Definitions for Sensors3 */
 osThreadId_t Sensors3Handle;
 const osThreadAttr_t Sensors3_attributes = {
   .name = "Sensors3",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for WatchDog */
 osThreadId_t WatchDogHandle;
@@ -108,7 +108,7 @@ osThreadId_t Propulsion4Handle;
 const osThreadAttr_t Propulsion4_attributes = {
   .name = "Propulsion4",
   .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityHigh1,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -490,8 +490,6 @@ void StartTelemetry2(void *argument)
 
 	char radio_buffer[RADIO_BUFFER_SIZE];
 	uint8_t counter = 0;
-	uint8_t iridium_counter = 0;
-	uint8_t timeout_changed = 0;
 
   /* Infinite loop */
   for(;;)
@@ -535,28 +533,6 @@ void StartTelemetry2(void *argument)
 		  MRT_formatAvionics();
 		  memcpy(radio_buffer, msg_buffer_av, strlen(msg_buffer_av));
 		  MRT_radio_tx((char*) radio_buffer);
-
-
-		  MRT_formatIridium();
-		  if(apogee_flag && iridium_counter == IRIDIUM_SEND_FREQ_DIVIDER){
-			  iridium_counter = 0;
-			  #if IRIDIUM_ //Iridium send
-			  if (!timeout_changed && ejection_stage_flag == LANDED) {
-				  timeout_changed = 1;
-				  hiridium.adjustTimeout(IRIDIUM_LANDED_TIMEOUT); //Adjust timeout when landed
-			  }
-			  hiridium.getTime(); //TODO doesn't cost anything
-
-			  if(!MRT_formatIridium()){
-				  //TODO make a list of latest coordinates retrieved to optimize the credits we use
-				  print("\tIridium sending: ");
-				  println(iridium_buffer);
-				  memset(iridium_buffer,0,IRIDIUM_BUFFER_SIZE);
-				  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
-			  }
-			  #endif
-		  }
-		  iridium_counter++;
 	  }
 	  counter++;
 
@@ -716,6 +692,8 @@ void StartWatchDog(void *argument)
 
 	  MRT_checkThreadStates();
 
+	  HAL_IWDG_Refresh(&hiwdg);
+
 	  HAL_GPIO_WritePin(OUT_LED2_GPIO_Port, OUT_LED2_Pin, RESET);
 
 	  osDelay(1000/WD_FREQ);
@@ -746,9 +724,13 @@ void StartPropulsion4(void *argument)
 	osThreadExit();
 	#endif
 
+	#if !IRIDIUM_
 	if (apogee_flag || ejection_stage_flag >= DROGUE_DESCENT){
 		osThreadExit();
 	}
+	#endif
+
+	uint8_t timeout_changed = 0;
 
   /* Infinite loop */
   for(;;)
@@ -757,7 +739,36 @@ void StartPropulsion4(void *argument)
 	  MRT_pollPropulsion();
 
 	  if (apogee_flag){
-		  osThreadExit();
+
+			#if IRIDIUM_ //Iridium send
+
+		  	//Adjust timeout when landing
+			if (!timeout_changed && ejection_stage_flag == LANDED) {
+			  timeout_changed = 1;
+			  hiridium.adjustTimeout(IRIDIUM_LANDED_TIMEOUT); //Adjust timeout when landed
+			}
+
+
+			hiridium.getTime(); //TODO doesn't cost anything
+
+			if(!MRT_formatIridium()){
+			  //TODO make a list of latest coordinates retrieved to optimize the credits we use
+			  print("\tIridium sending: ");
+			  println(iridium_buffer);
+			  memset(iridium_buffer,0,IRIDIUM_BUFFER_SIZE);
+			  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
+			}
+			println("");
+			println("");
+			print("\t\tIridium sent: ");
+			println(iridium_buffer);
+			println("\r\n");
+			osDelay(IRIDIUM_WAIT_TIME);
+			//osDelay(1000/POST_APOGEE_POLL_FREQ);
+			#else
+			osThreadExit();
+			#endif
+
 	  }
 	  else{
 		  osDelay(1000/PRE_APOGEE_POLL_FREQ);
@@ -836,6 +847,9 @@ void MRT_waitForLaunch(void){
 		MRT_radio_rx(radio_buffer, 2, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
 		cmd = radio_parse_command(radio_buffer);
 
+
+		execute_parsed_command(cmd);
+		MRT_radio_send_ack(cmd);
 		if (cmd == LAUNCH){
 			//Update ejection stage flag and save it
 			ejection_stage_flag = BOOST;
@@ -843,8 +857,6 @@ void MRT_waitForLaunch(void){
 			ext_flash_ejection_stage = BOOST;
 			MRT_saveFlagValue(FC_STATE_FLIGHT);
 		}
-		execute_parsed_command(cmd);
-		MRT_radio_send_ack(cmd);
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
@@ -877,8 +889,7 @@ void MRT_checkThreadStates(void){
 		  thread_state = osThreadGetState(threadsID[i]);
 
 		  if (thread_state == osThreadInactive ||
-			  thread_state == osThreadBlocked  ||
-			  thread_state == osThreadTerminated){
+			  thread_state == osThreadBlocked){
 
 			  //Ejection thread
 			  if (i==1 && ejection_stage_flag < LANDED){
@@ -886,21 +897,20 @@ void MRT_checkThreadStates(void){
 			  }
 
 			  //Propulsion thread
+			  #if !IRIDIUM_
 			  if (i==4 && (apogee_flag || ejection_stage_flag >= DROGUE_DESCENT)){
 				  osThreadTerminate(threadsID[i]);
-				  continue;
 			  }
+			  #endif
 			  else {
 				 //Resume otherwise
 				 osThreadResume(threadsID[i]);
 			  }
 		  }
-
 		  else if (thread_state == osThreadError){
 			  //If it's the propulsion thread
 			  if (i==4 && (apogee_flag || ejection_stage_flag >= DROGUE_DESCENT)){
 				  osThreadTerminate(threadsID[i]);
-				  continue;
 			  }
 			  else{
 				 //Reset otherwise
@@ -914,6 +924,8 @@ void MRT_checkThreadStates(void){
 		  else if (thread_state == osThreadRunning){
 		  }
 		  else if (thread_state == osThreadReserved){ TODO not sure what is this state
+		  }
+		  else if (thread_state == osThreadTerminated){not useful
 		  }
 		  */
 	  }
