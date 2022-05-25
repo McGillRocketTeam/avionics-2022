@@ -120,6 +120,7 @@ extern "C" {
 #define SD_CARD_	1
 #define SD_SPI_HANDLE hspi5
 #define DATA_FREQ 10 //Times per second that you want to save data
+#define POST_LANDED_DATA_FREQ 1 //Times per second that you want to save data
 
 
 
@@ -147,6 +148,7 @@ extern "C" {
 //TELEMETRY_THREAD
 #define PRE_APOGEE_SEND_FREQ 1000 //Times per second that you want to transmit data before apogee
 #define POST_APOGEE_SEND_FREQ 1000 //Times per second that you want to transmit data after apogee
+#define POST_LANDED_SEND_FREQ 10 //Times per second that you want to transmit data after landing
 #define SENSORS_SEND_FREQ_DIVIDER 10 //Number of times that you want to send sensors data relative to propulsion data
 									 //(can only be equal or slower). Divides the XXXX_APOGEE_SEND_FREQ
 
@@ -183,8 +185,9 @@ extern "C" {
 
 //**************************************************//
 //SENSORS THREAD
-#define PRE_APOGEE_POLL_FREQ 50 //Times per second that you want to poll data (pre apogee)
-#define POST_APOGEE_POLL_FREQ 100 //Times per second that you want to poll data (post apogee)
+#define PRE_APOGEE_POLL_FREQ 100 //Times per second that data is polled (pre apogee)
+#define POST_APOGEE_POLL_FREQ 50 //Times per second that data is polled (post apogee)
+#define POST_LANDED_POLL_FREQ 1 //Times per second that data is polled (post landing)
 
 //I2C
 #define CHECK_I2C 0

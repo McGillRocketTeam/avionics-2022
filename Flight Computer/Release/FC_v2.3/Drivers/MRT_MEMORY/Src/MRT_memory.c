@@ -118,7 +118,7 @@ uint8_t MRT_checkFlagsValues(rtc_backup_reg val_index, uint32_t max_val){
 
 	if (*rtc_bckp_regs[val_index] != *ext_flash_flags[val_index]){
 		*rtc_bckp_regs[val_index] = MAX(*rtc_bckp_regs[val_index], *ext_flash_flags[val_index]);
-		*ext_flash_flags[val_index] = MAX(*rtc_bckp_regs[val_index], *ext_flash_flags[val_index]);
+		*ext_flash_flags[val_index] = *rtc_bckp_regs[val_index];
 		ret = false;
 	}
 	return ret;
@@ -253,7 +253,7 @@ uint8_t MRT_checkTimeValues(rtc_backup_reg val_index, uint32_t max_val){
 
 	if (*rtc_bckp_regs[val_index] != *ext_flash_time[val_index - NB_OF_FLAGS]){
 		*rtc_bckp_regs[val_index] = MAX(*rtc_bckp_regs[val_index], *ext_flash_time[val_index - NB_OF_FLAGS]);
-		*ext_flash_time[val_index - NB_OF_FLAGS] = MAX(*rtc_bckp_regs[val_index], *ext_flash_time[val_index - NB_OF_FLAGS]);
+		*ext_flash_time[val_index - NB_OF_FLAGS] = *rtc_bckp_regs[val_index];
 		ret = false;
 	}
 	return ret;

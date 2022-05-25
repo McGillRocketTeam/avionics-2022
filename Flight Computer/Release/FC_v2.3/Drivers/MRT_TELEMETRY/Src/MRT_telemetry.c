@@ -116,35 +116,11 @@ void MRT_radio_send_ack(radio_command cmd){
 
 
 int MRT_formatIridium(void){
-	/*
-	//xxx.xxxxxxx format of coordinates %03.7f (need 11 bytes per latitude/longitude, thus 22 bytes per message.)
-	//This means that we can only send two pairs for 1 credit and have 6 bytes left for payload (50 bytes per credit)
-	//What about null terminating byte of string? should we allow only 5 bytes for payload?
-	char buffer[22];
-	sprintf(buffer, "%03.7f%03.7f", hgps.latitude, hgps.longitude);
-	for(int i=0; i<IRIDIUM_BUFFER_SIZE; i+=22){
-		if (iridium_buffer[i]==0){
-			//If you find a free spot, insert data and return
-			memcpy(iridium_buffer[i],buffer,22);
-			return 1;
-		}
-	}
-	//TODO add something for payload data
-	return -1;
-	*/
-
 	//We know that the GPS coordinates will always have 7 digits after the coma.
 	//The max extrema value for latitude are -90 and 90 and it's -180 and 180 for longitude
 	//The max value for longitude in binary is therefore (sign bit)(0 padded)110101 10100100 11101001 00000000
 	//The max value for latitude in binary is therefore (sign bit)1101011 01001001 11010010 00000000
 	//We can fit the pair inside 2x 4 bytes. This reprensents a maximum of 6 pairs inside one message (with 2 bytes left)¸
-
-	/*
-	char lat[4];
-	char lng[4];
-	MRT_float_to_4char(hgps.latitude, lat);
-	MRT_float_to_4char(hgps.longitude, lng);
-	*/
 
 	//TODO add something for payload data
 	memcpy(iridium_buffer+current_pos,&hgps.latitude,4);
@@ -157,36 +133,4 @@ int MRT_formatIridium(void){
 	}
 	return -1;
 }
-
-
-void MRT_float_to_4char(float f, char* receiving_buffer){
-
-	uint8_t binary[32];
-	binary[0] = 0; //Sign
-
-	uint32_t num;
-
-	num = f*10000000; //Integer representation of the float (only keep 7 first digits after comma)
-	if (num<0) binary[0] = 1; //Set sign if applicable
-
-	//Convert integer to a 32 bits binary number
-	for (uint8_t i=32; i>0; i--){ //Excludes sign part
-		binary[i] = num % 2;
-		num = num/2;
-	}
-
-	//Split binary number in 4 integers (really not efficient)
-	uint8_t char1 = pow(2,7)*binary[0] + pow(2,6)*binary[1] + pow(2,5)*binary[2] + pow(2,4)*binary[3] + pow(2,3)*binary[4] + pow(2,2)*binary[5] + pow(2,1)*binary[6] + binary[7];
-	uint8_t char2 = pow(2,7)*binary[8] + pow(2,6)*binary[9] + pow(2,5)*binary[10] + pow(2,4)*binary[11] + pow(2,3)*binary[12] + pow(2,2)*binary[13] + pow(2,1)*binary[14] + binary[15];
-	uint8_t char3 = pow(2,7)*binary[16] + pow(2,6)*binary[17] + pow(2,5)*binary[18] + pow(2,4)*binary[19] + pow(2,3)*binary[20] + pow(2,2)*binary[21] + pow(2,1)*binary[22] + binary[23];
-	uint8_t char4 = pow(2,7)*binary[24] + pow(2,6)*binary[25] + pow(2,5)*binary[26] + pow(2,4)*binary[27] + pow(2,3)*binary[28] + pow(2,2)*binary[29] + pow(2,1)*binary[30] + binary[31];
-
-	//Convert to 4 characters string
-	char buffer[5]; //Account for terminating bit (will remove later)
-	sprintf(buffer,"%c%c%c%c",char1,char2,char3,char4);
-	memcpy(receiving_buffer,buffer,5); //Copy only the 4 characters
-	print("\r\n\r\nreceivingbuffer: ");
-	println(receiving_buffer);
-}
-
 

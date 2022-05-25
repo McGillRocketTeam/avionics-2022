@@ -270,11 +270,8 @@ void StartMemory0(void *argument)
 
 	// Save to SD card
 	#if SD_CARD_
-	//reset_counter++;
 	sync_counter++;
 	MRT_formatAvionics();
-	//fres = sd_open_file(filename);
-
 
 	if (sd_write(&fil,(uint8_t*) msg_buffer_av)<0){
 		println("SD card error, closing and opening");
@@ -282,11 +279,6 @@ void StartMemory0(void *argument)
 		osDelay(100);
 		fres = sd_open_file(filename);
 	}
-	/*
-	if (sd_write(&fil,(uint8_t*) msg_buffer_av) >= 0){
-		reset_counter=0;
-	}
-	*/
 
 	if (ejection_stage_flag < MAIN_DESCENT){
 		MRT_formatPropulsion();
@@ -297,16 +289,19 @@ void StartMemory0(void *argument)
 			fres = sd_open_file(filename);
 		}
 	}
-	//f_close(&fil);
+
 	if (sync_counter == 50) {
 		sync_counter=0;
 		f_sync(&fil);
 	}
-
-	//if (reset_counter>=30) NVIC_SystemReset(); //Reset system if we haven't been able to write for some time
 	#endif
 
-	osDelay(1000/DATA_FREQ);
+	if (ejection_stage_flag >= LANDED){
+	  osDelay(1000/POST_LANDED_DATA_FREQ);
+	}
+	else{
+		osDelay(1000/DATA_FREQ);
+	}
   }
 
   //In case it leaves the infinite loop
@@ -496,7 +491,10 @@ void StartTelemetry2(void *argument)
   {
 	  HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
-	  if (apogee_flag){
+	  if (ejection_stage_flag >= LANDED){
+		  osDelay(1000/POST_LANDED_SEND_FREQ);
+	  }
+	  else if (apogee_flag){
 		  osDelay(1000/POST_APOGEE_SEND_FREQ);
 	  }
 	  else{ //Only send prop data pre-apogee
@@ -585,7 +583,10 @@ void StartSensors3(void *argument)
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
 
-	  if (apogee_flag){
+	  if (ejection_stage_flag >= LANDED){
+		  osDelay(1000/POST_LANDED_POLL_FREQ);
+	  }
+	  else if (apogee_flag){
 		  osDelay(1000/POST_APOGEE_POLL_FREQ);
 	  }
 	  else{
@@ -631,7 +632,7 @@ void StartWatchDog(void *argument)
 
 	 //TODO remove for comp
 	 memset(buffer, 0, WD_BUFFER_SIZE);
-	 sprintf(buffer, "Time: %i:%i:%i ::%lu	Altitude: \r\n %f\r\n", prev_hour,prev_min,prev_sec,prev_subsec , altitude_m);
+	 sprintf(buffer, "Time: %i:%i:%lu ::%lu	Altitude: \r\n %f\r\n", prev_hour,prev_min,prev_sec,prev_subsec , altitude_m);
 	 println((char*) buffer);
 
 
@@ -737,9 +738,6 @@ void StartPropulsion4(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	  //Poll propulsion sensors
-	  MRT_pollPropulsion();
-
 	  if (apogee_flag){
 
 			#if IRIDIUM_ //Iridium send
@@ -771,7 +769,13 @@ void StartPropulsion4(void *argument)
 			println(buf);
 
 			println("\r\n");
+
+			if (ejection_stage_flag >= LANDED){
+			  osDelay(1000/POST_LANDED_SEND_FREQ);
+			}
+			else{
 			osDelay(IRIDIUM_WAIT_TIME);
+			}
 			//osDelay(1000/POST_APOGEE_POLL_FREQ);
 			#else
 			osThreadExit();
@@ -779,6 +783,8 @@ void StartPropulsion4(void *argument)
 
 	  }
 	  else{
+		  //Poll propulsion sensors
+		  MRT_pollPropulsion();
 		  osDelay(1000/PRE_APOGEE_POLL_FREQ);
 	  }
   }
@@ -877,7 +883,7 @@ void MRT_waitForLaunch(void){
 		//Reset IWDG timer
 		HAL_IWDG_Refresh(&hiwdg);
 
-		HAL_Delay(1000/PRE_APOGEE_SEND_FREQ);
+		osDelay(1000/PRE_APOGEE_SEND_FREQ);
 	}
 
 	//Close SD card (reopened by FreeRTOS)
