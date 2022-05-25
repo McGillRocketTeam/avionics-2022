@@ -29,7 +29,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -55,7 +54,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void SystemClock_Config(void); // for callbacks.c to see
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -81,8 +80,8 @@ void Error_Handler(void);
 #define LEDF_GPIO_Port GPIOA
 #define ADC1_IN6_PropulsionPressureTransducer_Pin GPIO_PIN_6
 #define ADC1_IN6_PropulsionPressureTransducer_GPIO_Port GPIOA
-#define IN_Prop_PyroTurboValve_LimitSwitch_Pin GPIO_PIN_5
-#define IN_Prop_PyroTurboValve_LimitSwitch_GPIO_Port GPIOC
+#define Prop_RunValve_LimitSwitch_Pin GPIO_PIN_5
+#define Prop_RunValve_LimitSwitch_GPIO_Port GPIOC
 #define IN_Prop_ActuatedVent_Feedback_Pin GPIO_PIN_1
 #define IN_Prop_ActuatedVent_Feedback_GPIO_Port GPIOB
 #define Prop_Cont_2_Pin GPIO_PIN_13
@@ -165,6 +164,8 @@ void Error_Handler(void);
 #define Rcov_Cont_Drogue_GPIO_Port GPIOG
 #define Rcov_Arm_Pin GPIO_PIN_14
 #define Rcov_Arm_GPIO_Port GPIOG
+#define DEBUG_GPIO_Pin GPIO_PIN_8
+#define DEBUG_GPIO_GPIO_Port GPIOB
 #define POWER_ON_EXT_LED_Pin GPIO_PIN_9
 #define POWER_ON_EXT_LED_GPIO_Port GPIOB
 #define UART8_RX_Debug_Pin GPIO_PIN_0
@@ -188,32 +189,18 @@ extern UART_HandleTypeDef huart6;
 
 // -- 2021 megaloop parameters -- //
 #define LAUNCH_ALT_CHANGE_THRESHOLD		75		// ft, change in altitude needed to change to "launched" state
-#define APOGEE_NUM_DESCENDING_SAMPLES	30 		// ejection does not depend on this megaloop, can be more conservative
-#define MAIN_NUM_DESCENDING_SAMPLES		10
-#define LANDING_NUM_DESCENDING_SAMPLES	20		// number of samples needed to set as landing
+#define LAUNCH_NUM_DESCENDING_SAMPLES	20		// number of samples needed to set as launched
+#define APOGEE_NUM_DESCENDING_SAMPLES	30
+#define MAIN_NUM_DESCENDING_SAMPLES		20
+#define LANDING_NUM_DESCENDING_SAMPLES	100		// number of samples needed to set as landing
 #define MAIN_DEPLOY_ALTITUDE			1500	// ft
 #define LANDING_ALT_CHANGE_THRESHOLD	5		// ft
 
-// flight states
-#define FLIGHT_STATE_PAD				0		// on pad, waiting for launch
-#define FLIGHT_STATE_PRE_APOGEE			1		// after launch, waiting for apogee
-#define FLIGHT_STATE_PRE_MAIN			2		// after apogee, waiting for main
-#define FLIGHT_STATE_PRE_LANDED			3		// after main, waiting for landing
-#define FLIGHT_STATE_LANDED				4		// landed
-
-#define GPS_RX_DMA_BUF_LEN				175		// characters
 #define XTEND_RX_DMA_CMD_LEN			2		// all commands have this length (in chars)
 
-// buzzer durations
-#define BUZZ_SUCCESS_DURATION	100		// ms
-#define BUZZ_SUCCESS_REPEATS	2
-#define BUZZ_SUCCESS_FREQ		1046	// Hz
-
-#define BUZZ_FAILURE_DURATION	1000 	// ms
-#define BUZZ_FAILURE_REPEATS	3
-#define	BUZZ_FAILURE_FREQ		220		// Hz
-
 #define LOCAL_PRESSURE_HPA		1028	// hPa
+
+#define USING_XTEND 	// comment out to use SRADio
 
 /* USER CODE END Private defines */
 

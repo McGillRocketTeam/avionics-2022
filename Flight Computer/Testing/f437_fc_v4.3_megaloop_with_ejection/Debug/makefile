@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (9-2020-q2-update)
+# Toolchain: GNU Tools for STM32 (10.3-2021.10)
 ################################################################################
 
 -include ../makefile.init
@@ -11,14 +11,22 @@ RM := rm -rf
 -include sources.mk
 -include Middlewares/Third_Party/FatFs/src/option/subdir.mk
 -include Middlewares/Third_Party/FatFs/src/subdir.mk
+-include FC/Src/subdir.mk
 -include FATFS/Target/subdir.mk
 -include FATFS/App/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
--include Drivers/MRT_RTOS_f4xx/Src/subdir.mk
--include Drivers/MRT_Helpers_f4xx/Src/subdir.mk
+-include Drivers/MRT_Xtend/Src/subdir.mk
+-include Drivers/MRT_VideoRecorder/Src/subdir.mk
+-include Drivers/MRT_SX1262/Src/subdir.mk
+-include Drivers/MRT_SD/Src/subdir.mk
+-include Drivers/MRT_MAX31855/Src/subdir.mk
+-include Drivers/MRT_LSM6DSR/Src/subdir.mk
+-include Drivers/MRT_LPS22HH/Src/subdir.mk
+-include Drivers/MRT_Helpers/Src/subdir.mk
+-include Drivers/MRT_GPS_NEOM8/Src/subdir.mk
+-include Drivers/MRT_FLASH_W25QXX/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
--include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -50,14 +58,14 @@ BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ART
 EXECUTABLES += \
 f437_fc_v4.3_megaloop_with_ejection.elf \
 
+MAP_FILES += \
+f437_fc_v4.3_megaloop_with_ejection.map \
+
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
 f437_fc_v4.3_megaloop_with_ejection.list \
-
-OBJCOPY_BIN += \
-f437_fc_v4.3_megaloop_with_ejection.bin \
 
 
 # All Target
@@ -67,8 +75,8 @@ all: main-build
 main-build: f437_fc_v4.3_megaloop_with_ejection.elf secondary-outputs
 
 # Tool invocations
-f437_fc_v4.3_megaloop_with_ejection.elf: $(OBJS) $(USER_OBJS) C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight\ Computer\avionics-2022\Flight\ Computer\Testing\f437_fc_v4.3_megaloop_with_ejection\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "f437_fc_v4.3_megaloop_with_ejection.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jacoby\Desktop\Engineering\MRT\Avionics\Flight Computer\avionics-2022\Flight Computer\Testing\f437_fc_v4.3_megaloop_with_ejection\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f437_fc_v4.3_megaloop_with_ejection.map" -Wl,--gc-sections -static -u _printf_float -u _scanf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+f437_fc_v4.3_megaloop_with_ejection.elf f437_fc_v4.3_megaloop_with_ejection.map: $(OBJS) $(USER_OBJS) /Users/thomasjarvis/avionics-2022/Flight\ Computer/Testing/f437_fc_v4.3_megaloop_with_ejection/STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "f437_fc_v4.3_megaloop_with_ejection.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/thomasjarvis/avionics-2022/Flight Computer/Testing/f437_fc_v4.3_megaloop_with_ejection/STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f437_fc_v4.3_megaloop_with_ejection.map" -Wl,--gc-sections -static -u _printf_float -u _scanf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -82,17 +90,12 @@ f437_fc_v4.3_megaloop_with_ejection.list: $(EXECUTABLES) makefile objects.list $
 	@echo 'Finished building: $@'
 	@echo ' '
 
-f437_fc_v4.3_megaloop_with_ejection.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "f437_fc_v4.3_megaloop_with_ejection.bin"
-	@echo 'Finished building: $@'
-	@echo ' '
-
 # Other Targets
 clean:
-	-$(RM) $(SIZE_OUTPUT)$(OBJDUMP_LIST)$(EXECUTABLES)$(OBJS)$(S_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(OBJCOPY_BIN) f437_fc_v4.3_megaloop_with_ejection.elf
+	-$(RM) default.size.stdout f437_fc_v4.3_megaloop_with_ejection.elf f437_fc_v4.3_megaloop_with_ejection.list f437_fc_v4.3_megaloop_with_ejection.map
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
@@ -101,6 +104,6 @@ fail-specified-linker-script-missing:
 warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
-.PHONY: all clean dependents fail-specified-linker-script-missing warn-no-linker-script-specified
+.PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified
 
 -include ../makefile.targets
