@@ -127,14 +127,29 @@ extern "C" {
 //**************************************************//
 //EJECTION THREAD
 //TODO Ejection (just invented variables for the sake of testing)
-#define APOGEE_ALT 3657 //In meters
-#define DEPLOY_ALT 2000 //In meters
-#define GROUND_LEVEL_ALT 100 //In meters
 
-#define COUNTER_THRESHOLD 500
-#define ALT_ERROR_MARGIN 10 //In meters
+#define MAIN_DEPLOY_ALT 1000 //In meters
+
+//TODO might need a bigger range to account for errors (gotta know what we expect to be our slowest descent speed)
+#define LANDING_DIFF_LIMIT 1 //The difference in altitude that needs to be observed to update the landing counter
 
 
+//For acceleration
+#define ACC_LIMIT 1
+#define ACC_COUNTER_THRESH 30
+//Offsets based off robustness test 2 (-1423.25,499.71,1082.69 but the board had X direction pointing up)
+//TODO (might need to calculate the offset when starting and then saving it)
+#define ACC_X_OFF 1082.69
+#define ACC_Y_OFF 499.71
+#define ACC_Z_OFF -1423.25
+
+//For LSL in regression
+#define NUM_MEAS_REG 50
+#define LSL_SLOPE_LIMIT 0
+#define LSL_COUNTER_THRESHOLD 10
+
+
+//Not used (other variables used with same values)
 #define PAD_STATE 0
 #define BOOST_STATE 1
 #define DROGUE_STATE 2

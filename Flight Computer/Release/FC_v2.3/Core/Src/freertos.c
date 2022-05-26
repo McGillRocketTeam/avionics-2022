@@ -334,29 +334,39 @@ void StartEjection1(void *argument)
 
 	osDelay(5000); //TODO (remove?) Let the LPS "warm up" to have a valid pressure_hPa
 
-	uint16_t counter = 0;
-	uint8_t prev_alt = 0;
+	uint8_t lsl_counter = 0;
+	uint8_t acc_counter = 0;
 
   /* Infinite loop */
   for(;;)
   {
-	  altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa);
 
-	  //TODO UPDATE TRUE APOGEE (TESTING?)
+	  /*
+	  if (MRT_getAccNorm() < ACC_LIMIT){
+		  acc_counter++;
+	  }
+	  */
+
+
+	  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //TODO changed
+	  //altitude_m = runAltitudeMeasurements(HAL_GetTick(), MRT_getAltitude(hlps22hh.pressure_hPa));
+	  altitude_m = runAltitudeMeasurements(xTaskGetTickCount(), MRT_getAltitude(hlps22hh.pressure_hPa)); //TODO RTOS equivalent?
+
+	  //TODO UPDATE TRUE APOGEE
 	  if (altitude_m > rtc_bckp_reg_alt_true_apogee){
 		  rtc_bckp_reg_alt_true_apogee = altitude_m;
 		  rtc_bckp_reg_true_apogee_time = 100*prev_min + prev_sec;
 	  }
 
-	  //TODO check for apogee (starting to go down or stagnating, add to counter)
-	  if(altitude_m < prev_alt || MAX(altitude_m - prev_alt, prev_alt - altitude_m) < ALT_ERROR_MARGIN){
-		  counter++;
-		  char buff[50];
-		  sprintf(buff, "Alt: %f,  MAX:%f, counter: %i", altitude_m, MAX(altitude_m - prev_alt, prev_alt - altitude_m), counter);
-		  //println(buff);
+	  //TODO Check if we are going down and if we have decelerated a lot
+	  if(LSLinRegression() < LSL_SLOPE_LIMIT && acc_counter > ACC_COUNTER_THRESH){
+		  lsl_counter++;
+	  }
+	  else{
+		  lsl_counter = 0;
 	  }
 
-	  if (counter >= COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
+	  if (lsl_counter >= LSL_COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
 
 		  if (ejection_stage_flag < DROGUE_DESCENT){
 
@@ -386,10 +396,12 @@ void StartEjection1(void *argument)
 
 		  for(;;){
 
-			  altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa);
+			  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //TODO changed
+			  //altitude_m = runAltitudeMeasurements(HAL_GetTick(), MRT_getAltitude(hlps22hh.pressure_hPa));
+			  altitude_m = runAltitudeMeasurements(xTaskGetTickCount(), MRT_getAltitude(hlps22hh.pressure_hPa)); //TODO RTOS equivalent?
 
 			  //We reached main deployment altitude
-			  if (altitude_m < DEPLOY_ALT || ejection_stage_flag >= MAIN_DESCENT){
+			  if (altitude_m < MAIN_DEPLOY_ALT || ejection_stage_flag >= MAIN_DESCENT){
 
 				  if (ejection_stage_flag < MAIN_DESCENT){
 
@@ -420,8 +432,12 @@ void StartEjection1(void *argument)
 				  uint8_t cur_altitude = 0;
 				  uint8_t counter = 0;
 				  while(counter < 5){
-					  cur_altitude = MRT_getAltitude(hlps22hh.pressure_hPa);
-					  if (cur_altitude - prev_altitude < 1 && cur_altitude - prev_altitude > -1){ //TODO might need a bigger range to account for errors (gotta know what we expect to be our slowest descent speed)
+
+					  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //TODO changed
+					  //altitude_m = runAltitudeMeasurements(HAL_GetTick(), MRT_getAltitude(hlps22hh.pressure_hPa));
+					  cur_altitude = runAltitudeMeasurements(xTaskGetTickCount(), MRT_getAltitude(hlps22hh.pressure_hPa)); //TODO RTOS equivalent?
+
+					  if (MAX(cur_altitude - prev_altitude, cur_altitude - prev_altitude) < LANDING_DIFF_LIMIT){
 						  counter++;
 					  }
 					  else{
@@ -446,15 +462,9 @@ void StartEjection1(void *argument)
 				  osThreadExit();
 
 			  }
-
 			  osDelay(10);
 		  }
 	  }
-
-
-	  //Update previous altitude
-	  prev_alt = altitude_m;
-
 	  osDelay(10);
   }
 
@@ -819,6 +829,14 @@ void MRT_waitForLaunch(void){
 
 		HAL_IWDG_Refresh(&hiwdg);
 
+
+		//Start measuring altitude
+		hlps22hh.getPressure();
+	    //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //TODO changed
+	    //altitude_m = runAltitudeMeasurements(HAL_GetTick(), MRT_getAltitude(hlps22hh.pressure_hPa));
+	    altitude_m = runAltitudeMeasurements(xTaskGetTickCount(), MRT_getAltitude(hlps22hh.pressure_hPa)); //TODO RTOS equivalent?
+
+
 		//Get RTC time
 		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 		HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
@@ -861,8 +879,6 @@ void MRT_waitForLaunch(void){
 		cmd = radio_parse_command(radio_buffer);
 
 
-		execute_parsed_command(cmd);
-		MRT_radio_send_ack(cmd);
 		if (cmd == LAUNCH){
 			//Update ejection stage flag and save it
 			ejection_stage_flag = BOOST;
@@ -871,12 +887,13 @@ void MRT_waitForLaunch(void){
 			MRT_saveFlagValue(FC_STATE_FLIGHT);
 
 			//Todo to test ejection
-			hlps22hh.getPressure();
-			rtc_bckp_reg_alt_pad = MRT_getAltitude(hlps22hh.pressure_hPa);
+			rtc_bckp_reg_alt_pad = altitude_m;
 			MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
 			rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
 			MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
 		}
+		execute_parsed_command(cmd);
+		MRT_radio_send_ack(cmd);
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 

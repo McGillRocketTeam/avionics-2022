@@ -30,6 +30,10 @@ float MRT_getAltitude(float pressure);
 uint8_t MRT_getContinuity(void);
 void MRT_formatAvionics(void);
 
+//LSL in regression
+float LSLinRegression(void);
+float runAltitudeMeasurements(uint32_t currTick, uint16_t currAlt);
+
 
 #ifdef __cplusplus
 }
