@@ -18,7 +18,7 @@
 #include <MRT_ejection.h>
 
 char iridium_buffer[IRIDIUM_BUFFER_SIZE];
-uint8_t current_pos = 0;
+uint8_t current_pos = 1; //Starting after first delimiting character
 
 void MRT_float_to_4char(float f, char* receiving_buffer);
 
@@ -26,7 +26,7 @@ void MRT_float_to_4char(float f, char* receiving_buffer);
 void MRT_radio_tx(char* buffer){
 	#if XTEND_ //Xtend send
 		if (strlen(buffer) < XTEND_BUFFER_SIZE)	HAL_UART_Transmit(&XTEND_UART,(uint8_t*) buffer, strlen(buffer), HAL_MAX_DELAY);
-	#elif SRADIO_ //SRadio send TODO
+	#elif SRADIO_ //SRadio send
 		if (strlen(buffer) < SRADIO_BUFFER_SIZE){
 			//sx126x_set_tx(&SRADIO_SPI, 1000, SRADIO_BUFFER_SIZE);
 			if(ejection_stage_flag == PAD) Tx_setup(); //Only necessary when doing bidirectionnal
@@ -44,7 +44,7 @@ void MRT_radio_rx(char* buffer, uint8_t size, uint16_t timeout){
 		if (size < XTEND_BUFFER_SIZE){
 			HAL_UART_Receive(&XTEND_UART,(uint8_t*) buffer, sizeof(char) * size, timeout);
 		}
-	#elif SRADIO_ //SRadio receive TODO
+	#elif SRADIO_ //SRadio receive
 		if (size < SRADIO_BUFFER_SIZE){
 			//sx126x_set_rx(&SRADIO_SPI,5000);
 			Rx_setup();
@@ -128,7 +128,7 @@ int MRT_formatIridium(void){
 	current_pos += 8;
 
 	if(current_pos > IRIDIUM_BUFFER_SIZE){
-		current_pos = 0;
+		current_pos = 1;
 		return 1;
 	}
 	return -1;

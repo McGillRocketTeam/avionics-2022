@@ -341,128 +341,118 @@ void StartEjection1(void *argument)
   for(;;)
   {
 
-	  /*
+
 	  if (MRT_getAccNorm() < ACC_LIMIT){
 		  acc_counter++;
 	  }
-	  */
 
-
-	  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //TODO changed
-	  //altitude_m = runAltitudeMeasurements(HAL_GetTick(), MRT_getAltitude(hlps22hh.pressure_hPa));
-	  altitude_m = runAltitudeMeasurements(xTaskGetTickCount(), MRT_getAltitude(hlps22hh.pressure_hPa)); //TODO RTOS equivalent?
-
-	  //TODO UPDATE TRUE APOGEE
+	  //Update true apogee
 	  if (altitude_m > rtc_bckp_reg_alt_true_apogee){
 		  rtc_bckp_reg_alt_true_apogee = altitude_m;
 		  rtc_bckp_reg_true_apogee_time = 100*prev_min + prev_sec;
 	  }
-
-	  //TODO Check if we are going down and if we have decelerated a lot
-	  if(LSLinRegression() < LSL_SLOPE_LIMIT && acc_counter > ACC_COUNTER_THRESH){
-		  lsl_counter++;
-	  }
 	  else{
-		  lsl_counter = 0;
-	  }
-
-	  if (lsl_counter >= LSL_COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
-
-		  if (ejection_stage_flag < DROGUE_DESCENT){
-
-			  //TODO update value to be saved in rtc bckp registers
-			  rtc_bckp_reg_alt_apogee = altitude_m;
-			  rtc_bckp_reg_apogee_time = 100*prev_min + prev_sec;
-
-			  //Update state (save the state in WatchDog thread)
-			  ejection_stage_flag = DROGUE_DESCENT;
-			  apogee_flag = 1; //Apogee reached //TODO is it where we change it???
-			  wd_ejection_flag = 1; //Raise the flag
-
-			  println("Eject Drogue");
+		  //Check if we are going down and if almost no acceleration (close to apogee)
+		  acc_counter = ACC_COUNTER_THRESH + 1;//TODO remove (for testing)
+		  if(LSLinRegression() < LSL_SLOPE_LIMIT && acc_counter > ACC_COUNTER_THRESH){
+			  lsl_counter++;
+		  }
+		  else{
+			  lsl_counter = 0;
 		  }
 
-		  //Put outside of "if" such that we only need to remember the ejection stage instead if it + arming state
-		  //TODO should I put a while loop, a foor loop or just "one time functions"?
-		  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-			  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
-		  }
-		  while(!HAL_GPIO_ReadPin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin)){
-			  HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, SET); //PG12 DROGUE GATE
-		  }
-		  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-			  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
-		  }
+		  if (lsl_counter >= LSL_COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
 
-		  for(;;){
-
-			  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //TODO changed
-			  //altitude_m = runAltitudeMeasurements(HAL_GetTick(), MRT_getAltitude(hlps22hh.pressure_hPa));
-			  altitude_m = runAltitudeMeasurements(xTaskGetTickCount(), MRT_getAltitude(hlps22hh.pressure_hPa)); //TODO RTOS equivalent?
-
-			  //We reached main deployment altitude
-			  if (altitude_m < MAIN_DEPLOY_ALT || ejection_stage_flag >= MAIN_DESCENT){
-
-				  if (ejection_stage_flag < MAIN_DESCENT){
-
-					  //TODO update value to be saved in rtc bckp registers
-					  rtc_bckp_reg_alt_main = altitude_m;
-					  rtc_bckp_reg_main_time = 100*prev_min + prev_sec;
-
-					  //Update state (save the state in WatchDog thread)
-					  ejection_stage_flag = MAIN_DESCENT;
-					  wd_ejection_flag = 1; //Raise the flag
-
-					  println("Eject Main");
-				  }
-
-				  //Put outside of "if" such that we only need to remember the ejection stage instead if it + arming state
-				  //TODO should I put a while loop, a foor loop or just "one time functions"?
-				  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-					  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
-				  }
-				  while(!HAL_GPIO_ReadPin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin)){
-					  HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, SET); //PG11 MAIN GATE
-				  }
-				  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
-					  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
-				  }
-
-				  uint8_t prev_altitude = 0;
-				  uint8_t cur_altitude = 0;
-				  uint8_t counter = 0;
-				  while(counter < 5){
-
-					  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //TODO changed
-					  //altitude_m = runAltitudeMeasurements(HAL_GetTick(), MRT_getAltitude(hlps22hh.pressure_hPa));
-					  cur_altitude = runAltitudeMeasurements(xTaskGetTickCount(), MRT_getAltitude(hlps22hh.pressure_hPa)); //TODO RTOS equivalent?
-
-					  if (MAX(cur_altitude - prev_altitude, cur_altitude - prev_altitude) < LANDING_DIFF_LIMIT){
-						  counter++;
-					  }
-					  else{
-						  counter = 0;
-					  }
-					  prev_altitude = cur_altitude;
-					  osDelay(100);
-				  }
+			  if (ejection_stage_flag < DROGUE_DESCENT){
 
 				  //TODO update value to be saved in rtc bckp registers
-				  rtc_bckp_reg_alt_landed = altitude_m;
-				  rtc_bckp_reg_landed_time = 100*prev_min + prev_sec;
+				  rtc_bckp_reg_alt_apogee = altitude_m;
+				  rtc_bckp_reg_apogee_time = 100*prev_min + prev_sec;
 
-				  //Update state (saved state in WatchDog thread)
-				  ejection_stage_flag = LANDED;
-				  wd_ejection_flag = 1;
+				  //Update state (save the state in WatchDog thread)
+				  ejection_stage_flag = DROGUE_DESCENT;
+				  apogee_flag = 1; //Apogee reached //TODO is it where we change it???
+				  wd_ejection_flag = 1; //Raise the flag
 
-				  VR_Stop_Rec();
-				  VR_Power_Off();
-
-				  println("Ground Level Reached");
-				  osThreadExit();
-
+				  println("Eject Drogue");
 			  }
-			  osDelay(10);
+
+			  //Put outside of "if" such that we only need to remember the ejection stage instead if it + arming state
+			  //TODO should I put a while loop, a foor loop or just "one time functions"?
+			  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+				  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
+			  }
+			  while(!HAL_GPIO_ReadPin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin)){
+				  HAL_GPIO_WritePin(OUT_EJ_Drogue_Gate_GPIO_Port, OUT_EJ_Drogue_Gate_Pin, SET); //PG12 DROGUE GATE
+			  }
+			  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+				  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
+			  }
+
+			  for(;;){
+
+				  //We reached main deployment altitude
+				  if (altitude_m < MAIN_DEPLOY_ALT || ejection_stage_flag >= MAIN_DESCENT){
+
+					  if (ejection_stage_flag < MAIN_DESCENT){
+
+						  //TODO update value to be saved in rtc bckp registers
+						  rtc_bckp_reg_alt_main = altitude_m;
+						  rtc_bckp_reg_main_time = 100*prev_min + prev_sec;
+
+						  //Update state (save the state in WatchDog thread)
+						  ejection_stage_flag = MAIN_DESCENT;
+						  wd_ejection_flag = 1; //Raise the flag
+
+						  println("Eject Main");
+					  }
+
+					  //Put outside of "if" such that we only need to remember the ejection stage instead if it + arming state
+					  //TODO should I put a while loop, a foor loop or just "one time functions"?
+					  while(!HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+						  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, SET); //PG14 ARMING RCOV
+					  }
+					  while(!HAL_GPIO_ReadPin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin)){
+						  HAL_GPIO_WritePin(OUT_EJ_Main_Gate_GPIO_Port, OUT_EJ_Main_Gate_Pin, SET); //PG11 MAIN GATE
+					  }
+					  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
+						  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
+					  }
+
+					  uint8_t prev_altitude = 0;
+					  uint8_t cur_altitude = 0;
+					  uint8_t counter = 0;
+					  while(counter < 5){
+
+						  cur_altitude = altitude_m;
+
+						  if (MAX(cur_altitude - prev_altitude, cur_altitude - prev_altitude) < LANDING_DIFF_LIMIT){
+							  counter++;
+						  }
+						  else{
+							  counter = 0;
+						  }
+						  prev_altitude = cur_altitude;
+						  osDelay(100);
+					  }
+
+					  //TODO update value to be saved in rtc bckp registers
+					  rtc_bckp_reg_alt_landed = altitude_m;
+					  rtc_bckp_reg_landed_time = 100*prev_min + prev_sec;
+
+					  //Update state (saved state in WatchDog thread)
+					  ejection_stage_flag = LANDED;
+					  wd_ejection_flag = 1;
+
+					  VR_Stop_Rec();
+					  VR_Power_Off();
+
+					  println("Ground Level Reached");
+					  osThreadExit();
+
+				  }
+				  osDelay(10);
+			  }
 		  }
 	  }
 	  osDelay(10);
@@ -587,6 +577,12 @@ void StartSensors3(void *argument)
 
 	  //LPS22HH
 	  hlps22hh.pollAll();
+
+	  //Update altitude
+	  //altitude_m = MRT_getAltitude(hlps22hh.pressure_hPa); //TODO changed
+	  //altitude_m = runAltitudeMeasurements(HAL_GetTick(), MRT_getAltitude(hlps22hh.pressure_hPa));
+	  altitude_m = runAltitudeMeasurements(xTaskGetTickCount(), MRT_getAltitude(hlps22hh.pressure_hPa)); //TODO RTOS equivalent?
+
 
 	  //Gates continuity
 	  gates_continuity = MRT_getContinuity();
@@ -743,7 +739,10 @@ void StartPropulsion4(void *argument)
 
 	uint8_t timeout_changed = 0;
 
-	char buf[10];
+	iridium_buffer[0] = 'S';
+	iridium_buffer[IRIDIUM_BUFFER_SIZE-1] = 'E';
+
+	char buf[10]; //TODO remove
 
   /* Infinite loop */
   for(;;)
@@ -765,12 +764,12 @@ void StartPropulsion4(void *argument)
 			  //TODO make a list of latest coordinates retrieved to optimize the credits we use
 			  print("\tIridium sending: ");
 			  println(iridium_buffer);
-			  memset(iridium_buffer,0,IRIDIUM_BUFFER_SIZE);
+			  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
 			  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
 			}
 			println("");
 			println("");
-			print("\t\tIridium sent: ");
+			print("\t\tIridium buffer: ");
 			print(iridium_buffer);
 
 			memset(buf,0,10);
@@ -871,6 +870,12 @@ void MRT_waitForLaunch(void){
 			f_sync(&fil);
 		}
 		#endif
+
+
+		//Check for complete restart
+		if(restart_flag == 1){
+		  MRT_resetFromStart();
+		}
 
 
 		//Check for command

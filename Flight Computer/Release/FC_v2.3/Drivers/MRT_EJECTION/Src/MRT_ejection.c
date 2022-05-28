@@ -63,10 +63,10 @@ void MRT_formatAvionics(void) {
 
 /*Normal acceleration*/
 float MRT_getAccNorm(void){
-	float acc_x2 = pow(hlsm6dsr.acceleration_mg[0] - ACC_X_OFF,2);
-	float acc_y2 = pow(hlsm6dsr.acceleration_mg[1] - ACC_Y_OFF,2);
-	float acc_z2 = pow(hlsm6dsr.acceleration_mg[2] - ACC_Z_OFF,2);
-	return pow(acc_x2 + acc_y2 + acc_z2, 0.5);
+	float acc_x2 = pow(hlsm6dsr.acceleration_mg[0]/100,2);
+	float acc_y2 = pow(hlsm6dsr.acceleration_mg[1]/100,2);
+	float acc_z2 = pow(hlsm6dsr.acceleration_mg[2]/100,2);
+	return sqrtf(acc_x2 + acc_y2 + acc_z2);
 }
 
 

@@ -49,6 +49,16 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 		HAL_PWR_EnterSTANDBYMode();
 		*/
 
+	  //TODO change power mode? p.14
+	  //lsm6dsr_write_reg(&ctx, ,LSM6DSR_XL_ODR_OFF, );
+	  lsm6dsr_xl_data_rate_set(&ctx, LSM6DSR_XL_ODR_OFF);
+	  HAL_Delay(200);
+	  //lsm6dsr_write_reg(&ctx, ,LSM6DSR_XL_ODR_52Hz, );
+	  lsm6dsr_xl_data_rate_set(&ctx, LSM6DSR_XL_ODR_52Hz);
+
+	  //TODO see self-test?
+	  //https://www.st.com/resource/en/application_note/an5358-lsm6dsr-alwayson-3d-accelerometer-and-3d-gyroscope-stmicroelectronics.pdf
+
 
 	}
 	println((char*) "OK");
@@ -73,11 +83,27 @@ LSM6DSR::LSM6DSR(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	/* Set full scale */
 	lsm6dsr_xl_full_scale_set(&ctx, LSM6DSR_2g);
 	lsm6dsr_gy_full_scale_set(&ctx, LSM6DSR_2000dps);
+
+
+	//TODO https://www.st.com/resource/en/application_note/an5358-lsm6dsr-alwayson-3d-accelerometer-and-3d-gyroscope-stmicroelectronics.pdf
+	//P.18
+
 	/* Configure filtering chain(No aux interface)
 	* Accelerometer - LPF1 + LPF2 path
 	*/
-	lsm6dsr_xl_hp_path_on_out_set(&ctx, LSM6DSR_LP_ODR_DIV_100);
-	lsm6dsr_xl_filter_lp2_set(&ctx, PROPERTY_ENABLE);
+	//On page 18, it says that the value of the HPCF register must be 111b for
+	//the reference mode to work. Thus, I changed the second argument to make it work
+	//lsm6dsr_xl_hp_path_on_out_set(&ctx, LSM6DSR_LP_ODR_DIV_100);
+	//lsm6dsr_xl_hp_path_on_out_set(&ctx, LSM6DSR_LP_ODR_DIV_800);
+	lsm6dsr_xl_hp_path_on_out_set(&ctx, LSM6DSR_LP_ODR_DIV_10); //Fast and working properly
+
+	//On page 18, it basically says that this function does nothing
+	//when the previous one is called and the reference mode is active
+	//lsm6dsr_xl_filter_lp2_set(&ctx, PROPERTY_ENABLE);
+
+
+	//TODO Perform self test
+	//lsm6dsr_xl_self_test_set(&ctx,);
 }
 
 

@@ -55,9 +55,9 @@ extern "C" {
 
 //**************************************************//
 //CONSTANTS
-#define SEA_LEVEL_TEMPERATURE 25+273.15 //Sea level temperature in Kelvin
-#define SEA_LEVEL_PRESSURE 1014 //Sea level pressure hPa
-#define  BASE_HEIGHT 100 //In meters
+#define SEA_LEVEL_TEMPERATURE 25.0+273.15 //Sea level temperature in Kelvin
+#define SEA_LEVEL_PRESSURE 1014.0 //Sea level pressure hPa
+#define  BASE_HEIGHT 100.0 //In meters
 #define M 0.0289644 //Molar mass of earth's air in kg/mol
 #define go 9.80665 //Gravitational acceleration constant in m/s^2
 #define R 8.31432 //Universal gas constant Nm / mol K
@@ -137,15 +137,10 @@ extern "C" {
 //For acceleration
 #define ACC_LIMIT 1
 #define ACC_COUNTER_THRESH 30
-//Offsets based off robustness test 2 (-1423.25,499.71,1082.69 but the board had X direction pointing up)
-//TODO (might need to calculate the offset when starting and then saving it)
-#define ACC_X_OFF 1082.69
-#define ACC_Y_OFF 499.71
-#define ACC_Z_OFF -1423.25
 
 //For LSL in regression
 #define NUM_MEAS_REG 50
-#define LSL_SLOPE_LIMIT 0
+#define LSL_SLOPE_LIMIT -10
 #define LSL_COUNTER_THRESHOLD 10
 
 

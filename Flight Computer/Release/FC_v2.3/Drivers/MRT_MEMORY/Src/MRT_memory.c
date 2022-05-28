@@ -336,7 +336,7 @@ void MRT_stateRestoration(void){
 	reset_flag = rtc_bckp_reg_reset;
 
 	//Wake up flag (TODO double check??)
-	if(MRT_checkFlagsValues(FC_STATE_WU, 1) == false)	MRT_saveFlagValue(FC_STATE_WU);
+	if(MRT_checkFlagsValues(FC_STATE_WU, 2) == false)	MRT_saveFlagValue(FC_STATE_WU);
 	wu_flag = rtc_bckp_reg_wu;
 
 	//IWDG flag
@@ -365,7 +365,7 @@ void MRT_stateRestoration(void){
 	if(MRT_checkTimeValues(RTC_SECOND, 59) == false)	MRT_saveTimeValue(RTC_SECOND);
 	prev_sec = rtc_bckp_reg_sec;
 
-	//Sub-Seconds
+	//Sub-Seconds //Is it that important to know subsec? We lose a register because of it
 	if(MRT_checkTimeValues(RTC_SUBSEC, 999) == false)	MRT_saveTimeValue(RTC_SUBSEC);
 	prev_subsec = rtc_bckp_reg_subsec;
 }
