@@ -14,13 +14,13 @@
 
 */
 #include <SPI.h>
-#include <sx1262.h>
+#include <sx1262_allowTimeout.h>
 #include <stdio.h>
 
-#define RESET 16      //SX126X Reset line
-#define BUSY 17       //SX126X BUSY line, must be low before transmission
-#define DIO1 18      // DIO1
-#define ANT_SW 19     // Antenna switch
+#define RESET 6      //SX126X Reset line
+#define BUSY 7       //SX126X BUSY line, must be low before transmission
+#define DIO1 8      // DIO1
+#define ANT_SW 9     // Antenna switch
 #define NSS 10        //SX126X SPI device select, active low
 #define DATA_SIZE 100
 #define irq_set_mask                                0b1000000001  // Set mask to detect TX/RX timeout and TxDone
@@ -56,8 +56,6 @@ uint8_t sent_length = sizeof(sent_string)-1;
 char gui_rx_buf[GUI_RX_BUF_LEN] = {0};
 uint8_t gui_idx;
 
-
-
 void setup() {
   device.begin(NSS, BUSY, RESET, DIO1, ANT_SW); // Store pin ports for SX1262 class
   SPI.begin();
@@ -89,11 +87,11 @@ void setup() {
 
 void loop() {
   device.clearIrqStatus(SX1262_IRQ_RX_DONE | SX1262_IRQ_TIMEOUT);
-  device.setRx(0x00000);
+  device.setRx(0x00000);       
   do {
-    device.getIrqStatus(&irq_status);
+    device.getIrqStatus(&irq_status); 
   } while ( (!(irq_status & SX1262_IRQ_RX_DONE)) && (!(irq_status & SX1262_IRQ_TIMEOUT)) && !Serial.available());
-
+  
   if ( irq_status & SX1262_IRQ_TIMEOUT ) {
     device.clearIrqStatus(SX1262_IRQ_TIMEOUT);
   } else {
