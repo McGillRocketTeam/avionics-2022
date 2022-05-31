@@ -8,6 +8,7 @@
 #include <MRT_setup.h>
 #include <MRT_helpers.h>
 #include <MRT_telemetry.h>
+#include <half_byte_encoder.h>
 #include <MRT_iridium.h>
 #include <iwdg.h>
 #include <string.h>
@@ -20,22 +21,37 @@
 char iridium_buffer[IRIDIUM_BUFFER_SIZE];
 uint8_t current_pos = 1; //Starting after first delimiting character
 
+uint8_t encoded_buf[RADIO_BUFFER_SIZE];
+uint8_t encoded_buf_len;
+uint8_t decoded_buf[RADIO_BUFFER_SIZE];
+uint8_t decoded_buf_len;
+
 void MRT_float_to_4char(float f, char* receiving_buffer);
 
 
 void MRT_radio_tx(char* buffer){
-	#if XTEND_ //Xtend send
-		if (strlen(buffer) < XTEND_BUFFER_SIZE)	HAL_UART_Transmit(&XTEND_UART,(uint8_t*) buffer, strlen(buffer), HAL_MAX_DELAY);
-	#elif SRADIO_ //SRadio send
-		if (strlen(buffer) < SRADIO_BUFFER_SIZE){
-			//sx126x_set_tx(&SRADIO_SPI, 1000, SRADIO_BUFFER_SIZE);
-			if(ejection_stage_flag == PAD) Tx_setup(); //Only necessary when doing bidirectionnal
-			TxProtocol((uint8_t*) buffer, strlen(buffer));
-		}
-	#endif
-
 	print((char*) "Radio sending:\t");
 	println(buffer);
+
+	#if HALF_BYTE_
+	//Encode the buffer to send
+	memset(encoded_buf,0,RADIO_BUFFER_SIZE);
+	hb_encode_string((uint8_t*) buffer, strlen(buffer), encoded_buf, &encoded_buf_len);
+	#else
+	memset(encoded_buf,0,RADIO_BUFFER_SIZE);
+	memcpy(encoded_buf, buffer, strlen(buffer));
+	encoded_buf_len = strlen(encoded_buf);
+	#endif
+
+	#if XTEND_ //Xtend send
+		if (strlen(encoded_buf) < XTEND_BUFFER_SIZE)	HAL_UART_Transmit(&XTEND_UART,(uint8_t*) encoded_buf, encoded_buf_len, HAL_MAX_DELAY);
+	#elif SRADIO_ //SRadio send
+		if (strlen(encoded_buf) < SRADIO_BUFFER_SIZE){
+			//sx126x_set_tx(&SRADIO_SPI, 1000, SRADIO_BUFFER_SIZE);
+			if(ejection_stage_flag == PAD) Tx_setup(); //Only necessary when doing bidirectionnal
+			TxProtocol((uint8_t*) encoded_buf, encoded_buf_len);
+		}
+	#endif
 }
 
 
@@ -58,8 +74,14 @@ void MRT_radio_rx(char* buffer, uint8_t size, uint16_t timeout){
 		}
 	#endif
 
+	#if HALF_BYTE_
+	//Decode the buffer received
+	memset(decoded_buf,0,RADIO_BUFFER_SIZE);
+	hb_decode_string((uint8_t*) buffer, strlen(buffer), decoded_buf, &decoded_buf_len);
+	memcpy(buffer, decoded_buf, decoded_buf_len);
+	#endif
 	print((char*) "Radio receiving:\t");
-	println(buffer);
+	println((char*) buffer);
 }
 
 

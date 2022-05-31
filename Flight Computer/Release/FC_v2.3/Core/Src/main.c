@@ -64,7 +64,6 @@ void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 void MRT_STM_Init(void);
-void MRT_waitForLaunch(void);
 
 /* USER CODE END PFP */
 

@@ -145,6 +145,9 @@ void vApplicationDaemonTaskStartupHook(void)
 	print("\tCreating the threads...");
 
 	/* Create the thread(s) */
+	/* creation of Sensors3 */
+	Sensors3Handle = osThreadNew(StartSensors3, NULL, &Sensors3_attributes);
+
 	/* creation of Memory0 */
 	Memory0Handle = osThreadNew(StartMemory0, NULL, &Memory0_attributes);
 
@@ -154,14 +157,11 @@ void vApplicationDaemonTaskStartupHook(void)
 	/* creation of Telemetry2 */
 	Telemetry2Handle = osThreadNew(StartTelemetry2, NULL, &Telemetry2_attributes);
 
-	/* creation of Sensors3 */
-	Sensors3Handle = osThreadNew(StartSensors3, NULL, &Sensors3_attributes);
+	/* creation of Propulsion4 */
+	Propulsion4Handle = osThreadNew(StartPropulsion4, NULL, &Propulsion4_attributes);
 
 	/* creation of WatchDog */
 	WatchDogHandle = osThreadNew(StartWatchDog, NULL, &WatchDog_attributes);
-
-	/* creation of Propulsion4 */
-	Propulsion4Handle = osThreadNew(StartPropulsion4, NULL, &Propulsion4_attributes);
 
 	println("OK");
 }
@@ -341,7 +341,7 @@ void StartEjection1(void *argument)
   for(;;)
   {
 
-
+	  //Check acceleration
 	  if (MRT_getAccNorm() < ACC_LIMIT){
 		  acc_counter++;
 	  }
@@ -352,13 +352,23 @@ void StartEjection1(void *argument)
 		  rtc_bckp_reg_true_apogee_time = 100*prev_min + prev_sec;
 	  }
 	  else{
+		  //TODO remove (for testing)
+		  /*
+		  acc_counter = ACC_COUNTER_THRESH + 1;
+		  float lsl = LSLinRegression();
+		  char buf[10];
+		  sprintf(buf,"%f",lsl);
+		  println(buf);
+		  //if(lsl < LSL_SLOPE_LIMIT){
+		   */
+
+
 		  //Check if we are going down and if almost no acceleration (close to apogee)
-		  acc_counter = ACC_COUNTER_THRESH + 1;//TODO remove (for testing)
 		  if(LSLinRegression() < LSL_SLOPE_LIMIT && acc_counter > ACC_COUNTER_THRESH){
 			  lsl_counter++;
 		  }
 		  else{
-			  lsl_counter = 0;
+			  //lsl_counter = 0;
 		  }
 
 		  if (lsl_counter >= LSL_COUNTER_THRESHOLD || ejection_stage_flag >= DROGUE_DESCENT){
@@ -433,7 +443,7 @@ void StartEjection1(void *argument)
 							  counter = 0;
 						  }
 						  prev_altitude = cur_altitude;
-						  osDelay(100);
+						  osDelay(1000/EJECTION_FREQ);
 					  }
 
 					  //TODO update value to be saved in rtc bckp registers
@@ -451,11 +461,11 @@ void StartEjection1(void *argument)
 					  osThreadExit();
 
 				  }
-				  osDelay(10);
+				  osDelay(1000/EJECTION_FREQ);
 			  }
 		  }
 	  }
-	  osDelay(10);
+	  osDelay(1000/EJECTION_FREQ);
   }
 
   //In case it leaves the infinite loop
@@ -588,6 +598,7 @@ void StartSensors3(void *argument)
 	  gates_continuity = MRT_getContinuity();
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
+	  println("POLLED");
 
 	  if (ejection_stage_flag >= LANDED){
 		  osDelay(1000/POST_LANDED_POLL_FREQ);
@@ -823,6 +834,7 @@ void MRT_waitForLaunch(void){
 	uint8_t sync_counter = 0;
 
 	//Poll propulsion until launch command sent
+	//ejection_stage_flag = BOOST; //Todo
 	while((XTEND_ || SRADIO_) && ejection_stage_flag == PAD){
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
@@ -860,8 +872,8 @@ void MRT_waitForLaunch(void){
 
 		// Save to SD card
 		#if SD_CARD_
-		MRT_formatPropulsion();
-		if (sd_write(&fil,(uint8_t*) msg_buffer_pr)<0){
+		sync_counter++;
+		if (sd_write(&fil,(uint8_t*) msg_buffer_pr) < 0){
 			f_close(&fil);
 			fres = sd_open_file(filename);
 		}
@@ -878,9 +890,18 @@ void MRT_waitForLaunch(void){
 		}
 
 
-		//Check for command
+		//Refresh before using radio
+		HAL_IWDG_Refresh(&hiwdg);
+
+
+		#if HALF_BYTE_
+		//Check for command (encoded so 1 byte received instead of 2)
 		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
-		MRT_radio_rx(radio_buffer, 2, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
+		MRT_radio_rx(radio_buffer, 1, 0x500); //Timeout is about 1.2 sec (should be less than 5 sec)
+		#else
+		memset(radio_buffer, 0, RADIO_BUFFER_SIZE);
+		MRT_radio_rx(radio_buffer, 2, 0x25); //Timeout is about 0.6 sec (should be less than 5 sec)
+		#endif
 		cmd = radio_parse_command(radio_buffer);
 
 
@@ -897,8 +918,8 @@ void MRT_waitForLaunch(void){
 			rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
 			MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
 		}
-		execute_parsed_command(cmd);
 		MRT_radio_send_ack(cmd);
+		execute_parsed_command(cmd);
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 

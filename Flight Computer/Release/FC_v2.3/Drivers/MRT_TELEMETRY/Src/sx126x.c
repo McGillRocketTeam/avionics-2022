@@ -46,6 +46,8 @@
  * --- PRIVATE MACROS-----------------------------------------------------------
  */
 
+#define USES_FREERTOS 1
+
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE CONSTANTS -------------------------------------------------------
@@ -265,9 +267,14 @@ static uint8_t tx_address_base = 0x00;
 static uint8_t rx_address_base = 0x00;
 
 // LoRa modulation params
-static sx126x_lora_sf_t lora_sf = SX126X_LORA_SF5;      //spreading factor
+//static sx126x_lora_sf_t lora_sf = SX126X_LORA_SF5;      //spreading factor
+static sx126x_lora_sf_t lora_sf = SX126X_LORA_SF9;
 static sx126x_lora_bw_t lora_bw = SX126X_LORA_BW_500;   //bandwidth
-static sx126x_lora_cr_t lora_cr = SX126X_LORA_CR_4_5;   //coding rate
+//static sx126x_lora_bw_t lora_bw = SX126X_LORA_BW_007;
+//static sx126x_lora_cr_t lora_cr = SX126X_LORA_CR_4_6;   //coding rate
+static sx126x_lora_cr_t lora_cr = SX126X_LORA_CR_4_5;
+
+
 static uint8_t lora_ldro = 0x00;                        //low data rate optimizer
 
 // LoRa params
@@ -376,7 +383,11 @@ sx126x_hal_status_t sx126x_hal_read( const void* hspi, const uint8_t* command, c
 sx126x_hal_status_t sx126x_hal_reset( const void* hspi ){
     HAL_StatusTypeDef status = HAL_OK;
     HAL_GPIO_WritePin(NRESET_GPIO, NRESET, GPIO_PIN_RESET);
-    HAL_Delay(100);
+	#if USES_FREERTOS
+	osDelay(100);
+	#else
+	HAL_Delay(100);
+	#endif
     HAL_GPIO_WritePin(NRESET_GPIO, NRESET, GPIO_PIN_SET);
     return status;
 }
@@ -394,7 +405,11 @@ sx126x_hal_status_t sx126x_hal_wakeup( const void* hspi ){
     HAL_StatusTypeDef status = HAL_OK;
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_SET);
-    HAL_Delay(1);
+	#if USES_FREERTOS
+	osDelay(1);
+	#else
+	HAL_Delay(1);
+	#endif
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_RESET);
     return status;
 }
@@ -457,7 +472,11 @@ void Tx_setup(){
     //NEED TO ADD COMMAND ERROR HANDLING
     HAL_GPIO_WritePin(NRESET_GPIO, NRESET, GPIO_PIN_SET);
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_RESET);
-    HAL_Delay(50);
+	#if USES_FREERTOS
+	osDelay(50);
+	#else
+	HAL_Delay(50);
+	#endif
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_SET);             //make sure chip select is off
 
     //set to standby for setup
@@ -472,7 +491,11 @@ void Tx_setup(){
 
     //calibrate functions
     sx126x_cal(&hspi, cal_mask);                                //calibrate radio, mask chooses what to calibrate
-    HAL_Delay(50);
+	#if USES_FREERTOS
+	osDelay(50);
+	#else
+	HAL_Delay(50);
+	#endif
     sx126x_set_reg_mode(&hspi, regulator_mode);                 //ldo or dc-dc
     sx126x_cal_img_hex(&hspi, cal_low_freq, cal_hi_freq);       //image calibration frequencies
 
@@ -510,7 +533,6 @@ void Tx_setup(){
 
     //set dio and irq parameters
     sx126x_set_dio_irq_params(&hspi, irq_mask, dio1_mask, dio2_mask, dio3_mask);
-
 }
 
 void TxProtocol(uint8_t data[], uint8_t data_length){
@@ -518,8 +540,13 @@ void TxProtocol(uint8_t data[], uint8_t data_length){
     HAL_StatusTypeDef command_status;
     command_status = sx126x_clear_irq_status(&hspi, dio1_mask);
     command_status = sx126x_write_buffer(&hspi, 0, data, data_length); // 0 is the offset
-    command_status = sx126x_set_tx(&hspi, 6000, data_length);
-    osDelay(100);
+    //command_status = sx126x_set_tx(&hspi, 6000, data_length); TODO DEFAULT
+    command_status = sx126x_set_tx(&hspi, 1000, data_length);
+	#if USES_FREERTOS
+	osDelay(100);
+	#else
+	HAL_Delay(100);
+	#endif
 
     sx126x_irq_mask_t irq;
     do {
@@ -531,7 +558,11 @@ void Rx_setup(){
     //NEED TO ADD COMMAND ERROR HANDLING
     HAL_GPIO_WritePin(NRESET_GPIO, NRESET, GPIO_PIN_SET);
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_RESET);
+	#if USES_FREERTOS
+    osDelay(50);
+	#else
     HAL_Delay(50);
+	#endif
     HAL_GPIO_WritePin(NSS_GPIO, NSS, GPIO_PIN_SET);             //make sure chip select is off
 
     //set to standby for setup
@@ -546,7 +577,11 @@ void Rx_setup(){
 
     //calibrate functions
     sx126x_cal(&hspi, cal_mask);                                //calibrate radio, mask chooses what to calibrate
-    HAL_Delay(50);
+	#if USES_FREERTOS
+	osDelay(50);
+	#else
+	HAL_Delay(50);
+	#endif
     sx126x_set_reg_mode(&hspi, regulator_mode);                 //ldo or dc-dc
     sx126x_cal_img_hex(&hspi, cal_low_freq, cal_hi_freq);       //image calibration frequencies
 
@@ -577,16 +612,20 @@ void Rx_setup(){
     //timer for TIMEOUT params
     sx126x_stop_timer_on_preamble(&hspi, timer_is_stopped_at_header);
     sx126x_set_lora_symb_nb_timeout(&hspi, nb_symbols_for_valid_rx);
-
-
 }
 
 void RxProtocol(uint8_t buffer_received[]){
 
     HAL_StatusTypeDef command_status;
     command_status = sx126x_clear_irq_status(&hspi, dio1_mask);
-    command_status = sx126x_set_rx(&hspi, 3000);
-    HAL_Delay(1400);
+    //command_status = sx126x_set_rx(&hspi, 3000); TODO DEFAULT
+    command_status = sx126x_set_rx(&hspi, 1000);
+    //HAL_Delay(1400); TODO DEFAULT
+	#if USES_FREERTOS
+	osDelay(100);
+	#else
+	HAL_Delay(100);
+	#endif
 
     sx126x_irq_mask_t irq;
     command_status = sx126x_get_irq_status(&hspi, &irq); //reading the irq into irq

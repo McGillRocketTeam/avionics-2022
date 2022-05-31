@@ -224,7 +224,12 @@ LPS22HH::LPS22HH(I2C_HandleTypeDef* i2c_bus, uint8_t address){
 	lps22hh_block_data_update_set(&ctx, PROPERTY_ENABLE);
 
 	/* Set Output Data Rate */
-	lps22hh_data_rate_set(&ctx, LPS22HH_75_Hz_LOW_NOISE);
+	//lps22hh_data_rate_set(&ctx, LPS22HH_75_Hz_LOW_NOISE);
+	lps22hh_data_rate_set(&ctx, LPS22HH_200_Hz);
+
+
+	//Filter
+	lps22hh_lp_bandwidth_set(&ctx, LPS22HH_LPF_ODR_DIV_9);
 }
 
 
