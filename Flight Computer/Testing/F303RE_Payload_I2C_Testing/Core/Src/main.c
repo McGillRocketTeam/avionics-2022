@@ -60,7 +60,7 @@ static void MX_I2C1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-#define TEENSY_ADDRESS 0x01
+#define TEENSY_ADDRESS 0x08 << 1
 #define DATA_REG 0x02 //Don't know it
 #define BUFFER_SIZE 50
 
@@ -110,15 +110,15 @@ int main(void)
 
 
 	  buffer[0] = DATA_REG;
-	  ret = HAL_I2C_Master_Transmit(&hi2c1, TEENSY_ADDRESS, buffer, 1, HAL_MAX_DELAY);
+	  ret = HAL_I2C_Master_Transmit(&hi2c1, TEENSY_ADDRESS, buffer, 6, 100);
 	  if (ret != HAL_OK){
-		  HAL_UART_Transmit(&huart2, "Error1\r\n",8, HAL_MAX_DELAY);
+		  HAL_UART_Transmit(&huart2, "Error1\r\n",8, 100);
 	  }else{
-		  ret = HAL_I2C_Master_Receive(&hi2c1, TEENSY_ADDRESS, buffer, 1, HAL_MAX_DELAY);
+		  ret = HAL_I2C_Master_Receive(&hi2c1, TEENSY_ADDRESS, buffer, 6, 100);
 		  if (ret != HAL_OK){
-			  HAL_UART_Transmit(&huart2, "Error2\r\n",8, HAL_MAX_DELAY);
+			  HAL_UART_Transmit(&huart2, "Error2\r\n",8, 100);
 		  }else{
-			  HAL_UART_Transmit(&huart2, buffer, 1, HAL_MAX_DELAY);
+			  HAL_UART_Transmit(&huart2, buffer, 6, 100);
 
 		  }
 	  }
