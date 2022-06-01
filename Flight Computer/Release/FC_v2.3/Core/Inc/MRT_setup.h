@@ -133,14 +133,15 @@ extern "C" {
 //TODO might need a bigger range to account for errors (gotta know what we expect to be our slowest descent speed)
 #define LANDING_DIFF_LIMIT 1 //The difference in altitude that needs to be observed to update the landing counter
 
+#define EJECTION_FREQ 10
 
 //For acceleration
 #define ACC_LIMIT 1
-#define ACC_COUNTER_THRESH 30
+#define ACC_COUNTER_THRESH 10 //Used to be 30, but the update rate is not fast enough
 
 //For LSL in regression
-#define NUM_MEAS_REG 50
-#define LSL_SLOPE_LIMIT -10
+#define NUM_MEAS_REG 10 //Used to be 50, but the update rate is not fast enough
+#define LSL_SLOPE_LIMIT -0.005
 #define LSL_COUNTER_THRESHOLD 10
 
 
@@ -156,12 +157,13 @@ extern "C" {
 
 //**************************************************//
 //TELEMETRY_THREAD
-#define PRE_APOGEE_SEND_FREQ 1000 //Times per second that you want to transmit data before apogee
-#define POST_APOGEE_SEND_FREQ 1000 //Times per second that you want to transmit data after apogee
+#define PRE_APOGEE_SEND_FREQ 100 //Times per second that you want to transmit data before apogee
+#define POST_APOGEE_SEND_FREQ 100 //Times per second that you want to transmit data after apogee
 #define POST_LANDED_SEND_FREQ 10 //Times per second that you want to transmit data after landing
-#define SENSORS_SEND_FREQ_DIVIDER 10 //Number of times that you want to send sensors data relative to propulsion data
+#define SENSORS_SEND_FREQ_DIVIDER 5 //Number of times that you want to send sensors data relative to propulsion data
 									 //(can only be equal or slower). Divides the XXXX_APOGEE_SEND_FREQ
 
+#define HALF_BYTE_ 0
 
 //SRadio
 #define SRADIO_ 1
@@ -172,6 +174,7 @@ extern "C" {
 #define XTEND_ 0
 #define XTEND_UART huart3
 #define XTEND_BUFFER_SIZE 256
+#define XTEND_TIMEOUT 0x500
 
 #if XTEND_
 #define RADIO_BUFFER_SIZE	XTEND_BUFFER_SIZE
@@ -195,9 +198,9 @@ extern "C" {
 
 //**************************************************//
 //SENSORS THREAD
-#define PRE_APOGEE_POLL_FREQ 100 //Times per second that data is polled (pre apogee)
-#define POST_APOGEE_POLL_FREQ 50 //Times per second that data is polled (post apogee)
-#define POST_LANDED_POLL_FREQ 1 //Times per second that data is polled (post landing)
+#define PRE_APOGEE_POLL_FREQ 1000 //Times per second that data is polled (pre apogee)
+#define POST_APOGEE_POLL_FREQ 1000 //Times per second that data is polled (post apogee)
+#define POST_LANDED_POLL_FREQ 10 //Times per second that data is polled (post landing)
 
 //I2C
 #define CHECK_I2C 0
