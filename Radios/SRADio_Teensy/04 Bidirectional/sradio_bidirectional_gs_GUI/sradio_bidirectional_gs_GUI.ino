@@ -14,7 +14,7 @@
 
 */
 #include <SPI.h>
-#include <sx1262.h>
+#include <sx1262_allowTimeout.h>
 #include <stdio.h>
 
 #define RESET 16      //SX126X Reset line
@@ -33,10 +33,10 @@ uint16_t irq_status;
 uint8_t device_status;
 
 uint32_t freq = 448000000;
-uint16_t deley = 500;
+uint16_t deley = 200;
 uint32_t timeout = deley / 0.015625;
 
-uint8_t loraSF = LORA_SF5;
+uint8_t loraSF = LORA_SF7;
 uint8_t loraBW = LORA_BW_500;
 uint8_t loraCR = LORA_CR_4_5;
 
@@ -49,7 +49,7 @@ uint8_t txRAMP = SX1262_PA_RAMP_200U;
 uint8_t received_data[DATA_SIZE] = {0} ;
 uint8_t count = 0;
 char sent_string[] = "S,123.000,123.1245,123.2,12330,123,123,E"; //4chars
-uint8_t sent_length = sizeof(sent_string)-1;
+uint8_t sent_length = sizeof(sent_string) - 1;
 
 
 
@@ -65,7 +65,7 @@ void setup() {
 
   device.setStandBy(0); // Set device in standby mode, STDBY_RC
   device.setPacketType(0x01); // Set packet type to LoRa
-  device.setRxTxFallbackMode(0x20); // Set fallback mode to STDBY_RC
+  device.setRxTxFallbackMode(0x40); // Set fallback mode to FS CONSUMES MORE POWER but faster switching time
   device.setDIO2AsRfSwitchCtrl(0x01); // Set DIO2 to control RF swtich
   device.setDIO3AsTCXOCtrl(TCXO_CTRL_3_0V); // Set DIO3 to control TCXO with default delay
   device.calibrateFunction(0xFF); // Calibrate all
@@ -83,22 +83,24 @@ void setup() {
   device.setLoRaPacketParams(12, 0, 0xFF, 1, 0);
   device.setDioIrqParams(SX1262_IRQ_ALL, irq_set_mask, SX1262_IRQ_NONE, SX1262_IRQ_NONE);
   device.stopTimerOnPreamble(0x00);
-  device.setLoRaSymbNumTimeout(0x00);
+  device.setLoRaSymbNumTimeout(0x0);
   Serial.println("Setup Finished");
 }
 
 void loop() {
-  device.clearIrqStatus(SX1262_IRQ_RX_DONE | SX1262_IRQ_TIMEOUT);
-  device.setRx(0x00000);
+  device.clearIrqStatus(SX1262_IRQ_RX_DONE | SX1262_IRQ_TIMEOUT | SX1262_IRQ_PREAMBLE_DETECTED);
+  device.setRx(timeout);
   do {
     device.getIrqStatus(&irq_status);
-  } while ( (!(irq_status & SX1262_IRQ_RX_DONE)) && (!(irq_status & SX1262_IRQ_TIMEOUT)) && !Serial.available());
+  } while ( (!(irq_status & SX1262_IRQ_RX_DONE)) && (!(irq_status & SX1262_IRQ_TIMEOUT)));
 
   if ( irq_status & SX1262_IRQ_TIMEOUT ) {
     device.clearIrqStatus(SX1262_IRQ_TIMEOUT);
   } else {
     if ((irq_status & SX1262_IRQ_HEADER_ERR) || (irq_status & SX1262_IRQ_CRC_ERR)) {
       device.clearIrqStatus(SX1262_IRQ_HEADER_ERR | SX1262_IRQ_CRC_ERR);
+      Serial.println("CRC or Header error");
+
     } else if (irq_status & SX1262_IRQ_RX_DONE) {
       command_status = device.readBufferUnknownLength(received_data);
 
@@ -139,5 +141,6 @@ void loop() {
     // reset buffer
     gui_idx = 0;
     memset(gui_rx_buf, 0, GUI_RX_BUF_LEN);
+    delay(random(25));
   }
 }
