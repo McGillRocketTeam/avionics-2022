@@ -41,6 +41,8 @@
 #include <MRT_iridium.h>
 #include <video_recorder.h>
 
+#include <sx126x.h> //sx126x_cfg_rx_boosted(&SRADIO_SPI,bool);
+
 
 
 /* USER CODE END Includes */
@@ -829,6 +831,13 @@ void MRT_waitForLaunch(void){
 	char radio_buffer[RADIO_BUFFER_SIZE];
 	radio_command cmd = -1;
 
+	//Increase radio gain (more power used)
+	//sx126x_cfg_rx_boosted(&SRADIO_SPI,true);
+
+	//Reduce power used by radios (reduce gain)
+	sx126x_cfg_rx_boosted(&SRADIO_SPI,false);
+
+
 	//Open SD card file
 	fres = sd_open_file(filename);
 	uint8_t sync_counter = 0;
@@ -918,8 +927,15 @@ void MRT_waitForLaunch(void){
 			rtc_bckp_reg_pad_time = 100*prev_min + prev_sec;
 			MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
 		}
-		MRT_radio_send_ack(cmd);
-		execute_parsed_command(cmd);
+
+
+		if (cmd>=1 && cmd<=11){
+			execute_parsed_command(cmd);
+			osDelay(3000); //Big delay to allow ground station to switch mode
+			for(int i=0;i<3;i++){
+				MRT_radio_send_ack(cmd);
+			}
+		}
 
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, RESET);
 
@@ -931,6 +947,10 @@ void MRT_waitForLaunch(void){
 
 	//Close SD card (reopened by FreeRTOS)
 	f_close(&fil);
+
+
+	//Reduce power used by radios (reduce gain)
+	sx126x_cfg_rx_boosted(&SRADIO_SPI,false);
 }
 
 
