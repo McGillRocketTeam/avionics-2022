@@ -33,12 +33,12 @@ uint16_t irq_status;
 uint8_t device_status;
 
 uint32_t freq = 448000000;
-uint16_t deley = 200;
+uint16_t deley = 500;
 uint32_t timeout = deley / 0.015625;
 
 uint8_t loraSF = LORA_SF7;
 uint8_t loraBW = LORA_BW_500;
-uint8_t loraCR = LORA_CR_4_5;
+uint8_t loraCR = LORA_CR_4_7;
 
 uint8_t paDC = DUTY_CYCLE_22dBm;
 uint8_t paHP = HP_MAX_22dBm;
@@ -89,6 +89,7 @@ void setup() {
 
 void loop() {
   device.clearIrqStatus(SX1262_IRQ_RX_DONE | SX1262_IRQ_TIMEOUT | SX1262_IRQ_PREAMBLE_DETECTED);
+  Serial.println("Starting RX");
   device.setRx(timeout);
   do {
     device.getIrqStatus(&irq_status);
@@ -96,12 +97,18 @@ void loop() {
 
   if ( irq_status & SX1262_IRQ_TIMEOUT ) {
     device.clearIrqStatus(SX1262_IRQ_TIMEOUT);
+    Serial.println("RX timeout");
   } else {
-    if ((irq_status & SX1262_IRQ_HEADER_ERR) || (irq_status & SX1262_IRQ_CRC_ERR)) {
-      device.clearIrqStatus(SX1262_IRQ_HEADER_ERR | SX1262_IRQ_CRC_ERR);
-      Serial.println("CRC or Header error");
+    if (irq_status & SX1262_IRQ_HEADER_ERR) {
+      device.clearIrqStatus(SX1262_IRQ_HEADER_ERR);
+      Serial.println("Header error");
 
-    } else if (irq_status & SX1262_IRQ_RX_DONE) {
+    }else if (irq_status & SX1262_IRQ_CRC_ERR) {
+      device.clearIrqStatus(SX1262_IRQ_CRC_ERR);
+      Serial.println("CRC error");
+
+    }  
+    else if (irq_status & SX1262_IRQ_RX_DONE) {
       command_status = device.readBufferUnknownLength(received_data);
 
       Serial.println((char*)received_data);
@@ -121,12 +128,12 @@ void loop() {
     gui_rx_buf[2] = 0; // remove \n if present
 
     // for debugging:
-    /*Serial.print("\n\nReceived: ");
+    Serial.print("\n\nSending: ");
       Serial.println(gui_rx_buf);
       Serial.print("\n\n");
       Serial.send_now();
 
-      delay(deley);*/
+      delay(10);
 
     //send to sradio
     device.clearIrqStatus(SX1262_IRQ_TX_DONE | SX1262_IRQ_TIMEOUT);
@@ -137,7 +144,8 @@ void loop() {
     do {
       device.getIrqStatus(&irq_status);
     } while ( (!(irq_status & SX1262_IRQ_TX_DONE)) && (!(irq_status & SX1262_IRQ_TIMEOUT)) );
-
+    
+    Serial.println("TX done");
     // reset buffer
     gui_idx = 0;
     memset(gui_rx_buf, 0, GUI_RX_BUF_LEN);
