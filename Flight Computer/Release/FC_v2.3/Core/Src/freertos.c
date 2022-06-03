@@ -755,11 +755,27 @@ void StartPropulsion4(void *argument)
 	iridium_buffer[0] = 'S';
 	iridium_buffer[IRIDIUM_BUFFER_SIZE-1] = 'E';
 
+	HAL_StatusTypeDef ret;
+	uint8_t payload_buffer[PAYLOAD_BUFFER_SIZE];
 	char buf[10]; //TODO remove
 
   /* Infinite loop */
   for(;;)
   {
+	  /*
+	  payload_buffer[0] = DATA_REG;
+	  ret = HAL_I2C_Master_Transmit(&hi2c2, TEENSY_ADDRESS, payload_buffer, 6, 100);
+	  if (ret != HAL_OK){
+		  println("Error1\r\n");
+	  }else{
+		  ret = HAL_I2C_Master_Receive(&hi2c2, TEENSY_ADDRESS, payload_buffer, 6, 100);
+		  if (ret != HAL_OK){
+			  println("Error2\r\n");
+		  }else{
+			  println((char*)payload_buffer);
+		  }
+	  }
+	*/
 	  if (apogee_flag){
 
 			#if IRIDIUM_ //Iridium send
