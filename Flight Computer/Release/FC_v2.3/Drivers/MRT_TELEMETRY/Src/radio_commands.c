@@ -63,6 +63,13 @@ radio_command radio_parse_command(char* rx_buf) {
 	else if (strcmp(rx_buf, "v4") == 0) { // vr power off
 		return VR_POWER_OFF;
 	}
+	else if (strcmp(rx_buf, "t1") == 0) { // testing
+		return PM_12_EN_ON;
+	}
+	else if (strcmp(rx_buf, "t2") == 0) {
+		return PM_12_EN_OFF;
+	}
+
 
 	// all other commands are invalid, ignore.
 	else{
@@ -128,23 +135,37 @@ void execute_parsed_command(radio_command cmd) {
 		println((char*) "vr off");
 		break;
 
+	case PM_12_EN_ON:
+		HAL_GPIO_WritePin(EN_12V_Buck_GPIO_Port, EN_12V_Buck_Pin, SET);
+		println((char*) "EN 12V");
+		break;
+
+	case PM_12_EN_OFF:
+		HAL_GPIO_WritePin(EN_12V_Buck_GPIO_Port, EN_12V_Buck_Pin, RESET);
+		println((char*) "DIS 12V");
+		break;
+
 	default:
 		break;
 	}
 }
 
 void rocket_launch(void) {
-	// just to be safe, set arming pin high to ensure pyro channels are armed
-	HAL_GPIO_WritePin(OUT_PyroValve_Arming_GPIO_Port, OUT_PyroValve_Arming_Pin, SET);
-
-	// open valve by firing the prop pyro ejection channels
+	// Arm in case not armed before
 	HAL_GPIO_WritePin(OUT_PyroValve_Gate_1_GPIO_Port, OUT_PyroValve_Gate_1_Pin, SET);
 	HAL_GPIO_WritePin(OUT_PyroValve_Gate_2_GPIO_Port, OUT_PyroValve_Gate_2_Pin, SET);
+
+
+	// Firing
+	HAL_GPIO_WritePin(OUT_PyroValve_Arming_GPIO_Port, OUT_PyroValve_Arming_Pin, SET);
 }
 
 void arming_propulsion(void) {
 	// arm, TODO: decide whether to add feedback/check on arming status
-	HAL_GPIO_WritePin(OUT_PyroValve_Arming_GPIO_Port, OUT_PyroValve_Arming_Pin, SET);
+	HAL_GPIO_WritePin(OUT_PyroValve_Gate_1_GPIO_Port, OUT_PyroValve_Gate_1_Pin, SET);
+	HAL_GPIO_WritePin(OUT_PyroValve_Gate_2_GPIO_Port, OUT_PyroValve_Gate_2_Pin, SET);
+
+	HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, SET);
 	//state_arm_prop = 1;
 	//set_backup_state(FC_STATE_ARM_PROP, //state_arm_prop);
 }
@@ -159,6 +180,7 @@ void arming_recovery(void) {
 void disarm_propulsion(void) {
 	// disarm, TODO: decide whether to add feedback/check on arming status
 	HAL_GPIO_WritePin(OUT_PyroValve_Arming_GPIO_Port, OUT_PyroValve_Arming_Pin, RESET);
+	HAL_GPIO_WritePin(Vent_Valve_EN_GPIO_Port, Vent_Valve_EN_Pin, RESET);
 
 	// also reset the gates in case they were high
 	HAL_GPIO_WritePin(OUT_PyroValve_Gate_1_GPIO_Port, OUT_PyroValve_Gate_1_Pin, RESET);

@@ -24,6 +24,8 @@ typedef enum radio_command {
 	VR_REC_START,
 	VR_REC_STOP,	// should not be used at comp
 	VR_POWER_OFF,	// should not be used at comp
+	PM_12_EN_ON,
+	PM_12_EN_OFF
 
 } radio_command;
 
