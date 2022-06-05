@@ -136,6 +136,8 @@ void vApplicationDaemonTaskStartupHook(void);
 /* USER CODE BEGIN DAEMON_TASK_STARTUP_HOOK */
 void vApplicationDaemonTaskStartupHook(void)
 {
+	buzz_fc_on();
+
 	MRT_Init();
 
 	println("\r\n\r\n/****Starting FC****/\r\n\r\n");

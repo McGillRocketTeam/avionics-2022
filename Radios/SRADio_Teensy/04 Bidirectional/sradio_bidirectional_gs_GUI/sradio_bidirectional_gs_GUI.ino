@@ -89,7 +89,7 @@ void setup() {
 
 void loop() {
   device.clearIrqStatus(SX1262_IRQ_RX_DONE | SX1262_IRQ_TIMEOUT | SX1262_IRQ_PREAMBLE_DETECTED);
-  Serial.println("Starting RX");
+  //Serial.println("Starting RX");
   device.setRx(timeout);
   do {
     device.getIrqStatus(&irq_status);
@@ -97,7 +97,7 @@ void loop() {
 
   if ( irq_status & SX1262_IRQ_TIMEOUT ) {
     device.clearIrqStatus(SX1262_IRQ_TIMEOUT);
-    Serial.println("RX timeout");
+    //Serial.println("RX timeout");
   } else {
     if (irq_status & SX1262_IRQ_HEADER_ERR) {
       device.clearIrqStatus(SX1262_IRQ_HEADER_ERR);
@@ -128,10 +128,10 @@ void loop() {
     gui_rx_buf[2] = 0; // remove \n if present
 
     // for debugging:
-    Serial.print("\n\nSending: ");
-      Serial.println(gui_rx_buf);
-      Serial.print("\n\n");
-      Serial.send_now();
+    //Serial.print("\n\nSending: ");
+      //Serial.println(gui_rx_buf);
+      //Serial.print("\n\n");
+      //Serial.send_now();
 
       delay(10);
 

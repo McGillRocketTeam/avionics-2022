@@ -47,9 +47,15 @@ void tone_freq(uint32_t duration, uint32_t repeats, uint32_t freq) {
 }
 void buzz_success(void) { tone_freq(BUZZ_SUCCESS_DURATION, BUZZ_SUCCESS_REPEATS, BUZZ_SUCCESS_FREQ); }
 void buzz_failure(void) { tone_freq(BUZZ_FAILURE_DURATION, BUZZ_FAILURE_REPEATS, BUZZ_FAILURE_FREQ); }
+void buzz_fc_on(void){
+	for (uint8_t i = 0; i < 3; i++) {
+		buzz_success();
+		HAL_Delay(50);
+	}
+}
 void buzz_startup_success(void) {
 	for (uint8_t i = 0; i < 3; i++) {
 		buzz_success();
-		HAL_Delay(1000);
+		HAL_Delay(100);
 	}
 }
