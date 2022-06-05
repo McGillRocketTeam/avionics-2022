@@ -15,9 +15,10 @@ RM := rm -rf
 -include Middlewares/Third_Party/FreeRTOS/Source/subdir.mk
 -include Drivers/SX1262_c/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
+-include Drivers/MRT_LSM6DSR_f4xx/Src/subdir.mk
+-include Drivers/MRT_LPS22HH_f4xx/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
--include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -66,8 +67,8 @@ all: main-build
 main-build: FCV4.3\ Pinout\ F437ZI.elf secondary-outputs
 
 # Tool invocations
-FCV4.3\ Pinout\ F437ZI.elf: $(OBJS) $(USER_OBJS) C:\Users\Taha\ Mohamed\ Lazreg\Desktop\avionics-2022\Flight\ Computer\Integration\MiniFCDummyData\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "FCV4.3 Pinout F437ZI.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Taha Mohamed Lazreg\Desktop\avionics-2022\Flight Computer\Integration\MiniFCDummyData\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FCV4.3 Pinout F437ZI.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+FCV4.3\ Pinout\ F437ZI.elf: $(OBJS) $(USER_OBJS) C:\Users\cuizh\Documents\MRT\02\ Development\Github\avionics-2022\Flight\ Computer\Integration\MiniFCDummyData\STM32F437ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "FCV4.3 Pinout F437ZI.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Flight Computer\Integration\MiniFCDummyData\STM32F437ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FCV4.3 Pinout F437ZI.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -88,7 +89,7 @@ FCV4.3\ Pinout\ F437ZI.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL
 
 # Other Targets
 clean:
-	-$(RM) $(SIZE_OUTPUT)$(OBJDUMP_LIST)$(EXECUTABLES)$(OBJS)$(S_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(OBJCOPY_BIN) "FCV4.3 Pinout F437ZI.elf"
+	-$(RM) FCV4.3\ Pinout\ F437ZI.bin FCV4.3\ Pinout\ F437ZI.elf FCV4.3\ Pinout\ F437ZI.list FCV4.3\\ Pinout\\ F437ZI.elf default.size.stdout
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
@@ -100,6 +101,6 @@ fail-specified-linker-script-missing:
 warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
-.PHONY: all clean dependents fail-specified-linker-script-missing warn-no-linker-script-specified
+.PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified
 
 -include ../makefile.targets

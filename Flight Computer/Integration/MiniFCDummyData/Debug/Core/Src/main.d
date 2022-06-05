@@ -47,7 +47,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- ../Drivers/SX1262_c/sx126x.h
+ ../Drivers/SX1262_c/sx126x.h ../Core/Inc/i2c_sensors.h \
+ ../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h \
+ ../Drivers/MRT_LPS22HH_f4xx/Inc/lps22hh_reg.h
 
 ../Core/Inc/main.h:
 
@@ -148,3 +150,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
 ../Drivers/SX1262_c/sx126x.h:
+
+../Core/Inc/i2c_sensors.h:
+
+../Drivers/MRT_LSM6DSR_f4xx/Inc/lsm6dsr_reg.h:
+
+../Drivers/MRT_LPS22HH_f4xx/Inc/lps22hh_reg.h:

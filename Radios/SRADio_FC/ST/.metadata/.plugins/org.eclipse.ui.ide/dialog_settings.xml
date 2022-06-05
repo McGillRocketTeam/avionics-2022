@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="ExternalProjectImportWizard">
+		<item key="WizardProjectsImportPage.STORE_NESTED_PROJECTS" value="true"/>
+	</section>
+	<section name="SmartImportWizard">
+		<item key="SmartImportRootWizardPage.STORE_HIDE_ALREADY_OPEN" value="false"/>
+		<item key="SmartImportRootWizardPage.STORE_CLOSE_IMPORTED" value="false"/>
+		<item key="SmartImportRootWizardPage.STORE_NESTED_PROJECTS" value="true"/>
+		<item key="SmartImportRootWizardPage.STORE_CONFIGURE_NATURES" value="true"/>
+		<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\SRADio_Nucleo_F303"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\SRADio_FC_v4"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\SRADioriginal"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\SRADio"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\ijustwanttoknowtheclock"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\fc4_3_only_sradio"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\FC_V2"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\f4sradio"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\blink"/>
+			<item value="C:\Users\cuizh\Documents\MRT\02 Development\Github\avionics-2022\Radios\SRADio_FC\ST\Ahhhhhhhh"/>
+		</list>
+	</section>
+</section>

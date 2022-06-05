@@ -1,0 +1,31 @@
+04:33:56 **** Incremental Build of configuration Debug for project blink ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F303xE -c -I../Core/Inc -I../Drivers/STM32F3xx_HAL_Driver/Inc -I../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "blink.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\Smurf\Desktop\Documents\Homework\School\University\MRT\02 Development\ST workspaces\blink\STM32F303RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="blink.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: blink.elf
+ 
+arm-none-eabi-size   blink.elf 
+arm-none-eabi-objdump -h -S  blink.elf  > "blink.list"
+arm-none-eabi-objcopy  -O binary  blink.elf  "blink.bin"
+   text	   data	    bss	    dec	    hex	filename
+   7392	     20	   1572	   8984	   2318	blink.elf
+Finished building: default.size.stdout
+ 
+Finished building: blink.bin
+ 
+Finished building: blink.list
+ 
+04:34:16 **** Incremental Build of configuration Debug for project blink ****
+make -j8 all 
+arm-none-eabi-size   blink.elf 
+   text	   data	    bss	    dec	    hex	filename
+   7392	     20	   1572	   8984	   2318	blink.elf
+Finished building: default.size.stdout
+ 
+04:37:40 **** Incremental Build of configuration Debug for project blink ****
+make -j8 all 
+arm-none-eabi-size   blink.elf 
+   text	   data	    bss	    dec	    hex	filename
+   7392	     20	   1572	   8984	   2318	blink.elf
+Finished building: default.size.stdout
+ 

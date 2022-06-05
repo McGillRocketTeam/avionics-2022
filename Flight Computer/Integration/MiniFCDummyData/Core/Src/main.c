@@ -24,9 +24,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <string.h>
-#include <sx126x.h>
-/* USER CODE END Includes */
+#include "sx126x.h"
+#include "i2c_sensors.h"
+#include <stdio.h>
+#include <string.h>
+#include "sx126x.h"
 
+/* USER CODE END Includes */
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
@@ -35,6 +39,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DEBUG_USART huart8
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -86,7 +91,13 @@ const osThreadAttr_t fakeSensors_attributes = {
   .priority = (osPriority_t) osPriorityLow,
 };
 /* USER CODE BEGIN PV */
+// S,ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E
+//float acceleration_mg[3], angular_rate_mdps[3], lsm_temperature_degC = 0;
+float PRESSURE = 0, LAT = 0, LONG = 0, MIN = 0, SEC = 0, SUBSEC = 0;
+uint8_t STATE = 0, CONT = 0;
 uint16_t nbOfFriends = 0;
+stmdev_ctx_t lsm_ctx;
+stmdev_ctx_t lps_ctx;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -161,7 +172,7 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init scheduler */
-  osKernelInitialize();
+//  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -181,10 +192,10 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of radioShenanigan */
-  radioShenaniganHandle = osThreadNew(StartDefaultTask, NULL, &radioShenanigan_attributes);
+//  radioShenaniganHandle = osThreadNew(StartDefaultTask, NULL, &radioShenanigan_attributes);
 
   /* creation of fakeSensors */
-  fakeSensorsHandle = osThreadNew(StartFakeSensors, NULL, &fakeSensors_attributes);
+//  fakeSensorsHandle = osThreadNew(StartFakeSensors, NULL, &fakeSensors_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -195,16 +206,25 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
-  osKernelStart();
+//  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  char buffer[10]="abcdefghij";
+	set_hspi(hspi2);
+	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
+	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+	Tx_setup();
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  TxProtocol(buffer, strlen(buffer));
+	  HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }
@@ -903,17 +923,27 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-	uint16_t friends[] = { 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2 };
-	int i = 0;
-  for(;;)
-  {
-	  nbOfFriends = friends[i%12];
-	  i++;
-    osDelay(150);
-  }
-  /* USER CODE END 5 */
+	/* USER CODE BEGIN 5 */
+	  /* Infinite loop */
+	char buffer[100];
+	set_hspi(hspi2);
+	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
+	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
+	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
+	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
+	Tx_setup();
+
+	for(;;)
+	{
+		  // S,ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E
+		 sprintf(buffer, "S,%f,%f,%f,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,E", acceleration_mg[0],
+				 acceleration_mg[1],acceleration_mg[2],angular_rate_mdps[0],angular_rate_mdps[1],
+				 angular_rate_mdps[2],PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT);
+		 TxProtocol(buffer, strlen(buffer));
+
+		 osDelay(100);
+	}
+	  /* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_StartFakeSensors */
@@ -925,27 +955,19 @@ void StartDefaultTask(void *argument)
 /* USER CODE END Header_StartFakeSensors */
 void StartFakeSensors(void *argument)
 {
-  /* USER CODE BEGIN StartFakeSensors */
-  /* Infinite loop */
-	char buffer[100];
-	HAL_GPIO_WritePin(XTend_CTS_Pin, GPIO_PIN_10, GPIO_PIN_RESET);
-	set_hspi(hspi2);
-	// SPI2_SX_CS_GPIO_Port
-	set_NSS_pin(SPI2_SX_CS_GPIO_Port, SPI2_SX_CS_Pin);
-	set_BUSY_pin(SX_BUSY_GPIO_Port, SX_BUSY_Pin);
-	set_NRESET_pin(SX_RST_GPIO_Port, SX_RST_Pin);
-	set_DIO1_pin(SX_DIO_GPIO_Port, SX_DIO_Pin);
-	Tx_setup();
-  for(;;)
-  {
-	  // S,ACCx,ACCy,ACCz,GYROx,GYROy,GYROz,PRESSURE,LAT,LONG,MIN,SEC,SUBSEC,STATE,CONT,E
-	  sprintf(buffer, "S,%f,%f,%f,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i,%i,E", nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends,nbOfFriends);
-	  // HAL_UART_Transmit(&huart3, buffer, sizeof(char) * strlen(buffer), HAL_MAX_DELAY);
-	  TxProtocol(buffer, strlen(buffer));
+	 /* USER CODE BEGIN StartFakeSensors */
+	  /* Infinite loop */
+	int i = 0;
+	for(;;)
+	{
+		    /* USER CODE BEGIN 3 */
+		MRT_LSM6DSR_getAcceleration(lsm_ctx,acceleration_mg);
+		MRT_LSM6DSR_getAngularRate(lsm_ctx,angular_rate_mdps);
+		i++;
+	    osDelay(50);
+	}
+	  /* USER CODE END StartFakeSensors */
 
-    osDelay(100);
-  }
-  /* USER CODE END StartFakeSensors */
 }
 
 /**

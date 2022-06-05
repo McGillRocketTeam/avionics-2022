@@ -1,0 +1,2 @@
+# Goal and Procedure of project
+Started brand new project from the base .ioc file to try to debug the connection between FC and SRADio. The current problem is that it doesn't transmit unless it is on Thomas' code. Starting the entire project from the base should let us know where the problem lies.
