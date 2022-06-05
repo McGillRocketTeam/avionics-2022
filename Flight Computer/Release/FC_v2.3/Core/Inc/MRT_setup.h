@@ -30,7 +30,8 @@ extern "C" {
 #define HARDFAULT_GENERATOR 0
 #define TESTING_SLEEP 0
 
-//Forced state
+//FC state
+#define FLIGHT_MODE 0 //Put 1 if in flight mode, 0 if not in flight mode (will allow to reset from the start)
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
 #define FORCED_EJECTION_STAGE 0 //Can take value from 0 to 1 (boolean)
 #define FORCED_STAGE 1 //Can take value from 0 to 4 (only happens if FORCED_EJECTION_STAGE is 1)

@@ -364,7 +364,6 @@ void StartEjection1(void *argument)
 		  //if(lsl < LSL_SLOPE_LIMIT){
 		   */
 
-
 		  //Check if we are going down and if almost no acceleration (close to apogee)
 		  if(LSLinRegression() < LSL_SLOPE_LIMIT && acc_counter > ACC_COUNTER_THRESH){
 			  lsl_counter++;
@@ -673,7 +672,7 @@ void StartWatchDog(void *argument)
 			MRT_saveFlagValue(FC_STATE_APOGEE);
 		}
 
-		//TODO TESTING SAVE EVERY ALT REGISTERS
+		//TODO TESTING SAVE EVERY ALTITUDE REGISTERS
 		MRT_RTC_setBackupReg(FC_STATE_ALT_PAD, rtc_bckp_reg_alt_pad);
 		MRT_RTC_setBackupReg(FC_PAD_TIME, rtc_bckp_reg_pad_time);
 		MRT_RTC_setBackupReg(FC_STATE_TRUE_APOGEE, rtc_bckp_reg_alt_true_apogee);
@@ -707,7 +706,9 @@ void StartWatchDog(void *argument)
 
 	  //Check for complete restart
 	  if(restart_flag == 1){
+		  #if !FLIGHT_MODE
 		  MRT_resetFromStart();
+		  #endif
 	  }
 
 	  MRT_checkThreadStates();
@@ -851,7 +852,7 @@ void MRT_waitForLaunch(void){
 	//sx126x_cfg_rx_boosted(&SRADIO_SPI,true);
 
 	//Reduce power used by radios (reduce gain)
-	sx126x_cfg_rx_boosted(&SRADIO_SPI,false);
+	//sx126x_cfg_rx_boosted(&SRADIO_SPI,false);
 
 
 	//Open SD card file
@@ -911,7 +912,9 @@ void MRT_waitForLaunch(void){
 
 		//Check for complete restart
 		if(restart_flag == 1){
+		  #if !FLIGHT_MODE
 		  MRT_resetFromStart();
+		  #endif
 		}
 
 
@@ -947,7 +950,6 @@ void MRT_waitForLaunch(void){
 
 		if (cmd>=1 && cmd<=11){
 			execute_parsed_command(cmd);
-			osDelay(3000); //Big delay to allow ground station to switch mode
 			for(int i=0;i<3;i++){
 				MRT_radio_send_ack(cmd);
 			}
@@ -966,7 +968,7 @@ void MRT_waitForLaunch(void){
 
 
 	//Reduce power used by radios (reduce gain)
-	sx126x_cfg_rx_boosted(&SRADIO_SPI,false);
+	//sx126x_cfg_rx_boosted(&SRADIO_SPI,false);
 }
 
 
