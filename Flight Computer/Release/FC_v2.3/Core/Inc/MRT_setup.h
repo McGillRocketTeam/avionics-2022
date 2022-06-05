@@ -39,7 +39,7 @@ extern "C" {
 //Buzzer
 #define BUZZ_SUCCESS_DURATION	75		// ms
 #define BUZZ_SUCCESS_REPEATS	2
-#define BUZZ_SUCCESS_FREQ		500	// Hz
+#define BUZZ_SUCCESS_FREQ		1046	// Hz
 
 #define BUZZ_FAILURE_DURATION	1000 	// ms
 #define BUZZ_FAILURE_REPEATS	3
