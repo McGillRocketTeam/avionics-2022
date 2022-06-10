@@ -251,7 +251,7 @@ extern "C" {
 #define TRANSDUCER_ADC	hadc1
 
 //PAYLOAD
-#define TEENSY_ADDRESS 0x08 << 1
+#define TEENSY_ADDRESS 0x01 << 1
 #define DATA_REG 0x02 //Don't know it
 #define PAYLOAD_BUFFER_SIZE 50
 

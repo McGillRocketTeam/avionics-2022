@@ -14,6 +14,7 @@
 #include <MRT_telemetry.h>
 #include <MRT_propulsion.h>
 #include <MRT_ejection.h>
+#include <MRT_payload.h>
 
 //**************************************************//
 //PRIVATE FUNCTIONS PROTOTYPES
@@ -63,6 +64,11 @@ void MRT_Init(void){
 	//Telemetry
 	#if TELEMETRY_THREAD
 		MRT_TELEMETRY_Init();
+	#endif
+
+	//Payload
+	#if PROPULSION_THREAD
+		MRT_payloadInit();
 	#endif
 
 
