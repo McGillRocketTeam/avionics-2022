@@ -58,7 +58,7 @@ extern "C" {
 //CONSTANTS
 #define SEA_LEVEL_TEMPERATURE 25.0+273.15 //Sea level temperature in Kelvin
 #define SEA_LEVEL_PRESSURE 1014.0 //Sea level pressure hPa
-#define  BASE_HEIGHT 100.0 //In meters
+#define  BASE_HEIGHT 1402.08 //In meters (4600ft)
 #define M 0.0289644 //Molar mass of earth's air in kg/mol
 #define go 9.80665 //Gravitational acceleration constant in m/s^2
 #define R 8.31432 //Universal gas constant Nm / mol K
@@ -91,7 +91,7 @@ extern "C" {
 //Alarm times are relative to RTC, which is stopped when asleep
 //and continues at the time it went to sleep when waking up
 
-//Launch day sleep time (launch at 3:30pm)
+//Launch day sleep time (launch at 3:30pm??)
 #define PRE_WHEN_SLEEP_TIME_SEC 0  //In seconds
 #define PRE_WHEN_SLEEP_TIME_MIN 30  //In minutes
 #define PRE_WHEN_SLEEP_TIME_HOURS 4  //In hours
@@ -129,7 +129,7 @@ extern "C" {
 //EJECTION THREAD
 //TODO Ejection (just invented variables for the sake of testing)
 
-#define MAIN_DEPLOY_ALT 1000 //In meters
+#define MAIN_DEPLOY_ALT 152.4 //In meters (1500 ft)
 
 //TODO might need a bigger range to account for errors (gotta know what we expect to be our slowest descent speed)
 #define LANDING_DIFF_LIMIT 1 //The difference in altitude that needs to be observed to update the landing counter
