@@ -39,6 +39,7 @@
 #include <MRT_memory.h>
 #include <MRT_i2c_sensors.h>
 #include <MRT_iridium.h>
+#include <MRT_payload.h>
 #include <video_recorder.h>
 
 #include <sx126x.h> //sx126x_cfg_rx_boosted(&SRADIO_SPI,bool);
@@ -797,11 +798,6 @@ void StartPropulsion4(void *argument)
 			println("");
 			print("\t\tIridium buffer: ");
 			print(iridium_buffer);
-
-			memset(buf,0,10);
-			sprintf(buf,"%i",strlen(iridium_buffer));
-			print("Bytes sent:");
-			println(buf);
 
 			println("\r\n");
 
