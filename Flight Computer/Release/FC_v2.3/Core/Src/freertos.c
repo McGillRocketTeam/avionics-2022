@@ -39,6 +39,7 @@
 #include <MRT_memory.h>
 #include <MRT_i2c_sensors.h>
 #include <MRT_iridium.h>
+#include <MRT_payload.h>
 #include <video_recorder.h>
 
 #include <sx126x.h> //sx126x_cfg_rx_boosted(&SRADIO_SPI,bool);
@@ -758,27 +759,20 @@ void StartPropulsion4(void *argument)
 	iridium_buffer[0] = 'S';
 	iridium_buffer[IRIDIUM_BUFFER_SIZE-1] = 'E';
 
-	HAL_StatusTypeDef ret;
-	uint8_t payload_buffer[PAYLOAD_BUFFER_SIZE];
-	char buf[10]; //TODO remove
-
   /* Infinite loop */
   for(;;)
   {
-	  /*
-	  payload_buffer[0] = DATA_REG;
-	  ret = HAL_I2C_Master_Transmit(&hi2c2, TEENSY_ADDRESS, payload_buffer, 6, 100);
-	  if (ret != HAL_OK){
-		  println("Error1\r\n");
-	  }else{
-		  ret = HAL_I2C_Master_Receive(&hi2c2, TEENSY_ADDRESS, payload_buffer, 6, 100);
-		  if (ret != HAL_OK){
-			  println("Error2\r\n");
-		  }else{
-			  println((char*)payload_buffer);
+	  //if between boost and landing send payload data over iridium
+	  if (ejection_stage_flag > 0 && ejection_stage_flag < 4){
+		  #if IRIDIUM_ //Iridium send
+		  if(MRT_payloadPoll == 1){
+			  print("\tIridium sending: ");
+		  	  println(iridium_buffer);
+		  	  //memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
+		  	  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
 		  }
+		  #endif
 	  }
-	*/
 	  if (apogee_flag){
 
 			#if IRIDIUM_ //Iridium send
@@ -799,15 +793,11 @@ void StartPropulsion4(void *argument)
 			  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
 			  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
 			}
+
 			println("");
 			println("");
 			print("\t\tIridium buffer: ");
 			print(iridium_buffer);
-
-			memset(buf,0,10);
-			sprintf(buf,"%i",strlen(iridium_buffer));
-			print("Bytes sent:");
-			println(buf);
 
 			println("\r\n");
 

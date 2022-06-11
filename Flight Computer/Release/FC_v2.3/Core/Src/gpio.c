@@ -54,7 +54,8 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, EN_12V_Buck_Pin|Vent_Valve_EN_Pin|SPI4_CS_Thermocouple_Pin|Iridium_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, EN_12V_Buck_Pin|Vent_Valve_EN_Pin|PAYLOAD_I2C_EN_Pin|SPI4_CS_Thermocouple_Pin
+                          |Iridium_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
@@ -82,8 +83,10 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, OUT_FLASH_IO3_Pin|OUT_FLASH_WP_Pin|OUT_FLASH_CS_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PEPin PEPin PEPin PEPin */
-  GPIO_InitStruct.Pin = EN_12V_Buck_Pin|Vent_Valve_EN_Pin|SPI4_CS_Thermocouple_Pin|Iridium_RST_Pin;
+  /*Configure GPIO pins : PEPin PEPin PEPin PEPin
+                           PEPin */
+  GPIO_InitStruct.Pin = EN_12V_Buck_Pin|Vent_Valve_EN_Pin|PAYLOAD_I2C_EN_Pin|SPI4_CS_Thermocouple_Pin
+                          |Iridium_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -158,11 +161,11 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PEPin PEPin */
-  GPIO_InitStruct.Pin = PAYLOAD_I2C_EN_Pin|IN_XTend_Continuity_Pin;
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = IN_XTend_Continuity_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  HAL_GPIO_Init(IN_XTend_Continuity_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PB8 PBPin */
   GPIO_InitStruct.Pin = SPI2_SX_CS_Pin|GPIO_PIN_8|POWER_ON_EXT_LED_Pin;

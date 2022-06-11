@@ -53,8 +53,6 @@ void MRT_formatPropulsion(void) {
 			prev_min, prev_sec, prev_subsec);
 }
 
-
-
 //**************************************************//
 //PRIVATE FUNCTIONS
 
