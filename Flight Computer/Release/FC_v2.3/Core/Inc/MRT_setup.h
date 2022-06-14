@@ -167,7 +167,7 @@ extern "C" {
 #define HALF_BYTE_ 0
 
 //SRadio
-#define SRADIO_ 1
+#define SRADIO_ 0
 #define SRADIO_SPI hspi2
 #define SRADIO_BUFFER_SIZE 256
 

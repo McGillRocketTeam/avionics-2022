@@ -6,5 +6,5 @@
  */
 
 
-void MRT_payloadPoll(void);
+uint8_t MRT_payloadPoll(void);
 uint8_t MRT_payloadInit(void);
