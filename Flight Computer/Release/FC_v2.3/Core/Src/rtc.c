@@ -449,8 +449,6 @@ void MRT_RTC_backup_regs_Init(void){
 			rtc_bckp_reg_alt_apogee, rtc_bckp_reg_apogee_time, rtc_bckp_reg_alt_main, rtc_bckp_reg_main_time,
 			rtc_bckp_reg_alt_landed, rtc_bckp_reg_landed_time);
 	print(buffer);
-
-	HAL_Delay(2000);
 }
 
 // initializes backup register values to zero
