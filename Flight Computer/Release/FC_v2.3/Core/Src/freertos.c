@@ -755,6 +755,7 @@ void StartPropulsion4(void *argument)
 	#endif
 
 	uint8_t timeout_changed = 0;
+	uint16_t counter = 0;
 
 	iridium_buffer[0] = 'S';
 	iridium_buffer[IRIDIUM_BUFFER_SIZE-1] = 'E';
@@ -763,14 +764,19 @@ void StartPropulsion4(void *argument)
   for(;;)
   {
 	  //if between boost and landing send payload data over iridium
+	  ejection_stage_flag = 1;
 	  if (ejection_stage_flag > 0 && ejection_stage_flag < 4){
 		  #if IRIDIUM_ //Iridium send
-		  if(MRT_payloadPoll() == 1){
+		  if(counter > 1000 && MRT_payloadPoll() == 1){
 			  print("\tIridium sending: ");
 		  	  println(iridium_buffer);
 		  	  memset(iridium_buffer,0,IRIDIUM_BUFFER_SIZE); //Everything but the beginning and ending characters
 		  	  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
 		  }
+		  if(counter > 1000){
+			  counter = 0;
+		  }
+		  counter++;
 		  #endif
 	  }
 	  if (apogee_flag){

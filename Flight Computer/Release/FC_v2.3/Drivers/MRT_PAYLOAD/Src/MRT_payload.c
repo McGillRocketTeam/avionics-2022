@@ -42,22 +42,18 @@ uint8_t MRT_payloadPoll(void) {
 	HAL_StatusTypeDef ret;
 	uint8_t payload_buffer[PAYLOAD_BUFFER_SIZE];
 	HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, SET);
-	osDelay(100);
-	payload_buffer[0] = DATA_REG;
-	ret = HAL_I2C_Master_Transmit(&hi2c2, TEENSY_ADDRESS, payload_buffer, 50, 100);
+	HAL_Delay(100);
+	ret = HAL_I2C_Master_Receive(&hi2c2, TEENSY_ADDRESS, payload_buffer, 25, 100);
 	if (ret != HAL_OK){
-		println("Error1\r\n");
+		println("Error2\r\n");
+		HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET);
 		return 0;
-	}else{
-		ret = HAL_I2C_Master_Receive(&hi2c2, TEENSY_ADDRESS, payload_buffer, 50, 100);
-		if (ret != HAL_OK){
-			println("Error2\r\n");
-			return 0;
-		}else{
-#ifdef DEBUG
-			HAL_UART_Transmit(&DEBUGUART, payload_buffer, strlen(payload_buffer), HAL_MAX_DELAY);
-#endif
-		}
+	}
+	ret = HAL_I2C_Master_Receive(&hi2c2, TEENSY_ADDRESS, &payload_buffer[25], 25, 100);
+	if (ret != HAL_OK){
+		println("Error2\r\n");
+		HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET);
+		return 0;
 	}
 	HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET);
 	memcpy(iridium_buffer,payload_buffer, 50);
