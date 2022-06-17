@@ -1,6 +1,0 @@
-MRT_Helpers.c:54:6:MRT_externalFlashSetup	24	static
-MRT_Helpers.c:70:6:checkForI2CDevices	88	static
-MRT_Helpers.c:149:6:MRT_updateExternalFlashBuffers	16	static
-MRT_Helpers.c:159:6:MRT_getFlags	16	static
-MRT_Helpers.c:299:6:MRT_saveRTCTime	8	static
-MRT_Helpers.c:327:7:MRT_prop_poll_pressure_transducer	24	static
