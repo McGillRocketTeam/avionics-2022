@@ -1,9 +1,0 @@
-MRT_RTOS.c:18:6:MRT_SetupRTOS	8	static
-MRT_RTOS.c:25:6:HAL_RTC_AlarmAEventCallback	16	static
-MRT_RTOS.c:30:6:HAL_RTC_AlarmBEventCallback	16	static
-MRT_RTOS.c:35:6:HAL_RTCEx_WakeUpTimerEventCallback	16	static
-MRT_RTOS.c:39:6:MRT_WUProcedure	16	static
-MRT_RTOS.c:60:6:MRT_ClearFlags	8	static
-MRT_RTOS.c:97:6:MRT_StandByMode	152	static
-MRT_RTOS.c:131:6:MRT_DefaultRTC	72	static
-MRT_RTOS.c:184:6:MRT_CustomRTC	16	static
