@@ -261,7 +261,6 @@ void StartMemory0(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
 	 //Get RTC time
 	 HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	 HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
@@ -343,7 +342,6 @@ void StartEjection1(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
 	  //Check acceleration
 	  if (MRT_getAccNorm() < ACC_LIMIT){
 		  acc_counter++;
@@ -750,12 +748,14 @@ void StartPropulsion4(void *argument)
 	uint8_t timeout_changed = 0;
 	uint16_t payload_counter = 0; //Was sending too fast relative to thread
 
-	iridium_buffer[0] = 'S';
-	iridium_buffer[IRIDIUM_BUFFER_SIZE-1] = 'E';
 
   /* Infinite loop */
   for(;;)
   {
+	  //hiridium.getTime();
+	  //hiridium.adjustTimeout(200);
+	  //hiridium.sendMessage(iridium_buffer);
+	  //osDelay(400000);
 	  //if between boost and landing send payload data over iridium
 	  if (payload_counter>=PAYLOAD_COUNT*4 && ejection_stage_flag < LANDED){
 		  payload_counter = 0;
@@ -763,13 +763,13 @@ void StartPropulsion4(void *argument)
 			#if IRIDIUM_ //Iridium send
 			if(MRT_payloadPoll() == 1){
 				  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, SET);
+				  osDelay(50);
 				  print("\tPayload sending: ");
 				  println(payload_buffer);
 				  //hiridium.getTime(); //TODO doesn't cost anything
-				  hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
+				  //hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
 				  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
 				  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, RESET);
-				  return;
 			}
 			#endif
 		  }
@@ -794,12 +794,12 @@ void StartPropulsion4(void *argument)
 
 			if(MRT_formatIridium() == 1){
 			  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, SET);
-
+			  osDelay(50);
 			  //TODO make a list of latest coordinates retrieved to optimize the credits we use
 			  print("\tIridium sending: ");
 			  println(iridium_buffer);
 			  //hiridium.getTime(); //TODO doesn't cost anything
-			  hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
+			  //hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
 			  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
 			  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, RESET);
 			}

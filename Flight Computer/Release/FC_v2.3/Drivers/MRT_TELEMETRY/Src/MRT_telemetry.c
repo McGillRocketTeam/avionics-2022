@@ -143,8 +143,8 @@ int MRT_formatIridium(void){
 	//The max value for longitude in binary is therefore (sign bit)(0 padded)110101 10100100 11101001 00000000
 	//The max value for latitude in binary is therefore (sign bit)1101011 01001001 11010010 00000000
 	//We can fit the pair inside 2x 4 bytes. This reprensents a maximum of 6 pairs inside one message (with 2 bytes left)¸
-
-	//TODO add something for payload data
+	iridium_buffer[0] = 'S';
+	iridium_buffer[49] = 'E';
 	memcpy(iridium_buffer+current_pos,&hgps.latitude,4);
 	memcpy(iridium_buffer+current_pos+4,&hgps.longitude,4);
 	current_pos += 8;

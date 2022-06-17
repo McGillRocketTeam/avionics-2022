@@ -31,7 +31,7 @@ extern "C" {
 
 //Testing
 #define TESTING_EJECTION 0 //Only testing pressure, not acceleration
-#define TESTING_IRIDIUM 0
+#define TESTING_IRIDIUM 1
 #define TESTING_SLEEP 0
 
 //FC state
@@ -172,7 +172,7 @@ extern "C" {
 #define HALF_BYTE_ 0
 
 //SRadio
-#define SRADIO_ 1
+#define SRADIO_ 0
 #define SRADIO_SPI hspi2
 #define SRADIO_BUFFER_SIZE 256
 
@@ -191,7 +191,7 @@ extern "C" {
 #endif
 
 //Iridium
-#define IRIDIUM_ 0
+#define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_BUFFER_SIZE 50//Keep in mind a 1 credit per 50 bytes message (does it take into account the terminating byte of a string?)
 //#define IRIDIUM_FLIGHT_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
@@ -254,7 +254,7 @@ extern "C" {
 
 //**************************************************//
 //PROPULSION THREAD
-#define PAYLOAD_ 0
+#define PAYLOAD_ 1
 #define TRANSDUCER_ADC	hadc1
 
 //PAYLOAD
