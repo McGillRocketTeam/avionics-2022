@@ -1,7 +1,0 @@
-ejection.c:25:6:init_ejection_states	4	static
-ejection.c:40:7:runAltitudeMeasurements	24	static
-ejection.c:56:7:filterAltitude	16	static
-ejection.c:61:6:storeAltitude	16	static
-ejection.c:76:7:LSLinRegression	32	static
-ejection.c:89:9:get_continuity	16	static
-ejection.c:101:6:check_ejection_state	16	static

@@ -28,6 +28,10 @@ extern "C" {
 #define PRINT 1
 #define NO_BUZZ 0
 #define HARDFAULT_GENERATOR 0
+
+//Testing
+#define TESTING_EJECTION 0 //Only testing pressure, not acceleration
+#define TESTING_IRIDIUM 0
 #define TESTING_SLEEP 0
 
 //FC state
@@ -130,6 +134,7 @@ extern "C" {
 //TODO Ejection (just invented variables for the sake of testing)
 
 #define MAIN_DEPLOY_ALT 152.4 //In meters (1500 ft)
+#define DROGUE_TO_MAIN_DELAY 4000 //In milli-seconds
 
 //TODO might need a bigger range to account for errors (gotta know what we expect to be our slowest descent speed)
 #define LANDING_DIFF_LIMIT 1 //The difference in altitude that needs to be observed to update the landing counter
@@ -167,7 +172,7 @@ extern "C" {
 #define HALF_BYTE_ 0
 
 //SRadio
-#define SRADIO_ 0
+#define SRADIO_ 1
 #define SRADIO_SPI hspi2
 #define SRADIO_BUFFER_SIZE 256
 
@@ -186,11 +191,12 @@ extern "C" {
 #endif
 
 //Iridium
-#define IRIDIUM_ 1
+#define IRIDIUM_ 0
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_BUFFER_SIZE 50//Keep in mind a 1 credit per 50 bytes message (does it take into account the terminating byte of a string?)
-#define IRIDIUM_FLIGHT_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
-#define IRIDIUM_LANDED_TIMEOUT 5
+//#define IRIDIUM_FLIGHT_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
+#define IRIDIUM_FLIGHT_TIMEOUT 90 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
+#define IRIDIUM_LANDED_TIMEOUT 90
 #define IRIDIUM_WAIT_TIME 1000 //in milliseconds
 
 #define IRIDIUM_INTERNAL_PRINT 1
@@ -248,6 +254,7 @@ extern "C" {
 
 //**************************************************//
 //PROPULSION THREAD
+#define PAYLOAD_ 0
 #define TRANSDUCER_ADC	hadc1
 
 //PAYLOAD

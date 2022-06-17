@@ -337,8 +337,6 @@ void StartEjection1(void *argument)
 	//Double check the state TODO bad? (say wakeup flag is raised but ground isn't reached yet
 	if (ejection_stage_flag >= LANDED)  osThreadExit(); //Ground reached
 
-	osDelay(5000); //TODO (remove?) Let the LPS "warm up" to have a valid pressure_hPa
-
 	uint8_t lsl_counter = 0;
 	uint8_t acc_counter = 0;
 
@@ -357,15 +355,9 @@ void StartEjection1(void *argument)
 		  rtc_bckp_reg_true_apogee_time = 100*prev_min + prev_sec;
 	  }
 	  else{
-		  //TODO remove (for testing)
-		  /*
+		  #if TESTING_EJECTION
 		  acc_counter = ACC_COUNTER_THRESH + 1;
-		  float lsl = LSLinRegression();
-		  char buf[10];
-		  sprintf(buf,"%f",lsl);
-		  println(buf);
-		  //if(lsl < LSL_SLOPE_LIMIT){
-		   */
+		  #endif
 
 		  //Check if we are going down and if almost no acceleration (close to apogee)
 		  if(LSLinRegression() < LSL_SLOPE_LIMIT && acc_counter > ACC_COUNTER_THRESH){
@@ -402,6 +394,9 @@ void StartEjection1(void *argument)
 			  while(HAL_GPIO_ReadPin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin)){
 				  HAL_GPIO_WritePin(OUT_EJ_Arming_GPIO_Port, OUT_EJ_Arming_Pin, RESET); //PG14 ARMING RCOV
 			  }
+
+			  //Minimum delay between drogue and main
+			  osDelay(DROGUE_TO_MAIN_DELAY);
 
 			  for(;;){
 
@@ -651,12 +646,6 @@ void StartWatchDog(void *argument)
 	 *i = 10;
 	#endif
 
-	 //TODO remove for comp
-	 memset(buffer, 0, WD_BUFFER_SIZE);
-	 sprintf(buffer, "Time: %i:%i:%lu ::%lu	Altitude: \r\n %f\r\n", prev_hour,prev_min,prev_sec,prev_subsec , altitude_m);
-	 println((char*) buffer);
-
-
 	 //Check if new ejection stage to save in memory
 	 if(wd_ejection_flag == 1){
 
@@ -754,8 +743,12 @@ void StartPropulsion4(void *argument)
 	}
 	#endif
 
+	#if TESTING_IRIDIUM
+	apogee_flag = 1;
+	#endif
+
 	uint8_t timeout_changed = 0;
-	uint16_t counter = 0;
+	uint16_t payload_counter = 0; //Was sending too fast relative to thread
 
 	iridium_buffer[0] = 'S';
 	iridium_buffer[IRIDIUM_BUFFER_SIZE-1] = 'E';
@@ -764,48 +757,52 @@ void StartPropulsion4(void *argument)
   for(;;)
   {
 	  //if between boost and landing send payload data over iridium
-	  ejection_stage_flag = 1;
-	  if (ejection_stage_flag > 0 && ejection_stage_flag < 4){
-		  #if IRIDIUM_ //Iridium send
-		  if(counter > 1000 && MRT_payloadPoll() == 1){
-			  print("\tIridium sending: ");
-		  	  println(iridium_buffer);
-		  	  memset(iridium_buffer,0,IRIDIUM_BUFFER_SIZE); //Everything but the beginning and ending characters
-		  	  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
+	  if (payload_counter>=PAYLOAD_COUNT*4 && ejection_stage_flag < LANDED){
+		  payload_counter = 0;
+		  if(payload_init_success){
+			#if IRIDIUM_ //Iridium send
+			if(MRT_payloadPoll() == 1){
+				  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, SET);
+				  print("\tPayload sending: ");
+				  println(payload_buffer);
+				  //hiridium.getTime(); //TODO doesn't cost anything
+				  hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
+				  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
+				  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, RESET);
+				  return;
+			}
+			#endif
 		  }
-		  if(counter > 1000){
-			  counter = 0;
+		  else{
+			  MRT_payloadInit();
 		  }
-		  counter++;
-		  #endif
+
 	  }
 	  if (apogee_flag){
 
 			#if IRIDIUM_ //Iridium send
 
+		    payload_counter = PAYLOAD_COUNT*4;
+
 		  	//Adjust timeout when landing
 			if (!timeout_changed && ejection_stage_flag == LANDED) {
+			  //Set for the rest of the flight
 			  timeout_changed = 1;
 			  hiridium.adjustTimeout(IRIDIUM_LANDED_TIMEOUT); //Adjust timeout when landed
 			}
 
 
-			hiridium.getTime(); //TODO doesn't cost anything
-
 			if(MRT_formatIridium() == 1){
+			  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, SET);
+
 			  //TODO make a list of latest coordinates retrieved to optimize the credits we use
 			  print("\tIridium sending: ");
 			  println(iridium_buffer);
+			  //hiridium.getTime(); //TODO doesn't cost anything
+			  hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
 			  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
-			  //hiridium.sendMessage(iridium_buffer); TODO IT COSTS CREDITS WATCH OUT
+			  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, RESET);
 			}
-
-			println("");
-			println("");
-			print("\t\tIridium buffer: ");
-			print(iridium_buffer);
-
-			println("\r\n");
 
 			if (ejection_stage_flag >= LANDED){
 			  osDelay(1000/POST_LANDED_SEND_FREQ);
@@ -822,6 +819,7 @@ void StartPropulsion4(void *argument)
 	  else{
 		  //Poll propulsion sensors
 		  MRT_pollPropulsion();
+		  payload_counter++;
 		  osDelay(1000/PRE_APOGEE_POLL_FREQ);
 	  }
   }
@@ -835,9 +833,6 @@ void StartPropulsion4(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
-//TODO private functions
-
 
 void MRT_waitForLaunch(void){
 
@@ -857,8 +852,11 @@ void MRT_waitForLaunch(void){
 	fres = sd_open_file(filename);
 	uint8_t sync_counter = 0;
 
+	#if TESTING_IRIDIUM
+	ejection_stage_flag = BOOST;
+	#endif
+
 	//Poll propulsion until launch command sent
-	//ejection_stage_flag = BOOST; //Todo
 	while((XTEND_ || SRADIO_) && ejection_stage_flag == PAD){
 		HAL_GPIO_WritePin(OUT_LED3_GPIO_Port, OUT_LED3_Pin, SET);
 
