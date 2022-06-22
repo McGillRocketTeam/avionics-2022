@@ -146,10 +146,10 @@ int8_t sd_write(FIL* fp, uint8_t* buffer)
 	UINT bytesWrote;
 	FRESULT fres = f_write(fp, buffer, strlen((char const *)buffer), &bytesWrote);
 	if (fres == FR_OK) {
-		myprintf("Wrote %i bytes to 'write.txt'!\r\n", bytesWrote);
+		//myprintf("Wrote %i bytes to 'write.txt'!\r\n", bytesWrote);
 		return bytesWrote;
 	} else {
-		myprintf("f_write error (%i)\r\n");
+		//myprintf("f_write error (%i)\r\n");
 		return -1;
 	}
 }

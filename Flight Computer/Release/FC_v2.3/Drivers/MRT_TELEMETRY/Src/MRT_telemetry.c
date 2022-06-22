@@ -30,8 +30,8 @@ void MRT_float_to_4char(float f, char* receiving_buffer);
 
 
 void MRT_radio_tx(char* buffer){
-	print((char*) "Radio sending:\t");
-	println(buffer);
+	//print((char*) "Radio sending:\t");
+	//println(buffer);
 
 	#if HALF_BYTE_
 	//Encode the buffer to send
