@@ -25,9 +25,15 @@ extern "C" {
 //DEBUGGING
 #define DEBUG 0 //If in debug mode, no IWDG
 #define DEBUGUART huart8
-#define PRINT 1
 #define NO_BUZZ 0
 #define HARDFAULT_GENERATOR 0
+
+//PRINTING
+#define PRINT 1 //Overall print function
+#define SD_PRINT 1 //SD card print
+#define RADIO_PRINT 1 //Radio print
+#define IRIDIUM_INTERNAL_PRINT 1 //Internal Iridium print
+
 
 //Testing
 #define TESTING_EJECTION 0 //Only testing pressure, not acceleration
@@ -35,7 +41,7 @@ extern "C" {
 #define TESTING_SLEEP 0
 
 //FC state
-#define FLIGHT_MODE 0 //Put 1 if in flight mode, 0 if not in flight mode (will allow to reset from the start)
+#define FLIGHT_MODE 1 //Put 1 if in flight mode, 0 if not in flight mode (will allow to reset from the start)
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
 #define FORCED_EJECTION_STAGE 0 //Can take value from 0 to 1 (boolean)
 #define FORCED_STAGE 1 //Can take value from 0 to 4 (only happens if FORCED_EJECTION_STAGE is 1)
@@ -198,8 +204,6 @@ extern "C" {
 #define IRIDIUM_FLIGHT_TIMEOUT 90 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 #define IRIDIUM_LANDED_TIMEOUT 90
 #define IRIDIUM_WAIT_TIME 100 //in milliseconds
-
-#define IRIDIUM_INTERNAL_PRINT 1
 
 
 

@@ -6,6 +6,7 @@
  */
 
 #include "MRT_helpers.h"
+#include <MRT_setup.h>
 #include "sd_card.h"
 #include "string.h"
 #include "main.h"
@@ -32,7 +33,9 @@ void myprintf(const char *fmt, ...) { // currently does nothing, was copied from
 
   //CDC_Transmit_FS((uint8_t *)buffer, strlen(buffer));
   //HAL_UART_Transmit(&DEBUGUART, (uint8_t*)buffer, strlen(buffer), -1);
+  #if SD_PRINT
   print(buffer);
+  #endif
 }
 
 /*
