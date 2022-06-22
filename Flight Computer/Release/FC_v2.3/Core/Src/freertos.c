@@ -595,7 +595,6 @@ void StartSensors3(void *argument)
 	  gates_continuity = MRT_getContinuity();
 
 	  HAL_GPIO_WritePin(OUT_LED1_GPIO_Port, OUT_LED1_Pin, RESET);
-	  println("POLLED");
 
 	  if (ejection_stage_flag >= LANDED){
 		  osDelay(1000/POST_LANDED_POLL_FREQ);

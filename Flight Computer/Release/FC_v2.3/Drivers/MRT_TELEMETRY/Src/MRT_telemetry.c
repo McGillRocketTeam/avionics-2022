@@ -30,8 +30,11 @@ void MRT_float_to_4char(float f, char* receiving_buffer);
 
 
 void MRT_radio_tx(char* buffer){
+
+	#if RADIO_PRINT
 	print((char*) "Radio sending:\t");
 	println(buffer);
+	#endif
 
 	#if HALF_BYTE_
 	//Encode the buffer to send
@@ -80,8 +83,11 @@ void MRT_radio_rx(char* buffer, uint8_t size, uint16_t timeout){
 	hb_decode_string((uint8_t*) buffer, strlen(buffer), decoded_buf, &decoded_buf_len);
 	memcpy(buffer, decoded_buf, decoded_buf_len);
 	#endif
+
+	#if RADIO_PRINT
 	print((char*) "Radio receiving:\t");
 	println((char*) buffer);
+	#endif
 }
 
 
