@@ -767,7 +767,7 @@ void StartPropulsion4(void *argument)
 				  print("\tPayload sending: ");
 				  println(payload_buffer);
 				  //hiridium.getTime(); //TODO doesn't cost anything
-				  //hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
+				  hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
 				  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
 				  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, RESET);
 			}
@@ -799,7 +799,7 @@ void StartPropulsion4(void *argument)
 			  print("\tIridium sending: ");
 			  println(iridium_buffer);
 			  //hiridium.getTime(); //TODO doesn't cost anything
-			  //hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
+			  hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
 			  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
 			  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, RESET);
 			}
@@ -808,7 +808,7 @@ void StartPropulsion4(void *argument)
 			  osDelay(1000/POST_LANDED_SEND_FREQ);
 			}
 			else{
-			osDelay(IRIDIUM_WAIT_TIME);
+			  osDelay(IRIDIUM_WAIT_TIME);
 			}
 			//osDelay(1000/POST_APOGEE_POLL_FREQ);
 			#else
