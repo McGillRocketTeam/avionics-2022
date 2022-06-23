@@ -3,6 +3,9 @@ extern "C" {
   #include <string.h>
   #include <inttypes.h>
   #include "stm32f4xx_hal.h"
+  #include "cmsis_os2.h" //TODO
+  #include "stm32f4xx_hal.h" //TODO
+  #include "iwdg.h" //TODO
 }
 
 #include "Wire.h"
@@ -269,6 +272,9 @@ uint8_t TwoWire::endTransmission(void)
 // or after beginTransmission(address)
 size_t TwoWire::write(uint8_t data)
 {
+  //TODO
+  osDelay(5);
+  HAL_IWDG_Refresh(&hiwdg);
   if(transmitting){
     // in master transmitter mode
     // don't bother if buffer is full

@@ -37,7 +37,7 @@ extern "C" {
 
 //Testing
 #define TESTING_EJECTION 0 //Only testing pressure, not acceleration
-#define TESTING_IRIDIUM 0
+#define TESTING_IRIDIUM 1
 #define TESTING_SLEEP 0
 
 //FC state
@@ -199,7 +199,7 @@ extern "C" {
 //Iridium
 #define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
-#define IRIDIUM_BUFFER_SIZE 10//Keep in mind a 1 credit per 50 bytes message (does it take into account the terminating byte of a string?)
+#define IRIDIUM_BUFFER_SIZE 50//Keep in mind a 1 credit per 50 bytes message (does it take into account the terminating byte of a string?)
 //#define IRIDIUM_FLIGHT_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 #define IRIDIUM_FLIGHT_TIMEOUT 90 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 #define IRIDIUM_LANDED_TIMEOUT 90
