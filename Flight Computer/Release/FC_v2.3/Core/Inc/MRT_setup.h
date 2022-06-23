@@ -199,7 +199,7 @@ extern "C" {
 //Iridium
 #define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
-#define IRIDIUM_BUFFER_SIZE 50//Keep in mind a 1 credit per 50 bytes message (does it take into account the terminating byte of a string?)
+#define IRIDIUM_BUFFER_SIZE 10//Keep in mind a 1 credit per 50 bytes message (does it take into account the terminating byte of a string?)
 //#define IRIDIUM_FLIGHT_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 #define IRIDIUM_FLIGHT_TIMEOUT 90 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 #define IRIDIUM_LANDED_TIMEOUT 90
@@ -264,7 +264,7 @@ extern "C" {
 //PAYLOAD
 #define TEENSY_ADDRESS 0x01 << 1
 #define DATA_REG 0x02 //Don't know it
-#define PAYLOAD_BUFFER_SIZE 50
+#define PAYLOAD_BUFFER_SIZE 10
 
 //**************************************************//
 

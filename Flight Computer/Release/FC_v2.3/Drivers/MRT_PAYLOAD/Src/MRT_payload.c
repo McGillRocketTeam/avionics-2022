@@ -59,20 +59,13 @@ uint8_t MRT_payloadPoll(void) {
 	HAL_StatusTypeDef ret;
 	HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, SET);
 	osDelay(100);
-	ret = HAL_I2C_Master_Receive(&hi2c2, TEENSY_ADDRESS, payload_buffer, 25, 100);
+	ret = HAL_I2C_Master_Receive(&hi2c2, TEENSY_ADDRESS, &payload_buffer[1], 9, 100);
 	if (ret != HAL_OK){
-		println("Error2\r\n");
-		HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET);
-		return 0;
-	}
-	ret = HAL_I2C_Master_Receive(&hi2c2, TEENSY_ADDRESS, &payload_buffer[25], 25, 100);
-	if (ret != HAL_OK){
-		println("Error2\r\n");
+		println("Error1\r\n");
 		HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET);
 		return 0;
 	}
 	HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET);
-	memcpy(iridium_buffer,payload_buffer, 50);
 	return 1;
 	#else
 	return 0;

@@ -155,7 +155,7 @@ int MRT_formatIridium(void){
 	memcpy(iridium_buffer+current_pos+4,&hgps.longitude,4);
 	current_pos += 8;
 
-	if(current_pos > IRIDIUM_BUFFER_SIZE){
+	if(current_pos >= IRIDIUM_BUFFER_SIZE-7){
 		current_pos = 1;
 		return 1;
 	}

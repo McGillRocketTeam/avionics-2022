@@ -744,6 +744,9 @@ void StartPropulsion4(void *argument)
 	apogee_flag = 1;
 	#endif
 
+	payload_buffer[0] = 'P';
+	iridium_buffer[0] = 'S';
+	iridium_buffer[9] = 'E';
 	uint8_t timeout_changed = 0;
 	uint16_t payload_counter = 0; //Was sending too fast relative to thread
 
@@ -751,21 +754,6 @@ void StartPropulsion4(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	  //hiridium.getTime();
-	  sprintf(iridium_buffer, "TESTING IRIDIUM  TESTING IRIDIUM  TESTING IRIDIUM!");
-	  if(hiridium.getNetworkAvailability()){
-		  osDelay(100);
-		  if(hiridium.sendMessage(iridium_buffer)){
-			  //hiridium.getTime();
-			  osThreadExit();
-		  }
-	  }
-	  osDelay(1000);
-	  //while(!hiridium.getNetworkAvailability());
-	  //hiridium.getTime();
-	  //hiridium.sendMessage(iridium_buffer);
-	  //osThreadExit();
-	  /*
 	  //if between boost and landing send payload data over iridium
 	  if (payload_counter>=PAYLOAD_COUNT*4 && ejection_stage_flag < LANDED){
 		  payload_counter = 0;
@@ -776,9 +764,11 @@ void StartPropulsion4(void *argument)
 				  osDelay(50);
 				  print("\tPayload sending: ");
 				  println(payload_buffer);
-				  //hiridium.getTime(); //TODO doesn't cost anything
-				  //hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
-				  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
+				  if(hiridium.getNetworkAvailability()){
+					  osDelay(100);
+					  hiridium.sendMessage(payload_buffer);
+				  }
+				  memset(payload_buffer+1,0,PAYLOAD_BUFFER_SIZE-1); //Everything but the beginning and ending characters
 				  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, RESET);
 			}
 			#endif
@@ -808,8 +798,10 @@ void StartPropulsion4(void *argument)
 			  //TODO make a list of latest coordinates retrieved to optimize the credits we use
 			  print("\tIridium sending: ");
 			  println(iridium_buffer);
-			  hiridium.getTime(); //TODO doesn't cost anything
-			  //hiridium.sendMessage(iridium_buffer); //TODO IT COSTS CREDITS WATCH OUT
+			  if(hiridium.getNetworkAvailability()){
+				  osDelay(100);
+				  hiridium.sendMessage(iridium_buffer);
+			  }
 			  memset(iridium_buffer+1,0,IRIDIUM_BUFFER_SIZE-2); //Everything but the beginning and ending characters
 			  HAL_GPIO_WritePin(OUT_LEDF_GPIO_Port, OUT_LEDF_Pin, RESET);
 			}
@@ -832,7 +824,6 @@ void StartPropulsion4(void *argument)
 		  payload_counter++;
 		  osDelay(1000/PRE_APOGEE_POLL_FREQ);
 	  }
-	  */
   }
 
   //In case it leaves the infinite loop
