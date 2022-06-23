@@ -674,6 +674,7 @@ void StartWatchDog(void *argument)
 		MRT_RTC_setBackupReg(FC_LANDED_TIME, rtc_bckp_reg_landed_time);
 	 }
 
+	  #if !NO_SLEEP
 	  //Check if it's sleep time
 	  if (flagA==1 || flagB==1){
 		//Update iwdg_flag
@@ -688,6 +689,7 @@ void StartWatchDog(void *argument)
 		//Reset to deactivate IWDG
 		NVIC_SystemReset();
 	  }
+	  #endif
 
 	  //Save the RTC time
 	  MRT_saveTotalTime();
