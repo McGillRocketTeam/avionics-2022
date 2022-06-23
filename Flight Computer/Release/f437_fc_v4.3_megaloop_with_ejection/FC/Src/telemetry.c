@@ -32,7 +32,7 @@ volatile float temperature_degC;
 volatile float tank_temperature;
 uint8_t dump_valve_state;
 uint8_t run_valve_state;
-volatile float tank_pressure;
+volatile int tank_pressure;
 volatile uint16_t tank_pressure_buf[PROP_TANK_PRESSURE_ADC_BUF_LEN]; // circular buffer for averaging (low pass filter)
 volatile uint8_t tank_pressure_buf_idx;
 

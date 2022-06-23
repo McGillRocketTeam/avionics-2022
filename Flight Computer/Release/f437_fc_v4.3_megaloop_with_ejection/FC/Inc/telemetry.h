@@ -22,7 +22,7 @@ extern volatile float temperature_degC;
 extern volatile float tank_temperature;
 extern uint8_t dump_valve_state;
 extern uint8_t run_valve_state;
-extern volatile float tank_pressure;
+extern volatile int tank_pressure;
 extern volatile uint16_t tank_pressure_buf[PROP_TANK_PRESSURE_ADC_BUF_LEN]; // circular buffer for averaging (low pass filter)
 extern volatile uint8_t tank_pressure_buf_idx;
 

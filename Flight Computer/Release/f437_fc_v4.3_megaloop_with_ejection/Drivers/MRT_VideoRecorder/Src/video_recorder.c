@@ -26,12 +26,21 @@ void VR_Power_Off(void) {
 }
 
 void VR_Start_Rec(void) {
-//	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET); // HIGH = start record
+	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET); // HIGH = start record
+	HAL_Delay(500);
+	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET); // HIGH = start record
+	HAL_Delay(500);
+	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET); // HIGH = start record
+	HAL_Delay(500);
+	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET); // HIGH = start record
+	HAL_Delay(500);
 	set_backup_state(FC_STATE_VR_RECORDING, 1);
 }
 
 void VR_Stop_Rec(void) {
-//	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET); // LOW = stop recording
+	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, SET); // LOW = stop recording
+	HAL_Delay(1000);
+	HAL_GPIO_WritePin(VR_CTRL_REC_GPIO_Port, VR_CTRL_REC_Pin, RESET);
 	vr_is_stop = 1;
 	set_backup_state(FC_STATE_VR_RECORDING, 0);
 }
