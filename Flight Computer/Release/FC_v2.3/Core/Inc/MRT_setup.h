@@ -38,10 +38,13 @@ extern "C" {
 //Testing
 #define TESTING_EJECTION 0 //Only testing pressure, not acceleration
 #define TESTING_IRIDIUM 1
-#define TESTING_SLEEP 0
+#define TESTING_SLEEP 1
 
 //FC state
-#define FLIGHT_MODE 1 //Put 1 if in flight mode, 0 if not in flight mode (will allow to reset from the start)
+#define FLIGHT_MODE 0 //Put 1 if in flight mode, 0 if not in flight mode (will allow to reset from the start)
+#define NO_SLEEP 1 //RTC sleep control (the alarms are still set, but the function "go to sleep" is never called if 1)
+
+//FC forced states
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
 #define FORCED_EJECTION_STAGE 0 //Can take value from 0 to 1 (boolean)
 #define FORCED_STAGE 1 //Can take value from 0 to 4 (only happens if FORCED_EJECTION_STAGE is 1)
@@ -91,7 +94,7 @@ extern "C" {
 #define PRE_WHEN_SLEEP_TIME_MIN 0  //In minutes
 #define PRE_WHEN_SLEEP_TIME_HOURS 0  //In hours
 
-#define POST_WHEN_SLEEP_TIME_SEC 30  //In seconds
+#define POST_WHEN_SLEEP_TIME_SEC 45  //In seconds
 #define POST_WHEN_SLEEP_TIME_MIN 0  //In minutes
 #define POST_WHEN_SLEEP_TIME_HOURS 0  //In hours
 
@@ -200,7 +203,6 @@ extern "C" {
 #define IRIDIUM_ 1
 #define IRIDIUM_I2C 2 //I2C bus number
 #define IRIDIUM_BUFFER_SIZE 50//Keep in mind a 1 credit per 50 bytes message (does it take into account the terminating byte of a string?)
-//#define IRIDIUM_FLIGHT_TIMEOUT 1 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 #define IRIDIUM_FLIGHT_TIMEOUT 90 //Timeout in seconds TODO ONLY TESTED WITH GET TIME
 #define IRIDIUM_LANDED_TIMEOUT 90
 #define IRIDIUM_WAIT_TIME 100 //in milliseconds
