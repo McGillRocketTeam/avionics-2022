@@ -756,6 +756,7 @@ void StartPropulsion4(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	  /* TODO scratch payload integration
 	  //if between boost and landing send payload data over iridium
 	  if (payload_counter>=PAYLOAD_COUNT*4 && ejection_stage_flag < LANDED){
 		  payload_counter = 0;
@@ -780,7 +781,8 @@ void StartPropulsion4(void *argument)
 		  }
 
 	  }
-	  if (apogee_flag){
+	  */
+	  if (apogee_flag || prev_hour >= 4){
 
 			#if IRIDIUM_ //Iridium send
 

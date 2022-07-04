@@ -30,19 +30,19 @@ extern "C" {
 
 //PRINTING
 #define PRINT 1 //Overall print function
-#define SD_PRINT 1 //SD card print
-#define RADIO_PRINT 1 //Radio print
+#define SD_PRINT 0 //SD card print
+#define RADIO_PRINT 0 //Radio print
 #define IRIDIUM_INTERNAL_PRINT 1 //Internal Iridium print
 
 
 //Testing
 #define TESTING_EJECTION 0 //Only testing pressure, not acceleration
-#define TESTING_IRIDIUM 1
-#define TESTING_SLEEP 1
+#define TESTING_IRIDIUM 0
+#define TESTING_SLEEP 0
 
 //FC state
-#define FLIGHT_MODE 0 //Put 1 if in flight mode, 0 if not in flight mode (will allow to reset from the start)
-#define NO_SLEEP 1 //RTC sleep control (the alarms are still set, but the function "go to sleep" is never called if 1)
+#define FLIGHT_MODE 1 //Put 1 if in flight mode, 0 if not in flight mode (will allow to reset from the start)
+#define NO_SLEEP 0 //RTC sleep control (the alarms are still set, but the function "go to sleep" is never called if 1)
 
 //FC forced states
 #define FORCED_APOGEE 0 //Can only take value of 0 or 1
@@ -107,7 +107,7 @@ extern "C" {
 //Launch day sleep time (launch at 3:30pm??)
 #define PRE_WHEN_SLEEP_TIME_SEC 0  //In seconds
 #define PRE_WHEN_SLEEP_TIME_MIN 30  //In minutes
-#define PRE_WHEN_SLEEP_TIME_HOURS 4  //In hours
+#define PRE_WHEN_SLEEP_TIME_HOURS 11  //In hours
 
 //Post launch day sleep time (waking up at 6am)
 #define POST_WHEN_SLEEP_TIME_SEC ( 0 + PRE_WHEN_SLEEP_TIME_SEC )  //In seconds

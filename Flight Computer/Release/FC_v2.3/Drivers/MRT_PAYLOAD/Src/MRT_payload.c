@@ -19,6 +19,8 @@ uint8_t payload_init_success = 0;
 uint8_t payload_init_counter = 0;
 uint8_t payload_buffer[PAYLOAD_BUFFER_SIZE];
 
+uint8_t nb_of_zero = 0;
+
 void MRT_payloadInit(void) {
 	#if PAYLOAD_
 	print((char*) "Payload Init...");
@@ -66,6 +68,12 @@ uint8_t MRT_payloadPoll(void) {
 		return 0;
 	}
 	HAL_GPIO_WritePin(PAYLOAD_I2C_EN_GPIO_Port, PAYLOAD_I2C_EN_Pin, RESET);
+	for(int i = 1; i<PAYLOAD_BUFFER_SIZE - 2; i++){
+		if(payload_buffer==0) nb_of_zero++;
+	}
+	if (nb_of_zero >= 7){
+		return 0;
+	}
 	return 1;
 	#else
 	return 0;
